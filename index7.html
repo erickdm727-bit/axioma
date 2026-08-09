@@ -739,8 +739,17 @@
   const overlay = $("overlay");
   const apiKeyInput = $("apiKeyInput");
 
+  function safeLocalStorageSet(key, value){
+    try { localStorage.setItem(key, value); return true; }
+    catch(e){ console.error("No se pudo guardar en localStorage:", key, e); return false; }
+  }
+
   function getApiKey(){ try { return localStorage.getItem(STORAGE_KEY) || ""; } catch(e){ return ""; } }
-  function setApiKey(k){ try { localStorage.setItem(STORAGE_KEY, k); } catch(e){} }
+  function setApiKey(k){
+    if(!safeLocalStorageSet(STORAGE_KEY, k)){
+      setStatus("⚠ No se pudo guardar tu API key en este dispositivo (almacenamiento lleno o bloqueado) — tendrás que volver a pegarla la próxima vez que abras la app.", true);
+    }
+  }
 
   $("openSettings").addEventListener("click", ()=>{ apiKeyInput.value = getApiKey(); overlay.style.display = "flex"; });
   $("closeSettings").addEventListener("click", ()=> overlay.style.display = "none");
@@ -2482,7 +2491,11 @@
     try { saved = JSON.parse(localStorage.getItem(TOGGLE_STORAGE_KEY) || "{}"); } catch(e){}
     MODULE_DEFS.forEach(m => { moduleEnabled[m.key] = saved[m.key] !== undefined ? saved[m.key] : true; });
   })();
-  function saveToggles(){ try { localStorage.setItem(TOGGLE_STORAGE_KEY, JSON.stringify(moduleEnabled)); } catch(e){} }
+  function saveToggles(){
+    if(!safeLocalStorageSet(TOGGLE_STORAGE_KEY, JSON.stringify(moduleEnabled))){
+      setStatus("⚠ No se pudieron guardar tus preferencias de módulos activos en este dispositivo.", true);
+    }
+  }
 
   function moduleNeedsMet(key, result){
     if(!result) return true;
@@ -2871,7 +2884,11 @@
   const FX_URL = "https://api.frankfurter.dev/v1/latest?base=USD&symbols=MXN";
 
   function loadPortLots(){ try { return JSON.parse(localStorage.getItem(PORT_LOTS_KEY) || "[]"); } catch(e){ return []; } }
-  function savePortLots(){ try { localStorage.setItem(PORT_LOTS_KEY, JSON.stringify(portLots)); } catch(e){} }
+  function savePortLots(){
+    if(!safeLocalStorageSet(PORT_LOTS_KEY, JSON.stringify(portLots))){
+      setPortFormStatus("⚠ No se pudo guardar tu portafolio en este dispositivo (almacenamiento lleno o bloqueado) — vuelve a intentarlo o libera espacio.", true);
+    }
+  }
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
 
   let portLots = loadPortLots();
@@ -2922,7 +2939,9 @@
 
   function setDisplayCurrency(ccy){
     displayCurrency = ccy;
-    try { localStorage.setItem(PORT_CCY_KEY, ccy); } catch(e){}
+    if(!safeLocalStorageSet(PORT_CCY_KEY, ccy)){
+      setPortFormStatus("⚠ No se pudo guardar tu preferencia de moneda en este dispositivo.", true);
+    }
     $("ccyUSD").classList.toggle("active", ccy==="USD");
     $("ccyMXN").classList.toggle("active", ccy==="MXN");
     updatePriceInputCurrencyUI();
@@ -3099,4 +3118,4 @@
 })();
 </script>
 </body>
-</html>
+      </html>
