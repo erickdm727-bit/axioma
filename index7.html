@@ -636,11 +636,11 @@
     <div id="portfolioTable"></div>
 
     <div class="port-analysis-picker" id="portAnalysisPicker" style="display:none">
-      <label for="portTickerSelect">Ver análisis técnico completo de</label>
+      <label for="portTickerSelect">Análisis técnico completo (Scanner) de</label>
       <select id="portTickerSelect"></select>
+      <button class="btn-ghost" id="portOpenScannerBtn" type="button">Abrir en Scanner →</button>
     </div>
-    <div class="port-no-position" id="portNoPositionMsg" style="display:none">Agrega una posición para ver su gráfica y análisis técnico.</div>
-    <div id="portfolioAnalysisHost"></div>
+    <div class="port-no-position" id="portNoPositionMsg" style="display:none">Agrega una posición para ver sus niveles de soporte/resistencia.</div>
   </div>
 </main>
 
@@ -2899,6 +2899,7 @@
   let activeTab = "scanner";
   let scannerLastTicker = null, scannerLastBench = null;
   let portfolioLastTicker = null;
+  let portSRData = {}; // ticker -> { sr, alert, error } — soporte/resistencia + alerta por posición
 
   function groupLotsByTicker(){
     const groups = {};
@@ -2985,11 +2986,36 @@
     setPortFormStatus(entryCcy === "MXN" ? `Compra agregada (${enteredPrice.toFixed(2)} MXN ≈ $${priceUSD.toFixed(2)} USD).` : "Compra agregada.");
     renderPortfolioTable();
     populateTickerSelect();
-    refreshPortfolioPrices();
+    refreshPortfolioAll();
   });
 
   function deleteLot(id){ portLots = portLots.filter(l=>l.id!==id); savePortLots(); renderPortfolioTable(); populateTickerSelect(); }
   function deletePosition(ticker){ portLots = portLots.filter(l=>l.ticker!==ticker); savePortLots(); renderPortfolioTable(); populateTickerSelect(); }
+
+  function renderPortfolioSRBlock(ticker){
+    const info = portSRData[ticker];
+    const srKindLabel = { pivot:"Pivote", fib:"Fibonacci", confluencia:"Confluencia" };
+    if(!info){
+      return `<div class="rel-excess">Calculando niveles de soporte/resistencia…</div>`;
+    }
+    if(!info.sr){
+      return `<div class="rel-excess">⚠ No se pudieron calcular niveles${info.error?(" ("+info.error+")"):""}.</div>`;
+    }
+    const s1 = info.sr.supports[0], r1 = info.sr.resistances[0];
+    let html = `<div class="port-row-body">
+      <div class="port-stat"><div class="pslabel">Soporte más cercano (USD)</div><div class="psval">${s1?("$"+s1.price.toFixed(2)+" · "+srKindLabel[s1.type]):"—"}</div></div>
+      <div class="port-stat"><div class="pslabel">Resistencia más cercana (USD)</div><div class="psval">${r1?("$"+r1.price.toFixed(2)+" · "+srKindLabel[r1.type]):"—"}</div></div>
+    </div>`;
+    if(info.alert.urgent){
+      html += `<div class="bt-verdict ${info.alert.cls}">
+        <div class="btv-head"><span>${info.alert.icon}</span><span>${info.alert.title}</span></div>
+        <p>${info.alert.text}</p>
+      </div>`;
+    } else {
+      html += `<div class="rel-excess">${info.alert.icon} ${info.alert.text}</div>`;
+    }
+    return html;
+  }
 
   function renderPortfolioTable(){
     const groups = groupLotsByTicker();
@@ -3019,6 +3045,7 @@
           <div class="port-stat"><div class="pslabel">Valor actual</div><div class="psval">${curVal!=null?fmtCcy(convertUSD(curVal)):"…"}</div></div>
           <div class="port-stat"><div class="pslabel">Ganancia/Pérdida</div><div class="psval ${gainCls}">${gainUSD!=null?((gainUSD>=0?"+":"")+fmtCcy(convertUSD(gainUSD))+" ("+(gainPct*100).toFixed(1)+"%)"):"…"}</div></div>
         </div>
+        ${renderPortfolioSRBlock(ticker)}
         <div class="port-lots">
           ${lots.map(l=>{
             const ccy = l.entryCcy || "USD"; // older lots saved before this fix have no entryCcy — they were always USD
@@ -3052,7 +3079,63 @@
   }
   function startPortfolioAutoRefresh(){
     clearInterval(portRefreshTimer);
-    portRefreshTimer = setInterval(refreshPortfolioPrices, 30*60*1000);
+    portRefreshTimer = setInterval(refreshPortfolioAll, 30*60*1000);
+  }
+
+  const PORT_SR_PROXIMITY = 0.02; // dentro de 2% cuenta como "cerca" de un nivel
+  function buildPortfolioSRAlert(daily, currentPrice, sr){
+    const s1 = sr.supports[0], s2 = sr.supports[1];
+    const r1 = sr.resistances[0], r2 = sr.resistances[1];
+    const prevClose = daily.length>1 ? daily[daily.length-2].close : null;
+
+    if(s1 && prevClose!=null && prevClose>=s1.price && currentPrice<s1.price){
+      return { urgent:true, icon:"⚠", cls:"bear", title:"Acaba de romper un soporte",
+        text:`El precio cruzó por debajo del Soporte ${s1.n} (${s1.price.toFixed(2)} USD) — zona de riesgo.` + (s2?` Si sigue cayendo, el siguiente soporte está en ${s2.price.toFixed(2)} USD.`:'') };
+    }
+    if(r1 && prevClose!=null && prevClose<=r1.price && currentPrice>r1.price){
+      return { urgent:true, icon:"🚀", cls:"bull", title:"Acaba de romper una resistencia",
+        text:`El precio cruzó por encima de la Resistencia ${r1.n} (${r1.price.toFixed(2)} USD) — podría acelerar al alza.` + (r2?` Siguiente resistencia en ${r2.price.toFixed(2)} USD.`:'') };
+    }
+
+    const distS = s1 ? (currentPrice-s1.price)/currentPrice : null;
+    const distR = r1 ? (r1.price-currentPrice)/currentPrice : null;
+
+    if(distS!=null && distS>=0 && distS<=PORT_SR_PROXIMITY){
+      return { urgent:true, icon:"⚠", cls:"mixed", title:"Cerca de un soporte — zona de riesgo",
+        text:`Estás a ${(distS*100).toFixed(1)}% de tocar el Soporte ${s1.n} (${s1.price.toFixed(2)} USD).` + (s2?` Si se rompe, el siguiente soporte está en ${s2.price.toFixed(2)} USD.`:'') };
+    }
+    if(distR!=null && distR>=0 && distR<=PORT_SR_PROXIMITY){
+      return { urgent:true, icon:"◆", cls:"mixed", title:"Cerca de una resistencia",
+        text:`Estás a ${(distR*100).toFixed(1)}% de la Resistencia ${r1.n} (${r1.price.toFixed(2)} USD).` + (r2?` Si la rompe, la siguiente resistencia está en ${r2.price.toFixed(2)} USD.`:'') };
+    }
+
+    const parts = [];
+    if(distS!=null && distS>=0) parts.push(`${(distS*100).toFixed(1)}% arriba del Soporte ${s1.n} (${s1.price.toFixed(2)} USD)`);
+    if(distR!=null && distR>=0) parts.push(`${(distR*100).toFixed(1)}% debajo de la Resistencia ${r1.n} (${r1.price.toFixed(2)} USD)`);
+    return { urgent:false, icon:"◇",
+      text: parts.length ? `Precio a ${parts.join(" y ")} — sin niveles clave inmediatos que vigilar.` : "No hay suficiente historial para calcular soportes/resistencias confiables todavía." };
+  }
+
+  async function refreshPortfolioLevels(){
+    const tickers = Object.keys(groupLotsByTicker());
+    if(!tickers.length) return;
+    for(const t of tickers){
+      try {
+        const daily = await fetchSeries(t, "1day", 260);
+        const price = (portPrices[t] && portPrices[t].price!=null) ? portPrices[t].price : daily[daily.length-1].close;
+        const sr = computeSupportResistanceLevels(daily, price);
+        const alert = buildPortfolioSRAlert(daily, price, sr);
+        portSRData[t] = { sr, alert, error:null };
+      } catch(e){
+        portSRData[t] = Object.assign({}, portSRData[t], { error: e.message || "error" });
+      }
+      renderPortfolioTable();
+    }
+  }
+
+  async function refreshPortfolioAll(){
+    await refreshPortfolioPrices();
+    await refreshPortfolioLevels();
   }
 
   function populateTickerSelect(){
@@ -3065,9 +3148,12 @@
   }
   $("portTickerSelect").addEventListener("change", ()=>{
     portfolioLastTicker = $("portTickerSelect").value;
-    tickerInput.value = portfolioLastTicker;
-    if(!benchInput.value) benchInput.value = "SPY";
-    analyze();
+  });
+  $("portOpenScannerBtn").addEventListener("click", ()=>{
+    const t = $("portTickerSelect").value;
+    if(!t) return;
+    scannerLastTicker = t;
+    switchTab("scanner");
   });
 
   function moveAnalysisSectionTo(hostId){
@@ -3094,14 +3180,9 @@
       if(tickers.length){
         $("portNoPositionMsg").style.display = "none";
         $("portAnalysisPicker").style.display = "flex";
-        $("portfolioAnalysisHost").style.display = "";
-        moveAnalysisSectionTo("portfolioAnalysisHost");
-        tickerInput.value = portfolioLastTicker;
-        if(!benchInput.value) benchInput.value = "SPY";
-        analyze();
+        refreshPortfolioAll();
       } else {
         $("portAnalysisPicker").style.display = "none";
-        $("portfolioAnalysisHost").style.display = "none";
         $("portNoPositionMsg").style.display = "block";
       }
     }
@@ -3113,7 +3194,7 @@
   updatePriceInputCurrencyUI();
   renderPortfolioTable();
   populateTickerSelect();
-  if(Object.keys(groupLotsByTicker()).length){ fetchUsdMxnRate(); refreshPortfolioPrices(); }
+  if(Object.keys(groupLotsByTicker()).length){ fetchUsdMxnRate(); refreshPortfolioAll(); }
   startPortfolioAutoRefresh();
 })();
 </script>
