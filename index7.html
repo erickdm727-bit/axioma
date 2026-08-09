@@ -1,0 +1,3102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Axioma — Análisis Técnico Multi-indicador</title>
+<meta name="description" content="Analiza un ticker con medias móviles, EMA, Bollinger, RSI, Estocástico, Ichimoku, A/D y patrones de velas en múltiples marcos temporales.">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0B0F14">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0F14;
+    --panel:#121820;
+    --panel-2:#171F29;
+    --panel-3:#1D2732;
+    --line:#232D39;
+    --text:#E7ECEF;
+    --text-dim:#8FA0AE;
+    --text-dim2:#5E6E7C;
+    --up:#3ECF8E;
+    --up-dim:#193227;
+    --down:#FF5C5C;
+    --down-dim:#341A1A;
+    --mixed:#F2B84B;
+    --mixed-dim:#332812;
+    --accent:#5B8DEF;
+    --accent-dim:#182238;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(91,141,239,0.08), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Space Grotesk', system-ui, sans-serif;
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+  .mono{font-family:'IBM Plex Mono', ui-monospace, monospace;}
+
+  header{padding:28px 20px 18px; max-width:920px; margin:0 auto;}
+  .brand{display:flex; align-items:baseline; gap:10px;}
+  .brand .mark{width:10px;height:10px;border-radius:2px;background:var(--accent);display:inline-block;transform:rotate(45deg);flex:none;}
+  .brand h1{font-size:19px; font-weight:700; letter-spacing:0.01em; margin:0;}
+  .brand .tag{color:var(--text-dim); font-size:13px; margin-left:auto; cursor:pointer; user-select:none; border:1px solid var(--line); padding:6px 10px; border-radius:8px; transition:border-color .15s;}
+  .brand .tag:hover{border-color:var(--accent); color:var(--text);}
+  .sub{color:var(--text-dim); font-size:14px; margin-top:6px; max-width:60ch; line-height:1.5;}
+
+  main{max-width:920px;margin:0 auto;padding:0 20px;}
+
+  .search-row{display:flex; gap:10px; margin:18px 0 6px;}
+  .search-row input{flex:1; background:var(--panel); border:1px solid var(--line); color:var(--text); font-family:'IBM Plex Mono', monospace; font-size:18px; letter-spacing:0.04em; padding:14px 16px; border-radius:var(--radius); outline:none; text-transform:uppercase; transition:border-color .15s, box-shadow .15s;}
+  .search-row input:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(91,141,239,0.15);}
+  .search-row input::placeholder{color:#4C5A68; text-transform:none; letter-spacing:normal;}
+  .bench-row{display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap;}
+  .bench-row label{font-size:12px; color:var(--text-dim);}
+  .bench-row input{width:90px; background:var(--panel-2); border:1px solid var(--line); color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:13px; padding:6px 10px; border-radius:7px; outline:none; text-transform:uppercase;}
+  .bench-row input:focus{border-color:var(--accent);}
+  .bench-hint{font-size:11px; color:var(--text-dim2);}
+
+  .toggle-panel{border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); padding:14px 16px; margin-bottom:18px;}
+  .toggle-panel-head{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
+  .toggle-panel-head h4{font-size:13px; margin:0; font-weight:700;}
+  .toggle-panel-head .thint{font-size:11px; color:var(--text-dim2); margin-left:auto;}
+  .toggle-quick{display:flex; gap:6px;}
+  .toggle-quick button{background:var(--panel-2); border:1px solid var(--line); color:var(--text-dim); font-size:10.5px; padding:3px 8px; border-radius:99px; cursor:pointer;}
+  .toggle-quick button:hover{color:var(--text); border-color:var(--accent);}
+  .toggle-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(160px,1fr)); gap:8px;}
+  .toggle-item{display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--text-dim); background:var(--panel-2); border-radius:8px; padding:8px 10px; cursor:pointer; user-select:none;}
+  .toggle-item:hover{color:var(--text);}
+  .toggle-item input{display:none;}
+  .switch{width:30px; height:17px; border-radius:99px; background:var(--panel-3); position:relative; flex:none; transition:background .15s;}
+  .switch::after{content:''; position:absolute; top:2px; left:2px; width:13px; height:13px; border-radius:50%; background:var(--text-dim2); transition:transform .15s, background .15s;}
+  .toggle-item input:checked + .switch{background:var(--accent-dim);}
+  .toggle-item input:checked + .switch::after{transform:translateX(13px); background:var(--accent);}
+
+  .module{position:relative;}
+  .module.module-off .module-body-wrap{opacity:0.35; filter:grayscale(0.4); pointer-events:none;}
+  .module-off-banner{display:none; font-size:11.5px; color:var(--mixed); background:var(--mixed-dim); border:1px solid rgba(242,184,75,0.35); padding:6px 10px; border-radius:7px; margin-bottom:10px;}
+  .module.module-off .module-off-banner{display:block;}
+  .btn{background:var(--accent); color:#08101F; border:none; font-weight:600; font-size:15px; padding:0 22px; border-radius:var(--radius); cursor:pointer; transition:filter .15s, transform .05s;}
+  .btn:hover{filter:brightness(1.08);}
+  .btn:active{transform:scale(0.98);}
+  .btn:disabled{opacity:.5;cursor:default;}
+  .hint{color:var(--text-dim); font-size:12.5px; margin:8px 2px 22px;}
+  .hint a{color:var(--accent); text-decoration:none;}
+  .hint a:hover{text-decoration:underline;}
+
+  #statusLine{min-height:22px; font-size:13.5px; color:var(--text-dim); margin:4px 2px 14px;}
+  #statusLine.err{color:var(--down);}
+  #progressWrap{display:none; margin:4px 2px 16px;}
+  .progress-track{height:4px; background:var(--panel-2); border-radius:99px; overflow:hidden;}
+  #progressBar{height:100%; width:0%; background:var(--accent); transition:width .2s;}
+  .eta-text{font-size:12px; color:var(--accent); margin-top:6px; font-weight:600; display:none;}
+  .data-missing-banner{display:none; align-items:center; gap:10px; background:var(--mixed-dim); border:1px solid rgba(242,184,75,0.45); color:var(--mixed); font-size:13px; font-weight:600; padding:12px 14px; border-radius:8px; margin-top:12px;}
+  .data-missing-banner.show{display:flex;}
+  .data-missing-banner .spin2{width:14px; height:14px; border-radius:50%; border:2px solid rgba(242,184,75,0.3); border-top-color:var(--mixed); flex:none; animation:sp2 .7s linear infinite;}
+  @keyframes sp2{to{transform:rotate(360deg);}}
+
+  .price-card{display:none; align-items:baseline; gap:14px; background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:18px 20px; margin-bottom:24px;}
+  .price-card .sym{font-size:20px; font-weight:700;}
+  .price-card .px{font-family:'IBM Plex Mono', monospace; font-size:26px; font-weight:600;}
+  .price-card .asof{color:var(--text-dim); font-size:12.5px; margin-left:auto;}
+
+  /* Module cards (one per indicator) */
+  .module{display:none; border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); margin-bottom:16px; padding:18px 20px;}
+  .module-head{display:flex; align-items:center; gap:10px; margin-bottom:4px;}
+  .module-head .idx{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim2); width:20px;}
+  .module-head h3{font-size:15.5px; margin:0; font-weight:700;}
+  .module-head .catg{font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-dim2); border:1px solid var(--line); padding:2px 8px; border-radius:99px; margin-left:auto;}
+  .module-desc{color:var(--text-dim); font-size:12.5px; line-height:1.5; margin:4px 0 14px;}
+  .info-btn{background:transparent; border:1px solid var(--line); color:var(--text-dim2); font-size:10.5px; padding:3px 9px; border-radius:99px; cursor:pointer; white-space:nowrap; flex:none;}
+  .info-btn:hover{color:var(--accent); border-color:var(--accent);}
+  .info-btn.active{background:var(--accent-dim); border-color:var(--accent); color:var(--accent);}
+  .module-explainer{display:none; background:var(--accent-dim); border:1px solid rgba(91,141,239,0.35); border-radius:8px; padding:12px 14px; font-size:12.5px; color:var(--text-dim); line-height:1.6; margin:-6px 0 14px;}
+  .module-explainer.open{display:block;}
+  .module-score{display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--text-dim); margin-top:12px;}
+  .module-score .chip{font-size:10.5px; padding:3px 9px; border-radius:999px; font-weight:700; letter-spacing:.03em;}
+
+  /* Ladder (3-period grid — used by MA & EMA) */
+  .ladder{border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+  .rung{display:flex; align-items:center; padding:9px 12px; border-bottom:1px solid var(--line); background:var(--panel-2); gap:12px;}
+  .rung:last-child{border-bottom:none;}
+  .rung .tf{width:56px; flex:none; font-family:'IBM Plex Mono', monospace; font-size:12.5px; color:var(--text-dim);}
+  .rung .cells{display:flex; gap:6px; flex:1;}
+  .cell{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; padding:5px 3px; border-radius:6px; background:var(--panel-3);}
+  .cell .plab{font-size:9px; color:var(--text-dim); letter-spacing:.05em;}
+  .cell .sig{font-family:'IBM Plex Mono', monospace; font-size:12.5px; font-weight:700;}
+  .cell.above{background:var(--up-dim);} .cell.above .sig{color:var(--up);}
+  .cell.below{background:var(--down-dim);} .cell.below .sig{color:var(--down);}
+  .cell.na{opacity:.35;}
+
+  /* Chip row (compact, single value per timeframe — used by BB, RSI, Stoch, Ichimoku, A/D) */
+  .chiprow{display:flex; flex-wrap:wrap; gap:6px;}
+  .chip-tf{display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 6px; border-radius:8px; background:var(--panel-2); flex:1; min-width:64px;}
+  .chip-tf .lbl{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--text-dim2);}
+  .chip-tf .val{font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:700;}
+  .chip-tf.up{background:var(--up-dim);} .chip-tf.up .val{color:var(--up);}
+  .chip-tf.down{background:var(--down-dim);} .chip-tf.down .val{color:var(--down);}
+  .chip-tf.neutral .val{color:var(--mixed);}
+  .chip-tf .badge{font-size:8.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-dim2); margin-top:1px;}
+  .chip-tf.warn{box-shadow:inset 0 0 0 1px rgba(242,184,75,0.5);}
+
+  /* Candlestick patterns list */
+  .pattern-tf{padding:10px 12px; border-radius:8px; background:var(--panel-2); margin-bottom:6px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .pattern-tf:last-child{margin-bottom:0;}
+  .pattern-tf .lbl{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-dim); width:44px; flex:none;}
+  .pattern-tag{font-size:11.5px; padding:4px 10px; border-radius:999px; font-weight:600;}
+  .pattern-tag.bullish{background:var(--up-dim); color:var(--up);}
+  .pattern-tag.bearish{background:var(--down-dim); color:var(--down);}
+  .pattern-tag.neutral{background:var(--mixed-dim); color:var(--mixed);}
+  .pattern-tf .none{font-size:12px; color:var(--text-dim2); font-style:italic;}
+
+  .legend{display:flex; gap:16px; margin-top:10px; font-size:11.5px; color:var(--text-dim); flex-wrap:wrap;}
+  .legend span{display:inline-flex; align-items:center; gap:6px;}
+  .legend i{width:9px;height:9px;border-radius:3px;display:inline-block;}
+  .legend .up i{background:var(--up);}
+  .legend .down i{background:var(--down);}
+  .legend .mid i{background:var(--mixed);}
+
+  /* Final verdict */
+  .verdict{display:none; border-radius:14px; padding:26px 24px; margin:30px 0 18px; border:1px solid var(--accent); background:linear-gradient(180deg, var(--accent-dim), var(--panel)); position:relative;}
+  .verdict .eyebrow{font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--accent); font-weight:700; margin-bottom:8px;}
+  .verdict .headline{font-size:22px; font-weight:700; display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+  .verdict .headline .chip{font-size:12px; padding:4px 12px; border-radius:999px; font-weight:700;}
+  .verdict p{color:var(--text-dim); font-size:14.5px; line-height:1.6; margin:12px 0 0;}
+  .breakdown{margin-top:20px; display:flex; flex-direction:column; gap:8px;}
+  .breakdown-row{display:flex; align-items:center; gap:12px; font-size:13px;}
+  .breakdown-row .blabel{width:150px; flex:none; color:var(--text-dim);}
+  .breakdown-row .bbar{flex:1; height:8px; border-radius:99px; background:var(--panel-3); position:relative; overflow:hidden;}
+  .breakdown-row .bbar .mid{position:absolute; left:50%; top:0; bottom:0; width:1px; background:var(--text-dim2);}
+  .breakdown-row .bbar .fillneg, .breakdown-row .bbar .fillpos{position:absolute; top:0; bottom:0;}
+  .breakdown-row .bbar .fillpos{left:50%; background:var(--up);}
+  .breakdown-row .bbar .fillneg{right:50%; background:var(--down);}
+  .breakdown-row .bscore{width:44px; text-align:right; font-family:'IBM Plex Mono',monospace; color:var(--text-dim); flex:none;}
+
+  /* Movement map */
+  .movement{display:none; border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); padding:20px 22px; margin-bottom:20px;}
+  .movement-top{display:flex; align-items:flex-start; gap:12px; margin-bottom:4px;}
+  .movement h3{font-size:15.5px; margin:0; flex:1;}
+  .movement .movdesc{color:var(--text-dim); font-size:12.5px; line-height:1.55; margin:4px 0 14px;}
+  .movement svg{width:100%; height:auto; display:block; background:var(--panel-2); border-radius:8px;}
+  .movement .caveat{margin-top:14px; font-size:11.5px; color:var(--text-dim2); border-top:1px solid var(--line); padding-top:12px; line-height:1.5;}
+
+  .backtest-card{border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); padding:20px 22px; margin-bottom:20px;}
+  .bt-head{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:8px;}
+  .bt-head h3{font-size:15.5px; margin:0; flex:1;}
+  .btn-bt{background:var(--accent); color:#08101F; border:none; font-weight:700; font-size:13px; padding:9px 16px; border-radius:8px; cursor:pointer; white-space:nowrap;}
+  .btn-bt:hover{filter:brightness(1.08);}
+  .btn-bt:disabled{opacity:.5; cursor:default;}
+  .bt-desc{color:var(--text-dim); font-size:12.5px; line-height:1.55; margin:0 0 10px;}
+  .bt-startdate-row{display:flex; align-items:center; gap:10px; flex-wrap:wrap; background:var(--panel-2); border-radius:8px; padding:10px 12px; margin-bottom:10px;}
+  .bt-startdate-row label{font-size:12.5px; color:var(--text-dim); white-space:nowrap;}
+  .bt-startdate-row input[type="date"]{background:var(--panel-3); border:1px solid var(--line); color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:6px 10px; border-radius:7px; outline:none;}
+  .bt-startdate-row input[type="date"]:focus{border-color:var(--accent);}
+  .bt-startdate-hint{font-size:11px; color:var(--text-dim2); flex:1; min-width:200px;}
+  .bt-caveats{font-size:11.5px; color:var(--mixed); background:var(--mixed-dim); border:1px solid rgba(242,184,75,0.35); border-radius:8px; padding:10px 12px; line-height:1.55; margin-bottom:12px;}
+  .bt-status{font-size:12.5px; color:var(--text-dim); min-height:18px; margin-bottom:6px;}
+  .bt-results{display:none;}
+  .bt-results.show{display:block;}
+  .bt-metrics{display:grid; grid-template-columns:repeat(auto-fit, minmax(130px,1fr)); gap:10px; margin:14px 0;}
+  .bt-metric{background:var(--panel-2); border-radius:8px; padding:12px 14px;}
+  .bt-metric .btm-label{font-size:10.5px; color:var(--text-dim2); text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px;}
+  .bt-metric .btm-value{font-family:'IBM Plex Mono',monospace; font-size:17px; font-weight:700;}
+  .bt-metric .btm-sub{font-size:10.5px; color:var(--text-dim2); margin-top:2px;}
+  .bt-legend{display:flex; gap:16px; margin:10px 0 4px; font-size:11.5px; color:var(--text-dim);}
+  .bt-legend span{display:inline-flex; align-items:center; gap:6px;}
+  .bt-legend i{width:14px; height:2px; display:inline-block;}
+  .bt-chart{border:1px solid var(--line); border-radius:8px; overflow:hidden; margin-top:6px;}
+
+  .bt-verdict{border-radius:10px; padding:14px 16px; margin-bottom:14px; border:1px solid;}
+  .bt-verdict.bull{background:var(--up-dim); border-color:rgba(62,207,142,0.4);}
+  .bt-verdict.bear{background:var(--down-dim); border-color:rgba(255,92,92,0.4);}
+  .bt-verdict.mixed{background:var(--mixed-dim); border-color:rgba(242,184,75,0.4);}
+  .btv-head{display:flex; align-items:center; gap:10px; font-size:16px; font-weight:800;}
+  .bt-verdict.bull .btv-head{color:var(--up);}
+  .bt-verdict.bear .btv-head{color:var(--down);}
+  .bt-verdict.mixed .btv-head{color:var(--mixed);}
+  .bt-verdict p{margin:8px 0 0; font-size:13px; line-height:1.55; color:var(--text-dim);}
+  .bt-daterange{font-size:11.5px; color:var(--text-dim2); margin-bottom:12px;}
+
+  .bt-capital{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px;}
+  .btc-col{flex:1; min-width:220px; background:var(--panel-2); border-radius:8px; padding:12px 14px;}
+  .btc-label{font-size:10.5px; color:var(--text-dim2); text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px;}
+  .btc-arrow{font-family:'IBM Plex Mono',monospace; font-size:16px; font-weight:700;}
+
+  .bt-trades-head{font-size:11.5px; color:var(--text-dim2); margin:16px 0 8px; text-transform:uppercase; letter-spacing:.03em;}
+  .bt-trades{display:flex; flex-direction:column; gap:6px; max-height:420px; overflow-y:auto;}
+  .bt-trade{display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:10px; align-items:center; background:var(--panel-2); border-radius:8px; padding:9px 12px; font-size:12px;}
+  .btt-dates{color:var(--text-dim);}
+  .btt-open{color:var(--mixed);}
+  .btt-prices{color:var(--text-dim2); font-family:'IBM Plex Mono',monospace; font-size:11.5px;}
+  .btt-capital{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--text-dim);}
+  .btt-ret{font-family:'IBM Plex Mono',monospace; font-weight:700; text-align:right; white-space:nowrap;}
+  @media (max-width:640px){ .bt-trade{grid-template-columns:1fr 1fr; grid-template-areas:"dates ret" "prices capital";} .btt-ret{grid-area:ret;} .btt-dates{grid-area:dates;} .btt-prices{grid-area:prices;} .btt-capital{grid-area:capital;} }
+  .btn-resim{background:var(--panel-3); border:1px solid var(--line); color:var(--text-dim); font-size:12px; padding:7px 12px; border-radius:8px; cursor:pointer; white-space:nowrap; flex:none;}
+  .btn-resim:hover{color:var(--text); border-color:var(--accent);}
+  .btn-resim.active{background:var(--accent-dim); border-color:var(--accent); color:var(--accent);}
+  .alert-status{margin:4px 0 0;}
+  .alert-status-msg{font-size:11.5px; color:var(--text-dim2); margin-top:4px;}
+  .alert-banner{background:var(--mixed-dim); color:var(--mixed); border:1px solid rgba(242,184,75,0.4); border-radius:8px; padding:10px 14px; font-size:13px; margin-top:8px; font-weight:600;}
+  .rel-bars{display:flex; flex-direction:column; gap:10px; margin-top:4px;}
+  .rel-bar-row{display:flex; align-items:center; gap:10px;}
+  .rel-bar-row .rlabel{width:80px; flex:none; font-size:12.5px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace;}
+  .rel-bar-row .rtrack{flex:1; height:10px; border-radius:99px; background:var(--panel-3); position:relative; overflow:hidden;}
+  .rel-bar-row .rtrack .rmid{position:absolute; left:50%; top:0; bottom:0; width:1px; background:var(--text-dim2);}
+  .rel-bar-row .rtrack .rfill{position:absolute; top:0; bottom:0;}
+  .rel-bar-row .rval{width:64px; text-align:right; font-family:'IBM Plex Mono',monospace; font-size:12.5px; flex:none;}
+  .rel-excess{margin-top:10px; font-size:13px; padding:10px 12px; border-radius:8px; background:var(--panel-2);}
+  .tf-selector{display:flex; gap:6px; flex-wrap:wrap; margin:14px 0;}
+  .tf-chip{background:var(--panel-2); border:1px solid var(--line); color:var(--text-dim); font-size:12px; font-family:'IBM Plex Mono',monospace; padding:6px 12px; border-radius:99px; cursor:pointer;}
+  .tf-chip:hover{color:var(--text); border-color:var(--text-dim);}
+  .tf-chip.active{background:var(--accent-dim); border-color:var(--accent); color:var(--accent); font-weight:700;}
+  .tf-chip-disabled{opacity:0.35; cursor:not-allowed;}
+  .mov-evidence{border:1px solid var(--line); background:var(--panel-2); border-radius:8px; padding:12px 14px; font-size:12.5px; color:var(--text-dim); line-height:1.6; margin-top:12px;}
+  .mov-evidence b{color:var(--text);}
+  .mov-legend{display:flex; gap:16px; margin-top:10px; font-size:11px; color:var(--text-dim); flex-wrap:wrap;}
+  .mov-legend span{display:inline-flex; align-items:center; gap:6px;}
+  .mov-legend i{width:14px;height:2px;display:inline-block;}
+
+  .disclaimer{color:var(--text-dim); font-size:12px; line-height:1.6; border-top:1px solid var(--line); margin-top:24px; padding-top:16px;}
+
+  /* Settings modal */
+  .overlay{display:none; position:fixed; inset:0; background:rgba(3,6,10,0.7); align-items:center; justify-content:center; z-index:50; padding:20px;}
+  .modal{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:24px; max-width:420px; width:100%;}
+  .modal h2{font-size:16px; margin:0 0 6px;}
+  .modal p{color:var(--text-dim); font-size:13px; line-height:1.5; margin:0 0 14px;}
+  .modal input{width:100%; background:var(--panel-2); border:1px solid var(--line); color:var(--text); font-family:'IBM Plex Mono', monospace; padding:12px 14px; border-radius:8px; outline:none; margin-bottom:14px;}
+  .modal input:focus{border-color:var(--accent);}
+  .modal-actions{display:flex; gap:10px; justify-content:flex-end;}
+  .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--text-dim); padding:10px 16px; border-radius:8px; cursor:pointer; font-size:14px;}
+  .btn-ghost:hover{color:var(--text); border-color:var(--text-dim);}
+
+  @media (max-width:560px){
+    .cell .plab{display:none;}
+    .rung .tf{width:40px; font-size:11px;}
+    .price-card .asof{display:none;}
+    .chip-tf{min-width:52px; padding:6px 4px;}
+    .breakdown-row .blabel{width:110px; font-size:12px;}
+  }
+  @media (prefers-reduced-motion: reduce){ * {transition:none !important;} }
+
+  /* ===== Tabs ===== */
+  .tabbar{display:flex; gap:4px; margin:18px 0 4px; border-bottom:1px solid var(--line);}
+  .tabbtn{background:transparent; border:none; color:var(--text-dim); font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; padding:10px 16px; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px;}
+  .tabbtn:hover{color:var(--text);}
+  .tabbtn.active{color:var(--accent); border-bottom-color:var(--accent);}
+
+  /* ===== Portfolio tab ===== */
+  .port-form-card{border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); padding:18px 20px; margin:18px 0;}
+  .port-form-card h3{margin:0 0 12px; font-size:15px;}
+  .port-form-row{display:flex; gap:10px; flex-wrap:wrap;}
+  .port-form-row input{flex:1; min-width:130px; background:var(--panel-2); border:1px solid var(--line); color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:14px; padding:11px 12px; border-radius:8px; outline:none;}
+  .port-form-row input:focus{border-color:var(--accent);}
+  .port-form-hint{font-size:11.5px; color:var(--text-dim2); margin-top:10px; line-height:1.5;}
+  .port-form-status{font-size:12.5px; margin-top:8px; min-height:16px;}
+  .port-form-status.err{color:var(--down);}
+  .port-form-status.ok{color:var(--up);}
+  .port-currency-row{display:flex; align-items:center; gap:10px; margin-bottom:16px; font-size:13px; color:var(--text-dim); flex-wrap:wrap;}
+  .ccy-btn{background:var(--panel-2); border:1px solid var(--line); color:var(--text-dim); font-size:12.5px; padding:6px 14px; border-radius:99px; cursor:pointer; font-weight:600;}
+  .ccy-btn.active{background:var(--accent-dim); border-color:var(--accent); color:var(--accent);}
+  .fx-note{font-size:11.5px; color:var(--text-dim2); margin-left:auto;}
+  .port-empty{color:var(--text-dim); font-size:13.5px; padding:20px; text-align:center; border:1px dashed var(--line); border-radius:var(--radius); margin-bottom:12px;}
+  .port-last-update{font-size:11px; color:var(--text-dim2); margin:-4px 0 12px;}
+  .port-row{border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); padding:14px 16px; margin-bottom:12px;}
+  .port-row-head{display:flex; align-items:center; gap:12px; margin-bottom:10px; flex-wrap:wrap;}
+  .port-ticker{font-size:15px; font-weight:700;}
+  .port-shares{font-size:12.5px; color:var(--text-dim);}
+  .port-del{margin-left:auto; background:transparent; border:1px solid var(--line); color:var(--text-dim2); font-size:12px; padding:4px 8px; border-radius:6px; cursor:pointer;}
+  .port-del:hover{color:var(--down); border-color:var(--down);}
+  .port-row-body{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; margin-bottom:8px;}
+  .port-stat{background:var(--panel-2); border-radius:8px; padding:9px 11px;}
+  .pslabel{font-size:10px; color:var(--text-dim2); text-transform:uppercase; letter-spacing:.03em; margin-bottom:3px;}
+  .psval{font-family:'IBM Plex Mono',monospace; font-size:14px; font-weight:700;}
+  .psval.pos{color:var(--up);} .psval.neg{color:var(--down);}
+  .port-lots{border-top:1px solid var(--line); padding-top:8px; display:flex; flex-direction:column; gap:5px;}
+  .port-lot{display:flex; align-items:center; justify-content:space-between; font-size:11.5px; color:var(--text-dim2); font-family:'IBM Plex Mono',monospace; gap:10px;}
+  .port-lot-del{background:transparent; border:none; color:var(--text-dim2); cursor:pointer; font-size:12px; flex:none;}
+  .port-lot-del:hover{color:var(--down);}
+  .port-analysis-picker{display:flex; align-items:center; gap:10px; margin:24px 0 14px; font-size:13px; color:var(--text-dim); flex-wrap:wrap;}
+  .port-analysis-picker select{background:var(--panel-2); border:1px solid var(--line); color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:13px; padding:8px 12px; border-radius:8px; outline:none;}
+  .port-no-position{color:var(--text-dim2); font-size:13px; padding:20px; text-align:center;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="mark"></span>
+    <h1>Axioma</h1>
+    <span class="tag" id="openSettings">⚙ API key</span>
+  </div>
+  <div class="sub">Escribe un ticker (acciones US) y corre todo el análisis técnico — medias móviles, EMA, Bollinger, RSI, estocástico, Ichimoku, acumulación/distribución y patrones de velas — en 10 marcos temporales a la vez.</div>
+</header>
+
+<main>
+  <div class="tabbar">
+    <button class="tabbtn active" id="tabBtnScanner" type="button">Scanner</button>
+    <button class="tabbtn" id="tabBtnPortfolio" type="button">Portafolio</button>
+  </div>
+
+  <div id="tabpanel-scanner" class="tabpanel">
+  <div class="search-row">
+    <input id="tickerInput" type="text" placeholder="Ticker, ej. AAPL, TSLA, MSFT" autocomplete="off" spellcheck="false">
+    <button class="btn" id="analyzeBtn">Analizar</button>
+  </div>
+  <div class="bench-row">
+    <label for="benchInput">Comparar contra</label>
+    <input id="benchInput" type="text" value="SPY" autocomplete="off" spellcheck="false">
+    <span class="bench-hint">mercado general = SPY · o pon un ETF de sector, ej. XLK (tech), XLF (financiero), XLE (energía)</span>
+  </div>
+
+  <div id="scannerAnalysisHost"><div id="analysisSection">
+  <div class="toggle-panel">
+    <div class="toggle-panel-head">
+      <h4>⚙ Instrumentos activos</h4>
+      <div class="toggle-quick">
+        <button id="toggleAllOn" type="button">Todos</button>
+        <button id="toggleAllOff" type="button">Ninguno</button>
+      </div>
+      <span class="thint">solo se piden los datos de lo que dejes prendido — nunca más de 8/min</span>
+    </div>
+    <div class="toggle-grid" id="toggleGrid"></div>
+    <div class="data-missing-banner" id="dataMissingBanner"></div>
+  </div>
+  <div class="hint">Datos vía <a href="https://twelvedata.com/pricing" target="_blank" rel="noopener">Twelve Data</a> (plan gratuito). No es asesoría financiera — herramienta educativa.</div>
+  <div id="statusLine"></div>
+  <div id="progressWrap">
+    <div class="progress-track"><div id="progressBar"></div></div>
+    <div id="etaText" class="eta-text"></div>
+  </div>
+
+  <div class="price-card" id="priceCard">
+    <div class="sym mono" id="pcSym">—</div>
+    <div class="px" id="pcPrice">—</div>
+    <div class="asof" id="pcAsof"></div>
+  </div>
+
+  <!-- 1. Market context -->
+  <div class="module" id="mod-marketctx">
+    <div class="module-head"><span class="idx">01</span><h3>Contexto de Mercado (SPY / QQQ)</h3><span class="catg">Régimen</span><button class="info-btn" data-explain="marketctx">ℹ️ Cómo leerlo</button></div>
+    <div class="module-desc">El mercado general marca el viento a favor o en contra de todo lo demás. Se calcula con la "nube EMA" (EMA8 vs EMA21) diaria de SPY y QQQ — si ambas están alcistas, es más fácil que las acciones individuales suban también.</div>
+    <div class="module-explainer" id="explain-marketctx">Idea de un trader real (@BeardoTrader): "el mercado amplio marca mi sesgo". Si SPY y QQQ están en nube EMA alcista (EMA rápida por encima de la lenta), es más fácil sostener posiciones largas y las probabilidades mejoran para todo lo demás. Si el mercado está débil, hasta las mejores acciones cuestan trabajo — por eso este módulo pesa más que los demás en el veredicto final.</div>
+    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-body-wrap">
+    <div id="marketctx-body"></div>
+    <div class="module-score" id="score-marketctx"></div>
+    </div>
+  </div>
+
+  <!-- 2. SMA -->
+  <div class="module" id="mod-sma">
+    <div class="module-head"><span class="idx">02</span><h3>Medias Móviles Simples (SMA)</h3><span class="catg">Tendencia</span><button class="info-btn" data-explain="sma">ℹ️ Cómo leerlo</button></div>
+    <div class="module-desc">Precio actual vs SMA de 10, 100 y 200 periodos, calculado de forma independiente en cada marco temporal.</div>
+    <div class="module-explainer" id="explain-sma">La media móvil simple es el promedio del precio de los últimos N periodos. Precio por ENCIMA de la media = tendencia reciente alcista; por DEBAJO = bajista. La de 200 periodos es la que más siguen los traders institucionales — perderla o recuperarla suele ser noticia. Cuantos más marcos temporales coincidan en el mismo lado, más fuerte y confiable es la señal.</div>
+    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-body-wrap">
+    <div class="ladder" id="ladder-sma"></div>
+    <div class="legend"><span class="up"><i></i> Precio encima de la media</span><span class="down"><i></i> Precio debajo de la media</span></div>
+    <div class="module-score" id="score-sma"></div>
+  </div>
+  </div>
+
+  <!-- 2. EMA -->
+  <div class="module" id="mod-ema">
+    <div class="module-head"><span class="idx">03</span><h3>Medias Móviles Exponenciales (EMA)</h3><span class="catg">Tendencia</span><button class="info-btn" data-explain="ema">ℹ️ Cómo leerlo</button></div>
+    <div class="module-desc">Igual que la SMA pero da más peso a los precios recientes — reacciona más rápido a cambios de tendencia.</div>
+    <div class="module-explainer" id="explain-ema">Igual que la SMA pero pondera más los precios recientes, así que reacciona más rápido a los cambios. Útil para detectar un giro de tendencia antes que la SMA — a cambio, en mercados sin tendencia clara ("choppy") puede dar más señales falsas por ser más sensible al ruido.</div>
+    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-body-wrap">
+    <div class="ladder" id="ladder-ema"></div>
+    <div class="legend"><span class="up"><i></i> Precio encima de la EMA</span><span class="down"><i></i> Precio debajo de la EMA</span></div>
+    <div class="module-score" id="score-ema"></div>
+  </div>
+  </div>
+
+  <!-- 4. EMA Cloud -->
+  <div class="module" id="mod-emacloud">
+    <div class="module-head"><span class="idx">04</span><h3>EMA Cloud (8 / 21)</h3><span class="catg">Tendencia</span><button class="info-btn" data-explain="emacloud">ℹ️ Cómo leerlo</button></div>
+    <div class="module-desc">La "nube" entre la EMA8 y la EMA21: verde (EMA8 encima) = régimen alcista, roja (EMA8 debajo) = régimen bajista. Es la herramienta favorita de muchos swing traders para leer la tendencia de un vistazo.</div>
+    <div class="module-explainer" id="explain-emacloud">Cuando la EMA rápida (8) está por encima de la lenta (21), el "aire" entre ambas se pinta verde — el precio tiene viento a favor de corto plazo. Cuando la rápida cae por debajo de la lenta, la nube se pinta roja. Un cruce reciente (la nube cambiando de color) suele anticipar un cambio de tendencia antes de que sea obvio en el precio.</div>
+    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-body-wrap">
+    <div class="chiprow" id="chip-emacloud"></div>
+    <div class="module-score" id="score-emacloud"></div>
+    </div>
+  </div>
+
+  <!-- 5. Bollinger -->
+  <div class="module" id="mod-bb">
+    <div class="module-head"><span class="idx">05</span><h3>Bandas de Bollinger (20, 2σ)</h3><span class="catg">Volatilidad</span><button class="info-btn" data-explain="bb">ℹ️ Cómo leerlo</button></div>
+    <div class="module-desc">Posición del precio respecto a la banda media (SMA20). Se marca con ⚠ cuando el precio rompe la banda superior/inferior (posible sobrecompra/sobreventa).</div>
+    <div class="module-explainer" id="explain-bb">Tres líneas: la banda media (SMA20) y dos bandas a ±2 desviaciones estándar. El precio se mueve dentro de las bandas la mayor parte del tiempo. Tocar/romper la banda superior sugiere sobrecompra (posible pausa); tocar la inferior sugiere sobreventa. Cuando las bandas se juntan mucho ("squeeze"), suele anticipar un movimiento fuerte próximo — en cualquier dirección, eso no lo dice Bollinger por sí solo.</div>
+    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-body-wrap">
+    <div class="chiprow" id="chip-bb"></div>
+    <div class="module-score" id="score-bb"></div>
+  </div>
+  </div>
+
+  <!-- 4. RSI -->
+  <div class="module" id="mod-rsi">
+    <div class="module-head"><span class="idx">06</span><h3>RSI (14)</h3><span class="catg">Momentum</span><button class="info-btn" data-explain="rsi">ℹ️ Cómo leerlo</button></div>
+    <div class="module-desc">Índice de fuerza relativa. &gt;70 sobrecompra, &lt;30 sobreventa, 50 es el punto neutro.</div>
+    <div class="module-explainer" id="explain-rsi">Mide qué tan rápido y fuerte se ha movido el precio recientemente, en escala 0–100. Arriba de 70 = sobrecompra (podría venir una pausa o corrección); abajo de 30 = sobreventa (podría venir un rebote). Cerca de 50 = sin sesgo claro. Ojo: en tendencias muy fuertes el RSI puede quedarse "sobrecomprado" o "sobrevendido" durante mucho tiempo sin que eso signifique una reversión inmediata.</div>
+    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-body-wrap">
+    <div class="chiprow" id="chip-rsi"></div>
+    <div class="module-score" id="score-rsi"></div>
+  </div>
+  </div>
+
+  <!-- 5. Stochastic -->
+  <div class="module" id="mod-stoch">
+    <div class="module-head"><span class="idx">07</span><h3>Oscilador Estocástico (14,3,3)</h3><span class="catg">Momentum</span><button class="info-btn" data-explain="stoch">ℹ️ Cómo leerlo</button></div>
+    <div class="module-desc">%K vs %D. &gt;80 sobrecompra, &lt;20 sobreventa. Se marca ⚠ cuando %K cruza a %D en zona extrema.</div>
+    <div class="module-explainer" id="explain-stoch">Compara el cierre actual contra el rango de precios reciente, también en escala 0–100. %K es la línea rápida, %D es su promedio suavizado (más lento). Arriba de 80 = sobrecompra, abajo de 20 = sobreventa. Muchos traders de corto plazo usan el cruce de %K sobre/bajo %D en zona extrema como señal de entrada o salida.</div>
+    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-body-wrap">
+    <div class="chiprow" id="chip-stoch"></div>
+    <div class="module-score" id="score-stoch"></div>
+  </div>
+  </div>
+
+  <!-- 6. Ichimoku -->
+  <div class="module" id="mod-ichi">
+    <div class="module-head"><span class="idx">08</span><h3>Nube de Ichimoku</h3><span class="catg">Tendencia</span><button class="info-btn" data-explain="ichi">ℹ️ Cómo leerlo</button></div>
+    <div class="module-desc">Precio vs la nube (Senkou A/B) y cruce Tenkan/Kijun. Encima de la nube = alcista, debajo = bajista, dentro = indecisión.</div>
+    <div class="module-explainer" id="explain-ichi">Sistema con varias líneas a la vez; lo esencial para leerlo rápido: precio ENCIMA de la nube (zona sombreada) = sesgo alcista; DEBAJO = sesgo bajista; DENTRO de la nube = indecisión, sin tendencia clara. El cruce Tenkan/Kijun (marcado como TK▲/TK▼) es una señal de momentum de más corto plazo dentro de esa tendencia mayor.</div>
+    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-body-wrap">
+    <div class="chiprow" id="chip-ichi"></div>
+    <div class="module-score" id="score-ichi"></div>
+  </div>
+  </div>
+
+  <!-- 7. A/D -->
+  <!-- 9. Anchored VWAP -->
+  <div class="module" id="mod-vwap">
+    <div class="module-head"><span class="idx">09</span><h3>VWAP Anclado desde Mínimos</h3><span class="catg">Volumen</span><button class="info-btn" data-explain="vwap">ℹ️ Cómo leerlo</button></div>
+    <div class="module-desc">Precio promedio ponderado por volumen, calculado desde el mínimo más reciente de cada marco temporal. Sostenerse por encima sugiere que los compradores que entraron desde ese mínimo siguen en control.</div>
+    <div class="module-explainer" id="explain-vwap">A diferencia de una media móvil normal, el VWAP anclado empieza a contar exactamente desde un punto específico — aquí, el precio más bajo reciente. Mientras el precio se mantenga por encima, el "costo promedio" de quienes compraron desde ese mínimo sigue siendo ganador, lo cual actúa como soporte psicológico. Perderlo sugiere que esos compradores empiezan a rendirse.</div>
+    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-body-wrap">
+    <div class="chiprow" id="chip-vwap"></div>
+    <div class="module-score" id="score-vwap"></div>
+    </div>
+  </div>
+
+  <div class="module" id="mod-ad">
+    <div class="module-head"><span class="idx">10</span><h3>Acumulación / Distribución</h3><span class="catg">Volumen</span><button class="info-btn" data-explain="ad">ℹ️ Cómo leerlo</button></div>
+    <div class="module-desc">Tendencia de la línea A/D (precio ponderado por volumen). Subiendo = acumulación (compradores), bajando = distribución (vendedores).</div>
+    <div class="module-explainer" id="explain-ad">Combina precio y volumen para estimar si los grandes jugadores están comprando (acumulando) o vendiendo (distribuyendo), incluso si el precio todavía no lo refleja del todo. La señal de alerta más útil: si el precio SUBE pero la línea A/D BAJA, es una divergencia — la subida podría no tener compradores fuertes detrás y ser más frágil de lo que parece.</div>
+    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-body-wrap">
+    <div class="chiprow" id="chip-ad"></div>
+    <div class="module-score" id="score-ad"></div>
+  </div>
+  </div>
+
+  <!-- 8. Candlestick patterns -->
+  <!-- 11. Heikin Ashi -->
+  <div class="module" id="mod-heikin">
+    <div class="module-head"><span class="idx">11</span><h3>Heikin Ashi Semanal</h3><span class="catg">Price Action</span><button class="info-btn" data-explain="heikin">ℹ️ Cómo leerlo</button></div>
+    <div class="module-desc">Las velas Heikin Ashi promedian el precio para filtrar ruido y mostrar la tendencia con menos zigzag que las velas normales. Una vela semanal verde sugiere que el promedio semana-a-semana ya está subiendo.</div>
+    <div class="module-explainer" id="explain-heikin">Heikin Ashi ("barra promedio" en japonés) recalcula cada vela usando el promedio de la anterior, así que suaviza el ruido de las velas normales. En marco semanal, una racha de velas verdes consecutivas es una de las señales más simples y confiables de que una tendencia alcista está en marcha; una vela roja después de varias verdes suele ser la primera señal de que el impulso se está enfriando.</div>
+    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-body-wrap">
+    <div id="heikin-body"></div>
+    <div class="module-score" id="score-heikin"></div>
+    </div>
+  </div>
+
+  <div class="module" id="mod-patterns">
+    <div class="module-head"><span class="idx">12</span><h3>Patrones de Velas</h3><span class="catg">Price Action</span><button class="info-btn" data-explain="patterns">ℹ️ Cómo leerlo</button></div>
+    <div class="module-desc">Doji, martillo, envolventes, estrella de la mañana/tarde, tres soldados/cuervos, y variantes — evaluados sobre las últimas velas de cada marco temporal.</div>
+    <div class="module-explainer" id="explain-patterns">Formaciones de una o varias velas que históricamente han anticipado giros o continuaciones del precio. Son más confiables cuando aparecen después de una tendencia clara (no en medio de precios laterales) y cuando se confirman con el periodo siguiente o con volumen alto — una sola vela aislada rara vez es suficiente para decidir por sí sola.</div>
+    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-body-wrap">
+    <div id="patterns-list"></div>
+    <div class="module-score" id="score-patterns"></div>
+  </div>
+  </div>
+
+  <!-- 9. Relative strength -->
+  <div class="module" id="mod-rel">
+    <div class="module-head"><span class="idx">13</span><h3>Fuerza Relativa vs Mercado</h3><span class="catg">Contexto</span><button class="info-btn" data-explain="rel">ℹ️ Cómo leerlo</button></div>
+    <div class="module-desc" id="rel-desc">Compara el rendimiento del ticker contra su benchmark en el mismo periodo (marco diario). Si el ticker sube pero rinde menos que el mercado, es una señal de debilidad relativa aunque el precio suba.</div>
+    <div class="module-explainer" id="explain-rel">Compara cuánto sube o baja el ticker contra un índice o ETF de referencia (mercado general o su sector) en el mismo periodo. Si el ticker sube pero rinde MENOS que el benchmark, es debilidad relativa — el dinero se está yendo a otro lado aunque el precio suba. Si rinde MÁS, hay fuerza real detrás del movimiento, no solo un mercado general al alza arrastrándolo.</div>
+    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-body-wrap">
+    <div id="rel-body"></div>
+    <div class="module-score" id="score-rel"></div>
+  </div>
+  </div>
+
+  <!-- 14. Beardo setup checklist -->
+  <div class="module" id="mod-setup">
+    <div class="module-head"><span class="idx">14</span><h3>Setup Beardo (5 condiciones)</h3><span class="catg">Composite</span><button class="info-btn" data-explain="setup">ℹ️ Cómo leerlo</button></div>
+    <div class="module-desc">Checklist de un trader real (@BeardoTrader) que combina varios de los módulos anteriores en un solo criterio de entrada: cuantas más condiciones se cumplan, mejor la relación riesgo/beneficio según su método.</div>
+    <div class="module-explainer" id="explain-setup">Sus 5 condiciones: (1) vela semanal Heikin Ashi verde, (2) precio sosteniéndose sobre el VWAP anclado desde mínimos, (3) precio sobre una media de 10 días que además esté subiendo, (4) precio sobre la nube EMA de 4 horas, (5) rompiendo una tendencia bajista definida (aquí aproximado con un cambio de pendiente de negativa a positiva). Es una combinación, no un indicador nuevo — por eso pesa más en el veredicto: resume todo lo demás en una sola pregunta de "¿esto ya se ve como una entrada?".</div>
+    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-body-wrap">
+    <div id="setup-body"></div>
+    <div class="module-score" id="score-setup"></div>
+    </div>
+  </div>
+
+  <!-- Final verdict -->
+  <div class="verdict" id="verdict">
+    <div class="eyebrow">Veredicto general</div>
+    <div class="headline"><span id="vIcon"></span><span id="vTitle">—</span><span class="chip" id="vChip"></span></div>
+    <p id="vText"></p>
+    <div class="breakdown" id="breakdown"></div>
+  </div>
+
+  <!-- Movement map -->
+  <div class="movement" id="movement">
+    <div class="movement-top">
+      <h3>Mapa de movimiento probable</h3>
+      <button class="btn-resim" id="alertToggle">🔔 Vigilar niveles</button>
+    </div>
+    <div class="alert-status" id="alertStatus"></div>
+    <div class="movdesc">Un único escenario, calculado directamente de tu análisis: la línea central extrapola la <strong>tendencia real reciente</strong> (regresión de precios) ajustada por el veredicto general de los 8 módulos. La banda sombreada es la <strong>volatilidad histórica real</strong> del ticker, no una suposición — se ensancha con el tiempo porque cuanto más lejos miras, menos certeza hay. Mismo ticker y mismos datos → mismo resultado siempre.</div>
+    <div class="tf-selector" id="movTfSelector"></div>
+    <div id="movementSvg"></div>
+    <div class="mov-evidence" id="movEvidence"></div>
+    <div class="mov-legend">
+      <span><i style="background:#3ECF8E"></i> Vela alcista</span>
+      <span><i style="background:#FF5C5C"></i> Vela bajista</span>
+      <span><i style="background:#9AA5B1"></i> Media 150 (larga)</span>
+      <span><i style="background:#34C6C6"></i> Media 50 (media)</span>
+      <span><i style="background:#E8607A"></i> Media 20 (corta)</span>
+      <span><i style="background:#5B8DEF"></i> Escenario central</span>
+      <span><i style="background:#5B8DEF; opacity:.25"></i> Banda de incertidumbre (±1σ, ±2σ)</span>
+      <span><i style="background:#F2B84B"></i> Nivel de invalidación</span>
+    </div>
+    <div class="caveat">Esto NO es magia ni una predicción garantizada: es la continuación matemática de la tendencia y volatilidad que ya existían en los datos, ajustada por lo que marcan tus indicadores hoy. Un dato de noticias, resultados trimestrales o cualquier evento inesperado puede invalidarlo en cualquier momento — por eso existe la banda de incertidumbre, y por eso crece cuanto más al futuro miras. En marcos temporales intradía el eje de tiempo es aproximado (no reproduce el horario exacto de mercado).</div>
+  </div>
+  </div></div>
+
+  <!-- Walk-forward strategy backtest -->
+  <div class="backtest-card" id="backtestCard">
+    <div class="bt-head">
+      <h3>🤖 Backtest de Estrategia (Walk-Forward)</h3>
+      <button class="btn-bt" id="runBacktestBtn" type="button">▶ Correr backtest</button>
+    </div>
+    <div class="bt-desc">Simula día por día, con datos diarios, qué habría dicho el veredicto general de esta app en el pasado — usando <strong>solo información disponible hasta ese día</strong>, sin ver el futuro — y qué le habría pasado a tu dinero siguiéndolo (solo largos: comprado cuando el veredicto es alcista, en efectivo cuando deja de serlo). Corre con todos los módulos calculables desde velas diarias, sobre todo el historial que Twelve Data tenga disponible para el ticker.</div>
+    <div class="bt-startdate-row">
+      <label for="btStartDate">Empezar a operar desde</label>
+      <input type="date" id="btStartDate">
+      <span class="bt-startdate-hint">opcional — vacío usa todo el historial disponible. Los indicadores igual usan datos de antes de esta fecha para "calentar" (medias de 200, etc.), pero las operaciones no empiezan hasta aquí.</span>
+    </div>
+    <div class="bt-caveats">
+      ⚠ Simplificación honesta: usa cierres diarios (no intradía), <strong>no incluye comisiones ni slippage</strong>, y la condición del "Setup Beardo" que originalmente mira la nube EMA de 4 horas aquí se aproxima con una nube EMA rápida en diario (no hay tantos años de historial en 4h como en diario). Esto es un ejercicio educativo sobre la lógica del analizador, no una simulación de ejecución real de bróker.
+    </div>
+    <div id="btStatus" class="bt-status"></div>
+    <div id="btResults" class="bt-results"></div>
+    <div id="wfResults" class="bt-results"></div>
+  </div>
+
+  <div class="disclaimer">
+    Todos los cálculos (SMA, EMA, Bollinger, RSI, Estocástico, Ichimoku, A/D, patrones de velas) se hacen en tu navegador a partir de datos históricos de mercado. Es un conjunto de indicadores técnicos y no considera fundamentales, noticias ni el libro de órdenes. Ninguna combinación de indicadores garantiza el movimiento futuro del precio. No constituye recomendación de inversión.
+  </div>
+  </div>
+
+  <div id="tabpanel-portfolio" class="tabpanel" style="display:none">
+    <div class="port-form-card">
+      <h3>Registrar compra</h3>
+      <div class="port-form-row">
+        <input id="portTickerInput" type="text" placeholder="Ticker, ej. GOOG" autocomplete="off" spellcheck="false">
+        <input id="portSharesInput" type="number" min="0" step="any" placeholder="Acciones, ej. 35">
+        <input id="portPriceInput" type="number" min="0" step="any" placeholder="Precio de compra (USD)">
+        <button class="btn" id="portAddBtn" type="button">Agregar compra</button>
+      </div>
+      <div class="port-form-status" id="portFormStatus"></div>
+      <div class="port-form-hint" id="portFormHint">El precio se captura en la moneda que tengas seleccionada abajo (USD o MXN) y se convierte automáticamente a USD internamente (con el tipo de cambio del momento) para poder promediar compras hechas en distintas monedas. Puedes agregar varias compras del mismo ticker — se calcula el costo promedio ponderado automáticamente.</div>
+    </div>
+
+    <div class="port-currency-row">
+      <span>Mostrar valores en</span>
+      <button class="ccy-btn active" id="ccyUSD" type="button">USD</button>
+      <button class="ccy-btn" id="ccyMXN" type="button">MXN</button>
+      <span class="fx-note" id="fxRateNote"></span>
+    </div>
+
+    <div class="port-empty" id="portfolioEmptyState">Aún no registras ninguna posición — agrega tu primera compra arriba.</div>
+    <div class="port-last-update" id="portLastUpdate"></div>
+    <div id="portfolioTable"></div>
+
+    <div class="port-analysis-picker" id="portAnalysisPicker" style="display:none">
+      <label for="portTickerSelect">Ver análisis técnico completo de</label>
+      <select id="portTickerSelect"></select>
+    </div>
+    <div class="port-no-position" id="portNoPositionMsg" style="display:none">Agrega una posición para ver su gráfica y análisis técnico.</div>
+    <div id="portfolioAnalysisHost"></div>
+  </div>
+</main>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2>Clave de API — Twelve Data</h2>
+    <p>Regístrate gratis en <a href="https://twelvedata.com" target="_blank" rel="noopener" style="color:var(--accent)">twelvedata.com</a>, copia tu API key y pégala aquí. Se guarda solo en este navegador (localStorage).</p>
+    <input id="apiKeyInput" type="text" placeholder="Pega tu API key aquí" autocomplete="off" spellcheck="false">
+    <div class="modal-actions">
+      <button class="btn-ghost" id="closeSettings">Cancelar</button>
+      <button class="btn" id="saveSettings">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ================= CONFIG =================
+  const API_BASE = "https://api.twelvedata.com";
+  const STORAGE_KEY = "ma_scanner_td_apikey";
+
+  // Timeframes shown shortest → longest. Order encodes granularity, used everywhere.
+  const TIMEFRAMES = [
+    { key:"5min",  label:"5m",  kind:"direct", interval:"5min",  outputsize:900 },  // buffer for 10min derive (needs enough after ÷2)
+    { key:"10min", label:"10m", kind:"derive", base:"5min",      group:2 },
+    { key:"30min", label:"30m", kind:"direct", interval:"30min", outputsize:230 },
+    { key:"60min", label:"1h",  kind:"direct", interval:"1h",    outputsize:900 },  // buffer for 3h derive (needs enough after ÷3)
+    { key:"2h",    label:"2h",  kind:"direct", interval:"2h",    outputsize:230 },
+    { key:"3h",    label:"3h",  kind:"derive", base:"60min",     group:3 },
+    { key:"4h",    label:"4h",  kind:"direct", interval:"4h",    outputsize:230 },
+    { key:"1day",  label:"1D",  kind:"direct", interval:"1day",  outputsize:260 },
+    { key:"1week", label:"1S",  kind:"direct", interval:"1week", outputsize:230 },
+    { key:"1month",label:"1M",  kind:"direct", interval:"1month",outputsize:230 },
+  ];
+  const PERIODS = [10, 100, 200];
+  const BASE_FETCHES = TIMEFRAMES.filter(t => t.kind === "direct");
+
+  // ---- Which timeframes each module actually needs. Most modules render a
+  // ladder/chip across all 10 timeframes, so enabling ANY of those pulls in
+  // everything. A handful of modules only look at one or a few timeframes —
+  // if ONLY those are enabled, we can skip fetching the rest entirely. ----
+  const FULL_LADDER_MODULES = ["sma","ema","emacloud","bb","rsi","stoch","ichi","vwap","ad","patterns"];
+  const LIMITED_TF_NEEDS = { heikin:["1week"], setup:["1week","1day","4h"], rel:["1day"] };
+
+  function computeNeededTimeframeKeys(enabled, movementTf){
+    const needed = new Set([movementTf]); // the movement map is always shown
+    const anyFullLadder = FULL_LADDER_MODULES.some(k => enabled[k]);
+    if(anyFullLadder){
+      TIMEFRAMES.forEach(tf => needed.add(tf.key));
+    } else {
+      Object.entries(LIMITED_TF_NEEDS).forEach(([mod, tfs]) => { if(enabled[mod]) tfs.forEach(t => needed.add(t)); });
+    }
+    return needed;
+  }
+
+  // Expands timeframe keys (which may include derived ones like "10min"/"3h")
+  // into the actual direct API fetches required to produce them.
+  function directFetchesFor(neededKeys){
+    const neededDirectKeys = new Set();
+    neededKeys.forEach(key => {
+      const tf = TIMEFRAMES.find(t => t.key === key);
+      if(!tf) return;
+      neededDirectKeys.add(tf.kind === "direct" ? tf.key : tf.base);
+    });
+    return BASE_FETCHES.filter(tf => neededDirectKeys.has(tf.key));
+  }
+
+  // Counts how many *fresh* (not already cached) API calls a run would need
+  // right now, given the ticker/benchmark and which modules are enabled —
+  // used to show an honest time estimate before/while fetching.
+  function countFreshCallsNeeded(symbol, benchmarkSymbol, enabled, movementTf){
+    let n = 0;
+    const neededTfKeys = computeNeededTimeframeKeys(enabled, movementTf);
+    directFetchesFor(neededTfKeys).forEach(tf => {
+      if(!isFreshCached("/time_series", { symbol, interval:tf.interval, outputsize:tf.outputsize })) n++;
+    });
+    if(enabled.rel && benchmarkSymbol && !isFreshCached("/time_series", { symbol:benchmarkSymbol, interval:"1day", outputsize:260 })) n++;
+    if(enabled.marketctx){
+      ["SPY","QQQ"].forEach(sym => { if(!isFreshCached("/time_series", { symbol:sym, interval:"1day", outputsize:100 })) n++; });
+    }
+    if(!isFreshCached("/price", { symbol })) n++;
+    return n;
+  }
+
+  // ================= DOM helpers =================
+  const $ = id => document.getElementById(id);
+  const tickerInput = $("tickerInput");
+  const benchInput = $("benchInput");
+  const analyzeBtn = $("analyzeBtn");
+  const statusLine = $("statusLine");
+  const progressWrap = $("progressWrap");
+  const progressBar = $("progressBar");
+  const priceCard = $("priceCard");
+  const overlay = $("overlay");
+  const apiKeyInput = $("apiKeyInput");
+
+  function getApiKey(){ try { return localStorage.getItem(STORAGE_KEY) || ""; } catch(e){ return ""; } }
+  function setApiKey(k){ try { localStorage.setItem(STORAGE_KEY, k); } catch(e){} }
+
+  $("openSettings").addEventListener("click", ()=>{ apiKeyInput.value = getApiKey(); overlay.style.display = "flex"; });
+  $("closeSettings").addEventListener("click", ()=> overlay.style.display = "none");
+  overlay.addEventListener("click", (e)=>{ if(e.target === overlay) overlay.style.display = "none"; });
+  $("saveSettings").addEventListener("click", ()=>{ setApiKey(apiKeyInput.value.trim()); overlay.style.display = "none"; setStatus("Clave guardada."); });
+
+  function setStatus(msg, isErr){ statusLine.textContent = msg || ""; statusLine.className = isErr ? "err" : ""; }
+  function setProgress(pct){
+    if(pct === null){ progressWrap.style.display = "none"; return; }
+    progressWrap.style.display = "block";
+    progressBar.style.width = Math.max(0,Math.min(100,pct)) + "%";
+  }
+
+  // ---- ETA countdown: shown while fetching so the person always knows
+  // roughly how long is left, computed from the 8/min rate limit. ----
+  let etaInterval = null;
+  function updateEtaText(remaining, totalCalls){
+    const el = $("etaText");
+    if(remaining > 0){
+      el.textContent = "⏱ ~" + formatDuration(remaining) + " restantes (" + totalCalls + " petición" + (totalCalls===1?"":"es") + " a Twelve Data, límite 8/min)";
+      el.style.display = "block";
+    } else {
+      el.style.display = "none";
+    }
+  }
+  function startEtaCountdown(seconds, totalCalls){
+    clearInterval(etaInterval);
+    let remaining = Math.round(seconds);
+    updateEtaText(remaining, totalCalls);
+    etaInterval = setInterval(()=>{
+      remaining = Math.max(0, remaining-1);
+      updateEtaText(remaining, totalCalls);
+      if(remaining<=0) clearInterval(etaInterval);
+    }, 1000);
+  }
+  function stopEtaCountdown(){ clearInterval(etaInterval); $("etaText").style.display = "none"; }
+
+  // ---- Prominent banner shown whenever the currently-active modules need
+  // data that wasn't fetched yet — much harder to miss than a status line. ----
+  function showDataMissingBanner(msg){
+    const el = $("dataMissingBanner");
+    el.innerHTML = `<span class="spin2"></span><span>${msg}</span>`;
+    el.classList.add("show");
+  }
+  function hideDataMissingBanner(){ $("dataMissingBanner").classList.remove("show"); }
+
+  // ================= Networking =================
+  function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+  // ---- Rate limiter: never fire more than RATE_LIMIT requests in any
+  // rolling RATE_WINDOW_MS window, no matter how many the app wants to send
+  // at once. Requests just wait their turn instead of erroring out. ----
+  const RATE_LIMIT = 8;
+  const RATE_WINDOW_MS = 60000;
+  let callTimestamps = [];
+  let rateLimitQueueLength = 0;
+  async function acquireRateSlot(){
+    while(true){
+      const now = Date.now();
+      callTimestamps = callTimestamps.filter(t => now - t < RATE_WINDOW_MS);
+      if(callTimestamps.length < RATE_LIMIT){
+        callTimestamps.push(now);
+        return;
+      }
+      rateLimitQueueLength++;
+      const waitMs = RATE_WINDOW_MS - (now - callTimestamps[0]) + 300;
+      setStatus(`Límite de ${RATE_LIMIT} peticiones/min de Twelve Data alcanzado — esperando ${Math.ceil(waitMs/1000)}s para seguir (sin perder lo ya traído)…`);
+      await sleep(Math.min(waitMs, 4000)); // recheck periodically in case the window frees up sooner
+    }
+  }
+
+  // Rough ETA in seconds for a batch of `totalCalls` fresh requests, given
+  // how many rate-limit slots are free right now.
+  function estimateFetchSeconds(totalCalls){
+    if(totalCalls <= 0) return 0;
+    const now = Date.now();
+    const inWindow = callTimestamps.filter(t => now - t < RATE_WINDOW_MS).length;
+    const availableNow = Math.max(0, RATE_LIMIT - inWindow);
+    if(totalCalls <= availableNow) return 3; // just network latency
+    const extraBatches = Math.ceil((totalCalls - availableNow) / RATE_LIMIT);
+    return 4 + extraBatches * 60;
+  }
+  function formatDuration(s){
+    s = Math.max(0, Math.round(s));
+    if(s < 60) return s + "s";
+    return Math.floor(s/60) + "min " + (s%60) + "s";
+  }
+
+  // ticker analyzed twice, toggles that re-trigger the same series, etc.)
+  // don't spend API credits at all. ----
+  const RESPONSE_CACHE = new Map(); // cacheKey -> { data, ts }
+  function cacheTtlFor(path, params){
+    if(path === "/price") return 20000; // quotes go stale fast
+    const intraday = new Set(["5min","10min","30min","1h","2h","3h","4h"]);
+    return intraday.has(params.interval) ? 45000 : 300000; // 45s intraday, 5min daily+
+  }
+  function cacheKeyFor(path, params){
+    const sp = new URLSearchParams();
+    Object.keys(params).sort().forEach(k => sp.set(k, params[k]));
+    return path + "?" + sp.toString();
+  }
+  function isFreshCached(path, params){
+    const cached = RESPONSE_CACHE.get(cacheKeyFor(path, params));
+    return !!cached && (Date.now() - cached.ts) < cacheTtlFor(path, params);
+  }
+
+  async function tdFetch(path, params){
+    const key = getApiKey();
+    if(!key){ overlay.style.display = "flex"; throw new Error("Falta tu API key de Twelve Data. Pégala en ⚙ API key."); }
+    const cacheKey = cacheKeyFor(path, params);
+    const ttl = cacheTtlFor(path, params);
+    const cached = RESPONSE_CACHE.get(cacheKey);
+    if(cached && (Date.now() - cached.ts) < ttl) return cached.data;
+
+    const url = new URL(API_BASE + path);
+    Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+    url.searchParams.set("apikey", key);
+    let networkAttempt = 0, rateAttempt = 0;
+    const MAX_NETWORK_RETRIES = 3, MAX_RATE_RETRIES = 3;
+    while(true){
+      await acquireRateSlot();
+      let res;
+      try {
+        res = await fetch(url.toString());
+      } catch(networkErr){
+        // "Failed to fetch" from the browser itself — the request never
+        // reached Twelve Data. Often a brief blip (network hiccup, a
+        // throttled background tab, a momentary extension race) rather than
+        // something permanently wrong, so retry a couple of times with
+        // backoff before giving up and explaining the likely causes.
+        networkAttempt++;
+        if(networkAttempt <= MAX_NETWORK_RETRIES){
+          setStatus(`Fallo de red al pedir datos (intento ${networkAttempt}/${MAX_NETWORK_RETRIES}) — reintentando…`, true);
+          await sleep(1200 * networkAttempt);
+          continue;
+        }
+        throw new Error(
+          "No se pudo conectar con Twelve Data tras " + MAX_NETWORK_RETRIES + " intentos (fetch falló antes de llegar al servidor). Causas más comunes: " +
+          "1) sin conexión a internet en este momento; " +
+          "2) un bloqueador de anuncios/privacidad (uBlock, Brave Shields, AdGuard, etc.) está bloqueando 'api.twelvedata.com' — pruébalo desactivado para esta página; " +
+          "3) un firewall/VPN corporativo o de red bloquea dominios externos. " +
+          "Revisa la consola del navegador (F12 → Console/Network) para ver el motivo exacto si esto se repite."
+        );
+      }
+      let data;
+      try { data = await res.json(); } catch(e){ throw new Error("Respuesta inválida del servidor de datos."); }
+      if(data && data.status === "error") throw new Error(data.message || "Error consultando datos de mercado.");
+      if(res.status === 429 && rateAttempt < MAX_RATE_RETRIES){ rateAttempt++; await sleep(4000); continue; }
+      RESPONSE_CACHE.set(cacheKey, { data, ts: Date.now() });
+      return data;
+    }
+  }
+
+  async function fetchSeries(symbol, interval, outputsize){
+    const data = await tdFetch("/time_series", { symbol, interval, outputsize });
+    if(!data.values || !Array.isArray(data.values)) throw new Error(`Sin datos para ${symbol} en ${interval}. Revisa el ticker.`);
+    return data.values.map(v => ({
+      datetime:v.datetime,
+      open:parseFloat(v.open), high:parseFloat(v.high), low:parseFloat(v.low), close:parseFloat(v.close),
+      volume: v.volume!=null ? parseFloat(v.volume)||0 : 0,
+    })).reverse(); // ascending chronological
+  }
+
+  async function fetchCurrentPrice(symbol){
+    const data = await tdFetch("/price", { symbol });
+    if(!data.price) throw new Error("No se pudo obtener el precio actual.");
+    return parseFloat(data.price);
+  }
+
+  // ================= Shared math =================
+  function aggregate(rawAsc, groupSize){
+    const groups = [];
+    let i = rawAsc.length;
+    while(i - groupSize >= 0){
+      const chunk = rawAsc.slice(i - groupSize, i);
+      groups.unshift({
+        datetime: chunk[chunk.length-1].datetime,
+        close: chunk[chunk.length-1].close,
+        high: Math.max(...chunk.map(c=>c.high)),
+        low: Math.min(...chunk.map(c=>c.low)),
+        open: chunk[0].open,
+        volume: chunk.reduce((s,c)=>s+(c.volume||0),0),
+      });
+      i -= groupSize;
+    }
+    return groups;
+  }
+
+  function smaArr(closesAsc, period){
+    if(closesAsc.length < period) return null;
+    return closesAsc.slice(-period).reduce((a,b)=>a+b,0) / period;
+  }
+
+  function emaSeries(closesAsc, period){
+    if(closesAsc.length < period) return null;
+    const k = 2/(period+1);
+    let ema = closesAsc.slice(0,period).reduce((a,b)=>a+b,0)/period;
+    for(let i=period;i<closesAsc.length;i++){ ema = closesAsc[i]*k + ema*(1-k); }
+    return ema;
+  }
+
+  function stddev(arr){
+    const m = arr.reduce((a,b)=>a+b,0)/arr.length;
+    const variance = arr.reduce((a,b)=>a+(b-m)*(b-m),0)/arr.length;
+    return Math.sqrt(variance);
+  }
+
+  function bollinger(closesAsc, period=20, mult=2){
+    if(closesAsc.length < period) return null;
+    const slice = closesAsc.slice(-period);
+    const mid = slice.reduce((a,b)=>a+b,0)/period;
+    const sd = stddev(slice);
+    return { mid, upper: mid+mult*sd, lower: mid-mult*sd };
+  }
+
+  function rsi(closesAsc, period=14){
+    if(closesAsc.length < period+2) return null;
+    function calc(arr){
+      let gains=0, losses=0;
+      for(let i=1;i<=period;i++){ const d=arr[i]-arr[i-1]; if(d>=0) gains+=d; else losses-=d; }
+      let avgGain=gains/period, avgLoss=losses/period;
+      for(let i=period+1;i<arr.length;i++){
+        const d=arr[i]-arr[i-1]; const g=d>0?d:0, l=d<0?-d:0;
+        avgGain=(avgGain*(period-1)+g)/period; avgLoss=(avgLoss*(period-1)+l)/period;
+      }
+      if(avgLoss===0) return 100;
+      return 100 - 100/(1+avgGain/avgLoss);
+    }
+    const now = calc(closesAsc);
+    const prev = calc(closesAsc.slice(0,-1));
+    return { value: now, prev };
+  }
+
+  function stochastic(candlesAsc, period=14, dPeriod=3){
+    if(candlesAsc.length < period+dPeriod) return null;
+    function kAt(endExclusive){
+      const win = candlesAsc.slice(endExclusive-period, endExclusive);
+      const hh = Math.max(...win.map(c=>c.high)), ll = Math.min(...win.map(c=>c.low));
+      const close = candlesAsc[endExclusive-1].close;
+      if(hh===ll) return 50;
+      return 100*(close-ll)/(hh-ll);
+    }
+    const n = candlesAsc.length;
+    const kVals = [];
+    for(let i=0;i<dPeriod;i++){ kVals.push(kAt(n-i)); }
+    const k = kVals[0];
+    const d = kVals.reduce((a,b)=>a+b,0)/kVals.length;
+    return { k, d };
+  }
+
+  function adLine(candlesAsc){
+    if(candlesAsc.length < 12) return null;
+    let ad = 0; const series = [];
+    candlesAsc.forEach(c => {
+      const range = (c.high-c.low) || 1e-9;
+      const clv = ((c.close-c.low)-(c.high-c.close))/range;
+      ad += clv*(c.volume||0);
+      series.push(ad);
+    });
+    const lookback = Math.min(10, series.length-1);
+    const now = series[series.length-1], past = series[series.length-1-lookback];
+    return { rising: now > past, delta: now-past };
+  }
+
+  // ---- EMA Cloud (fast EMA vs slow EMA — bullish/bearish regime ribbon) ----
+  function emaCloud(closesAsc, fast=8, slow=21){
+    const ef = emaSeries(closesAsc, fast), es = emaSeries(closesAsc, slow);
+    if(ef===null || es===null) return null;
+    return { fast:ef, slow:es, bullish: ef >= es, top: Math.max(ef,es), bottom: Math.min(ef,es) };
+  }
+
+  // ---- Anchored VWAP from the most recent swing low in the lookback window ----
+  function anchoredVwapFromLow(candlesAsc, lookback=100){
+    const win = candlesAsc.slice(-lookback);
+    if(win.length < 5) return null;
+    let lowIdx = 0, lowVal = Infinity;
+    win.forEach((c,i)=>{ if(c.low < lowVal){ lowVal = c.low; lowIdx = i; } });
+    const anchored = win.slice(lowIdx);
+    let cumPV = 0, cumVol = 0;
+    anchored.forEach(c=>{
+      const typical = (c.high + c.low + c.close)/3;
+      cumPV += typical * (c.volume||0);
+      cumVol += (c.volume||0);
+    });
+    if(cumVol === 0) return null;
+    return { vwap: cumPV/cumVol, anchorDatetime: anchored[0].datetime, barsSinceAnchor: anchored.length };
+  }
+
+  // ---- Heikin Ashi candles (smoothed candles that filter noise) ----
+  function heikinAshi(candlesAsc){
+    if(!candlesAsc.length) return [];
+    const out = [];
+    let prevHaOpen = null, prevHaClose = null;
+    candlesAsc.forEach((c,i) => {
+      const haClose = (c.open + c.high + c.low + c.close)/4;
+      const haOpen = i===0 ? (c.open + c.close)/2 : (prevHaOpen + prevHaClose)/2;
+      const haHigh = Math.max(c.high, haOpen, haClose);
+      const haLow = Math.min(c.low, haOpen, haClose);
+      out.push({ open:haOpen, close:haClose, high:haHigh, low:haLow, datetime:c.datetime });
+      prevHaOpen = haOpen; prevHaClose = haClose;
+    });
+    return out;
+  }
+
+  // ---- "Breaking out of a defined downtrend" approximation: recent regression
+  // slope flips from negative to positive over two adjacent windows ----
+  function slopeBreakout(closesAsc, windowSize=10){
+    if(closesAsc.length < windowSize*2) return null;
+    const recent = closesAsc.slice(-windowSize).map(Math.log);
+    const prior = closesAsc.slice(-windowSize*2, -windowSize).map(Math.log);
+    const slopeRecent = linRegSlope(recent);
+    const slopePrior = linRegSlope(prior);
+    return { breakout: slopePrior < 0 && slopeRecent > 0, slopeRecent, slopePrior };
+  }
+
+  // ---- Beardo-style 5-condition setup checklist ----
+  function setupChecklist(seriesByTf, currentPrice){
+    const weekly = seriesByTf["1week"], daily = seriesByTf["1day"], h4 = seriesByTf["4h"];
+    const conditions = [];
+
+    const haWeekly = weekly && weekly.length>5 ? heikinAshi(weekly) : null;
+    const c1 = haWeekly ? haWeekly[haWeekly.length-1].close >= haWeekly[haWeekly.length-1].open : null;
+    conditions.push({ id:"ha", label:"Vela semanal Heikin Ashi verde", pass:c1 });
+
+    const vwapD = daily ? anchoredVwapFromLow(daily, 100) : null;
+    const c2 = vwapD ? currentPrice >= vwapD.vwap : null;
+    conditions.push({ id:"vwap", label:"Sobre el VWAP anclado desde mínimos", pass:c2 });
+
+    let c3 = null;
+    if(daily && daily.length>15){
+      const closes = daily.map(c=>c.close);
+      const sma10now = smaArr(closes,10);
+      const sma10prev = smaArr(closes.slice(0,-5),10);
+      if(sma10now!==null && sma10prev!==null) c3 = currentPrice>=sma10now && sma10now>sma10prev;
+    }
+    conditions.push({ id:"ma10", label:"Sobre una media de 10 días ascendente", pass:c3 });
+
+    let c4 = null;
+    if(h4 && h4.length>25){
+      const cloud = emaCloud(h4.map(c=>c.close), 8, 21);
+      if(cloud) c4 = currentPrice > cloud.top;
+    }
+    conditions.push({ id:"emacloud4h", label:"Sobre la nube EMA de 4 horas", pass:c4 });
+
+    let c5 = null;
+    if(daily && daily.length>25){
+      const br = slopeBreakout(daily.map(c=>c.close), 10);
+      if(br) c5 = br.breakout;
+    }
+    conditions.push({ id:"breakout", label:"Rompiendo una tendencia bajista definida (aprox.)", pass:c5 });
+
+    const evaluated = conditions.filter(c=>c.pass!==null);
+    const passCount = evaluated.filter(c=>c.pass).length;
+    const score = evaluated.length ? ((passCount/evaluated.length)*2 - 1) : 0;
+    return { conditions, passCount, total: evaluated.length, score };
+  }
+
+  function windowHHLL(highs, lows, endExclusive, period){
+    const start = endExclusive - period;
+    if(start < 0) return null;
+    let h=-Infinity, l=Infinity;
+    for(let i=start;i<endExclusive;i++){ if(highs[i]>h) h=highs[i]; if(lows[i]<l) l=lows[i]; }
+    return {h,l};
+  }
+
+  function ichimoku(candlesAsc){
+    const n = candlesAsc.length;
+    if(n < 80) return null;
+    const highs = candlesAsc.map(c=>c.high), lows = candlesAsc.map(c=>c.low);
+    const tk9 = windowHHLL(highs, lows, n, 9);
+    const kj26 = windowHHLL(highs, lows, n, 26);
+    if(!tk9 || !kj26) return null;
+    const tenkan = (tk9.h+tk9.l)/2, kijun = (kj26.h+kj26.l)/2;
+    const laggedEnd = n - 26;
+    const tk9L = windowHHLL(highs, lows, laggedEnd, 9);
+    const kj26L = windowHHLL(highs, lows, laggedEnd, 26);
+    const hl52L = windowHHLL(highs, lows, laggedEnd, 52);
+    if(!tk9L || !kj26L || !hl52L) return null;
+    const senkouA = ((tk9L.h+tk9L.l)/2 + (kj26L.h+kj26L.l)/2)/2;
+    const senkouB = (hl52L.h+hl52L.l)/2;
+    return { tenkan, kijun, cloudTop: Math.max(senkouA,senkouB), cloudBottom: Math.min(senkouA,senkouB) };
+  }
+
+  function atr(candlesAsc, period=14){
+    if(candlesAsc.length < period+1) return null;
+    const trs = [];
+    for(let i=1;i<candlesAsc.length;i++){
+      const c=candlesAsc[i], p=candlesAsc[i-1];
+      trs.push(Math.max(c.high-c.low, Math.abs(c.high-p.close), Math.abs(c.low-p.close)));
+    }
+    let val = trs.slice(0,period).reduce((a,b)=>a+b,0)/period;
+    for(let i=period;i<trs.length;i++){ val = (val*(period-1)+trs[i])/period; }
+    return val;
+  }
+
+  function computeSupportResistanceLevels(candlesAsc, price){
+    // Combines two standard technical methods instead of relying on just one:
+    //  1) Swing fractals — actual prices where the market already turned
+    //     (3-bar high/low pivots) over the last ~90 bars.
+    //  2) Fibonacci retracements — 23.6/38.2/50/61.8/78.6% of the most
+    //     significant swing (high↔low) in that same window, which is what a
+    //     large share of discretionary traders also watch.
+    // Levels from both methods landing within ~0.6% of each other are merged
+    // into a single "confluencia" level — levels multiple independent
+    // methods agree on tend to be the more reliable ones.
+    const arr = candlesAsc.slice(-90);
+    if(arr.length < 10) return { support:null, resistance:null, supports:[], resistances:[] };
+    const highs=[], lows=[];
+    for(let i=3;i<arr.length-3;i++){
+      const w = arr.slice(i-3,i+4);
+      if(arr[i].high === Math.max(...w.map(c=>c.high))) highs.push(arr[i].high);
+      if(arr[i].low === Math.min(...w.map(c=>c.low))) lows.push(arr[i].low);
+    }
+    const swingHigh = Math.max(...arr.map(c=>c.high));
+    const swingLow = Math.min(...arr.map(c=>c.low));
+    const range = swingHigh - swingLow;
+    const candidates = [
+      ...highs.map(h=>({price:h, type:"pivot"})),
+      ...lows.map(l=>({price:l, type:"pivot"})),
+    ];
+    if(range > 0){
+      [0.236,0.382,0.5,0.618,0.786].forEach(r=>{
+        candidates.push({ price: swingHigh - range*r, type:"fib" });
+      });
+    }
+    const tol = Math.max(price*0.006, 0.01);
+    candidates.sort((a,b)=>a.price-b.price);
+    const clusters = [];
+    candidates.forEach(c=>{
+      const last = clusters[clusters.length-1];
+      if(last && Math.abs(c.price-last.price) <= tol){
+        last.sum += c.price; last.n += 1; last.price = last.sum/last.n;
+        if(!last.types.includes(c.type)) last.types.push(c.type);
+      } else {
+        clusters.push({ price:c.price, sum:c.price, n:1, types:[c.type] });
+      }
+    });
+    clusters.forEach(c=>{ c.kind = c.types.length>1 ? "confluencia" : c.types[0]; });
+
+    const supports = clusters.filter(c=>c.price<price).sort((a,b)=>b.price-a.price).slice(0,3)
+      .map((c,i)=>({ price:c.price, n:i+1, type:c.kind }));
+    const resistances = clusters.filter(c=>c.price>price).sort((a,b)=>a.price-b.price).slice(0,3)
+      .map((c,i)=>({ price:c.price, n:i+1, type:c.kind }));
+
+    return {
+      support: supports[0] ? supports[0].price : null,
+      resistance: resistances[0] ? resistances[0].price : null,
+      supports, resistances,
+    };
+  }
+
+  // ================= Candlestick patterns =================
+  function detectPatterns(candlesAsc){
+    const n = candlesAsc.length;
+    if(n < 7) return [];
+    const c0=candlesAsc[n-1], c1=candlesAsc[n-2], c2=candlesAsc[n-3];
+    const body=c=>Math.abs(c.close-c.open), range=c=>(c.high-c.low)||1e-9;
+    const isBull=c=>c.close>c.open, isBear=c=>c.close<c.open;
+    const upW=c=>c.high-Math.max(c.open,c.close), loW=c=>Math.min(c.open,c.close)-c.low;
+    const priorCloses = candlesAsc.slice(n-7,n-1).map(c=>c.close);
+    const trendUp = priorCloses[priorCloses.length-1] > priorCloses[0];
+    const trendDown = priorCloses[priorCloses.length-1] < priorCloses[0];
+    const found = [];
+
+    if(body(c0) <= 0.1*range(c0)) found.push({pattern:"Doji", bias:"neutral"});
+
+    if(body(c0) > 0 && loW(c0) >= 2*body(c0) && upW(c0) <= 0.3*body(c0)){
+      if(trendDown) found.push({pattern:"Martillo", bias:"bullish"});
+      else if(trendUp) found.push({pattern:"Hombre Colgado", bias:"bearish"});
+    }
+    if(body(c0) > 0 && upW(c0) >= 2*body(c0) && loW(c0) <= 0.3*body(c0)){
+      if(trendUp) found.push({pattern:"Estrella Fugaz", bias:"bearish"});
+      else if(trendDown) found.push({pattern:"Martillo Invertido", bias:"bullish"});
+    }
+    if(isBear(c1) && isBull(c0) && c0.close>=c1.open && c0.open<=c1.close && body(c0)>body(c1)){
+      found.push({pattern:"Envolvente Alcista", bias:"bullish"});
+    }
+    if(isBull(c1) && isBear(c0) && c0.close<=c1.open && c0.open>=c1.close && body(c0)>body(c1)){
+      found.push({pattern:"Envolvente Bajista", bias:"bearish"});
+    }
+    if(isBear(c2) && body(c2) > range(c2)*0.5 && body(c1) < body(c2)*0.4 && isBull(c0) && body(c0) > range(c0)*0.5 && c0.close > (c2.open+c2.close)/2){
+      found.push({pattern:"Estrella de la Mañana", bias:"bullish"});
+    }
+    if(isBull(c2) && body(c2) > range(c2)*0.5 && body(c1) < body(c2)*0.4 && isBear(c0) && body(c0) > range(c0)*0.5 && c0.close < (c2.open+c2.close)/2){
+      found.push({pattern:"Estrella de la Tarde", bias:"bearish"});
+    }
+    if(body(c1) <= 0.1*range(c1)){
+      if(trendDown && isBull(c0) && c0.close > (c2.open+c2.close)/2) found.push({pattern:"Estrella de la Mañana Doji", bias:"bullish"});
+      if(trendUp && isBear(c0) && c0.close < (c2.open+c2.close)/2) found.push({pattern:"Estrella de la Tarde Doji", bias:"bearish"});
+    }
+    if(isBull(c2)&&isBull(c1)&&isBull(c0) && c1.close>c2.close && c0.close>c1.close && c1.open>c2.open && c1.open<c2.close && c0.open>c1.open && c0.open<c1.close){
+      found.push({pattern:"Tres Soldados Blancos", bias:"bullish"});
+    }
+    if(isBear(c2)&&isBear(c1)&&isBear(c0) && c1.close<c2.close && c0.close<c1.close && c1.open<c2.open && c1.open>c2.close && c0.open<c1.open && c0.open>c1.close){
+      found.push({pattern:"Tres Cuervos Negros", bias:"bearish"});
+    }
+    return found;
+  }
+
+  // ================= Analysis pipeline =================
+  async function runAnalysis(symbol, benchmarkSymbol, enabled, movementTf){
+    setStatus("Consultando solo lo necesario…");
+    setProgress(5);
+    analyzeBtn.disabled = true;
+    const seriesByTf = {};
+
+    const neededTfKeys = computeNeededTimeframeKeys(enabled, movementTf);
+    const fetchesNeeded = directFetchesFor(neededTfKeys);
+    const needBenchmark = !!(enabled.rel && benchmarkSymbol);
+    const needMarketCtx = !!enabled.marketctx;
+
+    let done = 0;
+    const totalFetches = fetchesNeeded.length + (needBenchmark ? 1 : 0) + (needMarketCtx ? 2 : 0) + 1; // +1 for the price quote
+    let benchmarkSeries = null, benchmarkError = null;
+    const marketSeries = { SPY:null, QQQ:null };
+    const marketErrors = { SPY:null, QQQ:null };
+    try {
+      const jobs = fetchesNeeded.map(async (tf) => {
+        const s = await fetchSeries(symbol, tf.interval, tf.outputsize);
+        seriesByTf[tf.key] = s;
+        done++; setProgress(5 + (done/totalFetches)*70);
+      });
+      if(needBenchmark){
+        jobs.push((async ()=>{
+          try { benchmarkSeries = await fetchSeries(benchmarkSymbol, "1day", 260); }
+          catch(e){ benchmarkError = e.message; }
+          done++; setProgress(5 + (done/totalFetches)*70);
+        })());
+      }
+      if(needMarketCtx){
+        ["SPY","QQQ"].forEach(sym => {
+          jobs.push((async ()=>{
+            try { marketSeries[sym] = await fetchSeries(sym, "1day", 100); }
+            catch(e){ marketErrors[sym] = e.message; }
+            done++; setProgress(5 + (done/totalFetches)*70);
+          })());
+        });
+      }
+      await Promise.all(jobs);
+    } catch(err){ analyzeBtn.disabled=false; setProgress(null); throw err; }
+
+    TIMEFRAMES.forEach(tf => {
+      if(tf.kind === "derive" && seriesByTf[tf.base]) seriesByTf[tf.key] = aggregate(seriesByTf[tf.base], tf.group);
+    });
+
+    setProgress(80);
+    let currentPrice;
+    try {
+      currentPrice = await fetchCurrentPrice(symbol);
+      done++; setProgress(5 + (done/totalFetches)*70);
+    } catch(err){
+      const anyFetched = Object.values(seriesByTf).find(s => s && s.length);
+      if(!anyFetched) throw new Error("No se pudo obtener el precio actual ni ningún dato histórico para " + symbol + ".");
+      currentPrice = anyFetched[anyFetched.length-1].close;
+    }
+    setProgress(92);
+
+    const out = { currentPrice, seriesByTf, neededTfKeys, sma:{}, ema:{}, bb:{}, rsi:{}, stoch:{}, ichi:{}, ad:{}, patterns:{}, benchmark:{ series:benchmarkSeries, symbol:benchmarkSymbol, error:benchmarkError }, marketSeries, marketErrors };
+    TIMEFRAMES.forEach(tf => {
+      const candles = seriesByTf[tf.key];
+      if(!candles){
+        // Not fetched this round (module needing it was off) — mark as
+        // unavailable rather than crashing; renderers already handle "na".
+        out.sma[tf.key] = {}; out.ema[tf.key] = {};
+        PERIODS.forEach(p => { out.sma[tf.key][p] = {status:"na"}; out.ema[tf.key][p] = {status:"na"}; });
+        out.bb[tf.key] = {status:"na"}; out.rsi[tf.key] = {status:"na"}; out.stoch[tf.key] = {status:"na"};
+        out.ichi[tf.key] = {status:"na"}; out.ad[tf.key] = {status:"na"}; out.patterns[tf.key] = [];
+        return;
+      }
+      const closes = candles.map(c=>c.close);
+
+      out.sma[tf.key] = {};
+      out.ema[tf.key] = {};
+      PERIODS.forEach(p => {
+        const s = smaArr(closes, p);
+        out.sma[tf.key][p] = s===null ? {status:"na"} : {status: currentPrice>=s ? "above":"below", value:s};
+        const e = emaSeries(closes, p);
+        out.ema[tf.key][p] = e===null ? {status:"na"} : {status: currentPrice>=e ? "above":"below", value:e};
+      });
+
+      const bb = bollinger(closes);
+      if(bb){
+        let status = currentPrice >= bb.mid ? "above" : "below";
+        let extreme = currentPrice > bb.upper ? "overbought" : (currentPrice < bb.lower ? "oversold" : null);
+        out.bb[tf.key] = { status, extreme, value: bb.mid };
+      } else out.bb[tf.key] = { status:"na" };
+
+      const r = rsi(closes);
+      out.rsi[tf.key] = r ? { value:r.value, rising: r.value>r.prev } : { status:"na" };
+
+      const st = stochastic(candles);
+      out.stoch[tf.key] = st ? { k:st.k, d:st.d } : { status:"na" };
+
+      const ic = ichimoku(candles);
+      if(ic){
+        let status = currentPrice > ic.cloudTop ? "above" : (currentPrice < ic.cloudBottom ? "below" : "inside");
+        out.ichi[tf.key] = { status, tkBull: ic.tenkan > ic.kijun };
+      } else out.ichi[tf.key] = { status:"na" };
+
+      const ad = adLine(candles);
+      out.ad[tf.key] = ad ? { rising: ad.rising } : { status:"na" };
+
+      out.patterns[tf.key] = detectPatterns(candles);
+    });
+
+    setProgress(100);
+    setTimeout(()=>setProgress(null), 400);
+    analyzeBtn.disabled = false;
+    return out;
+  }
+
+  // Compares el ticker's own return against a benchmark's (SPY by default,
+  // or any sector ETF the user types) over the same lookback window.
+  function computeRelativeStrength(tickerDaily, benchmarkDaily, lookback=60){
+    if(!tickerDaily || !benchmarkDaily) return null;
+    const n = Math.min(lookback, tickerDaily.length-1, benchmarkDaily.length-1);
+    if(n < 10) return null;
+    const t0 = tickerDaily[tickerDaily.length-1-n].close, t1 = tickerDaily[tickerDaily.length-1].close;
+    const b0 = benchmarkDaily[benchmarkDaily.length-1-n].close, b1 = benchmarkDaily[benchmarkDaily.length-1].close;
+    const tickerRet = t1/t0 - 1, benchRet = b1/b0 - 1;
+    const excess = tickerRet - benchRet;
+    return { tickerRet, benchRet, excess, lookback:n };
+  }
+
+  // ================= Walk-forward strategy backtest =================
+  // Replays the app's own weighted-verdict logic one historical day at a
+  // time, using only data available up to that day (no lookahead), and
+  // simulates a long-only strategy following it. Reuses the exact same
+  // indicator functions as the live modules — just fed a trailing window
+  // instead of "up to now".
+  const BT_WEIGHTS = { marketctx:1.3, sma:1, ema:1, emacloud:1, bb:0.8, rsi:0.8, stoch:0.7, ichi:1, vwap:0.8, ad:0.7, heikin:0.6, patterns:0.6, rel:0.6, setup:1.2 };
+  const BT_WARMUP = 210;
+
+  function btFindIndexOnOrBefore(datesMs, ts){
+    let lo=0, hi=datesMs.length-1, idx=-1;
+    while(lo<=hi){ const mid=(lo+hi)>>1; if(datesMs[mid]<=ts){ idx=mid; lo=mid+1; } else hi=mid-1; }
+    return idx;
+  }
+  function btWindowUpTo(series, datesMs, ts, lookback){
+    if(!series || !datesMs) return null;
+    const idx = btFindIndexOnOrBefore(datesMs, ts);
+    return idx>=0 ? series.slice(Math.max(0, idx-lookback+1), idx+1) : null;
+  }
+
+  // Runs the day-by-day walk-forward simulation over a single contiguous
+  // slice of the daily series [segStartIdx, segEndIdxExclusive). Extracted
+  // as its own function so both the single-period backtest AND the
+  // multi-period walk-forward analysis below can reuse the exact same
+  // simulation logic without duplicating it — same indicators, same
+  // decision rule, only the date range and the equity starting point (always
+  // reset to 1 at the start of whatever segment is passed in) change.
+  function simulateSegment(daily, weekly, weeklyDates, spyDaily, spyDates, qqqDaily, qqqDates, benchDaily, benchDates, segStartIdx, segEndIdxExclusive){
+    const equityStrategy = [1], equityBH = [1], dates = [];
+    let inPosition = false, entryIdx = null, entryEquityMult = 1;
+    const trades = [];
+
+    for(let i=segStartIdx; i<segEndIdxExclusive; i++){
+      const win = daily.slice(Math.max(0,i-260), i+1);
+      const closes = win.map(c=>c.close);
+      const price = closes[closes.length-1];
+      const ts = new Date(daily[i].datetime.replace(" ","T")).getTime();
+
+      const scores = {};
+
+      const s10=smaArr(closes,10), s100=smaArr(closes,100), s200=smaArr(closes,200);
+      let smaVotes=0, smaTotal=0;
+      [s10,s100,s200].forEach(s=>{ if(s!==null){ smaTotal++; if(price>=s) smaVotes++; } });
+      scores.sma = smaTotal ? (smaVotes/smaTotal)*2-1 : null;
+
+      const e10=emaSeries(closes,10), e100=emaSeries(closes,100), e200=emaSeries(closes,200);
+      let emaVotes=0, emaTotal=0;
+      [e10,e100,e200].forEach(e=>{ if(e!==null){ emaTotal++; if(price>=e) emaVotes++; } });
+      scores.ema = emaTotal ? (emaVotes/emaTotal)*2-1 : null;
+
+      const cloud = emaCloud(closes);
+      scores.emacloud = cloud ? (cloud.bullish?1:-1) : null;
+
+      const bb = bollinger(closes);
+      scores.bb = bb ? (price>=bb.mid?1:-1) : null;
+
+      const rsiRes = rsi(closes);
+      scores.rsi = rsiRes ? (rsiRes.value-50)/50 : null;
+
+      const stochRes = stochastic(win);
+      scores.stoch = stochRes ? (stochRes.k-50)/50 : null;
+
+      const ichiRes = ichimoku(win);
+      scores.ichi = ichiRes ? (price>ichiRes.cloudTop?1:(price<ichiRes.cloudBottom?-1:0)) : null;
+
+      const vwapRes = anchoredVwapFromLow(win, 100);
+      scores.vwap = vwapRes ? (price>=vwapRes.vwap?1:-1) : null;
+
+      const ad = adLine(win);
+      scores.ad = ad ? (ad.rising?1:-1) : null;
+
+      const pats = detectPatterns(win);
+      scores.patterns = pats.length ? Math.max(-1,Math.min(1,(pats.filter(p=>p.bias==='bullish').length - pats.filter(p=>p.bias==='bearish').length)/3)) : null;
+
+      const wkWin = btWindowUpTo(weekly, weeklyDates, ts, 30);
+      const haLast = (wkWin && wkWin.length>3) ? heikinAshi(wkWin).slice(-1)[0] : null;
+      scores.heikin = haLast ? (haLast.close>=haLast.open ? 0.6 : -0.6) : null;
+
+      const spyWin = btWindowUpTo(spyDaily, spyDates, ts, 30);
+      const qqqWin = btWindowUpTo(qqqDaily, qqqDates, ts, 30);
+      let mcVotes=0, mcTotal=0;
+      [spyWin,qqqWin].forEach(w=>{ if(w && w.length>25){ const c=emaCloud(w.map(x=>x.close)); if(c){ mcTotal++; if(c.bullish) mcVotes++; } } });
+      scores.marketctx = mcTotal ? (mcVotes/mcTotal)*2-1 : null;
+
+      const benchWin = btWindowUpTo(benchDaily, benchDates, ts, 62);
+      const relRes = (benchWin && benchWin.length>60) ? computeRelativeStrength(win, benchWin, 60) : null;
+      scores.rel = relRes ? Math.max(-1,Math.min(1, relRes.excess/0.10)) : null;
+
+      // Setup checklist approximation (condition 4 swaps the live 4h EMA
+      // cloud for a fast/slow daily EMA cloud — see the on-screen caveat).
+      let setupPass=0, setupTotal=0;
+      if(haLast){ setupTotal++; if(haLast.close>=haLast.open) setupPass++; }
+      if(vwapRes){ setupTotal++; if(price>=vwapRes.vwap) setupPass++; }
+      if(s10!==null){ const s10prev = smaArr(closes.slice(0,-5),10); if(s10prev!==null){ setupTotal++; if(price>=s10 && s10>s10prev) setupPass++; } }
+      const fastCloud = emaCloud(closes, 3, 8);
+      if(fastCloud){ setupTotal++; if(price>fastCloud.top) setupPass++; }
+      const brk = slopeBreakout(closes, 10);
+      if(brk){ setupTotal++; if(brk.breakout) setupPass++; }
+      scores.setup = setupTotal ? (setupPass/setupTotal)*2-1 : null;
+
+      // Only modules with an actual computable value this day count toward
+      // the weighted average — missing data (e.g. SPY/QQQ/weekly history
+      // not reaching this far back) is excluded, not treated as a diluting
+      // "neutral" vote. This matters most in the earliest years of very
+      // long histories, where auxiliary series may not extend as far back
+      // as the ticker's own data.
+      let wsum=0, wtotal=0;
+      Object.keys(scores).forEach(k=>{
+        if(scores[k] === null) return;
+        const w=BT_WEIGHTS[k]||1; wsum+=scores[k]*w; wtotal+=w;
+      });
+      const composite = wtotal ? wsum/wtotal : 0;
+
+      const wasIn = inPosition;
+      if(!inPosition && composite > 0.15){ inPosition = true; entryIdx = i; entryEquityMult = equityStrategy[equityStrategy.length-1]; }
+      else if(inPosition && composite <= 0){ inPosition = false; }
+
+      const nextRet = daily[i+1].close/daily[i].close - 1;
+      const stratRet = wasIn ? nextRet : 0;
+      equityStrategy.push(equityStrategy[equityStrategy.length-1] * (1+stratRet));
+      equityBH.push(equityBH[equityBH.length-1] * (1+nextRet));
+      dates.push(daily[i+1].datetime);
+
+      if(wasIn && !inPosition){
+        // Day i+1's close is the last one actually captured in the equity
+        // curve for this trade (see stratRet above), so use it consistently
+        // for both the trade's dollar values and its % return.
+        const exitEquityMult = equityStrategy[equityStrategy.length-1];
+        trades.push({
+          entryIdx, exitIdx: i+1,
+          entryDate: daily[entryIdx].datetime, exitDate: daily[i+1].datetime,
+          entryPrice: daily[entryIdx].close, exitPrice: daily[i+1].close,
+          entryEquityMult, exitEquityMult,
+          ret: exitEquityMult/entryEquityMult - 1,
+        });
+      }
+    }
+    if(inPosition){
+      const lastIdx = segEndIdxExclusive; // last bar captured in this segment's equity curve (see stratRet loop above)
+      const exitEquityMult = equityStrategy[equityStrategy.length-1];
+      trades.push({
+        entryIdx, exitIdx: lastIdx,
+        entryDate: daily[entryIdx].datetime, exitDate: daily[lastIdx].datetime,
+        entryPrice: daily[entryIdx].close, exitPrice: daily[lastIdx].close,
+        entryEquityMult, exitEquityMult,
+        ret: exitEquityMult/entryEquityMult - 1,
+        stillOpen: true,
+      });
+    }
+
+    const finalStrat = equityStrategy[equityStrategy.length-1];
+    const finalBH = equityBH[equityBH.length-1];
+    const years = dates.length/252;
+    const cagr = years>0 ? Math.pow(finalStrat, 1/years)-1 : 0;
+    const bhCagr = years>0 ? Math.pow(finalBH, 1/years)-1 : 0;
+    let peak=1, maxDD=0;
+    equityStrategy.forEach(e=>{ if(e>peak) peak=e; const dd=(peak-e)/peak; if(dd>maxDD) maxDD=dd; });
+    let peakBH=1, maxDDBH=0;
+    equityBH.forEach(e=>{ if(e>peakBH) peakBH=e; const dd=(peakBH-e)/peakBH; if(dd>maxDDBH) maxDDBH=dd; });
+    const wins = trades.filter(t=>t.ret>0).length;
+    const winRate = trades.length ? wins/trades.length : 0;
+    const barsInMarket = trades.reduce((s,t)=>s+(t.exitIdx-t.entryIdx),0);
+    const segLen = segEndIdxExclusive - segStartIdx;
+    const timeInMarket = segLen>0 ? barsInMarket/segLen : 0;
+
+    return {
+      equityStrategy, equityBH, dates,
+      totalReturn: finalStrat-1, bhReturn: finalBH-1,
+      cagr, bhCagr, maxDD, maxDDBH, winRate, timeInMarket, years,
+      tradeCount: trades.length, trades,
+      segStartIdx, segEndIdxExclusive,
+      startDate: daily[segStartIdx].datetime, endDate: daily[segEndIdxExclusive].datetime,
+    };
+  }
+
+  // Single-period backtest — thin wrapper around simulateSegment covering the
+  // whole available (or user-restricted via startDateStr) date range.
+  function runBacktest(daily, weekly, spyDaily, qqqDaily, benchDaily, startDateStr){
+    const n = daily.length;
+    if(n < BT_WARMUP + 30) return null;
+
+    let startIdx = BT_WARMUP;
+    if(startDateStr){
+      const startTs = new Date(startDateStr + "T00:00:00").getTime();
+      const dailyDates = daily.map(c=>new Date(c.datetime.replace(" ","T")).getTime());
+      const idx = btFindIndexOnOrBefore(dailyDates, startTs);
+      // idx is the last bar ON OR BEFORE startTs; if the requested date falls
+      // between two trading days (weekend, holiday) or before all data, step
+      // forward to the first bar ON OR AFTER it instead.
+      let firstOnOrAfter = idx;
+      if(idx < 0 || dailyDates[idx] < startTs){
+        firstOnOrAfter = dailyDates.findIndex(t => t >= startTs);
+        if(firstOnOrAfter === -1) firstOnOrAfter = n-1;
+      }
+      startIdx = Math.max(BT_WARMUP, firstOnOrAfter);
+    }
+
+    const weeklyDates = weekly ? weekly.map(c=>new Date(c.datetime.replace(" ","T")).getTime()) : null;
+    const spyDates = spyDaily ? spyDaily.map(c=>new Date(c.datetime.replace(" ","T")).getTime()) : null;
+    const qqqDates = qqqDaily ? qqqDaily.map(c=>new Date(c.datetime.replace(" ","T")).getTime()) : null;
+    const benchDates = benchDaily ? benchDaily.map(c=>new Date(c.datetime.replace(" ","T")).getTime()) : null;
+
+    const seg = simulateSegment(daily, weekly, weeklyDates, spyDaily, spyDates, qqqDaily, qqqDates, benchDaily, benchDates, startIdx, n-1);
+
+    return Object.assign(seg, {
+      firstDataDate: daily[0].datetime, firstTradableDate: daily[startIdx].datetime, lastDate: daily[n-1].datetime,
+    });
+  }
+
+  // ---- Multi-period walk-forward robustness check ----
+  // A single backtest over the whole history gives one number, which can
+  // flatter (or unfairly punish) a strategy depending on which regime the
+  // available history happens to cover. Splitting the operable range into
+  // several SEQUENTIAL, non-overlapping blocks and running the exact same
+  // simulateSegment logic independently on each one (equity reset to 1 at
+  // the start of every block) shows whether the edge holds up across
+  // different market regimes, or whether it's really just one lucky window.
+  //
+  // Note on methodology: this app's verdict logic uses FIXED module weights
+  // (BT_WEIGHTS above) — nothing is fit/optimized on historical data — so
+  // there are no parameters that could "overfit" to a training set in the
+  // way a fitted model's would. That's why this splits the data into
+  // sequential out-of-sample blocks rather than a train/validation/test
+  // split: there's no training step to isolate, only a consistency check
+  // across regimes. A ROLLING window would spread that check even more
+  // finely, but fixed sequential blocks are simpler to read at a glance and,
+  // with a fixed (non-fitted) rule, don't lose the robustness a rolling
+  // scheme would normally buy you.
+  const WF_MIN_SEGMENT_DAYS = 120; // don't shrink blocks below ~6 months of trading days
+  function runWalkForwardMultiPeriod(daily, weekly, spyDaily, qqqDaily, benchDaily, numPeriodsRequested){
+    const n = daily.length;
+    if(n < BT_WARMUP + 30) return null;
+    const startIdx = BT_WARMUP;
+    const usable = (n-1) - startIdx;
+    if(usable < WF_MIN_SEGMENT_DAYS) return null;
+
+    const numPeriods = Math.max(1, Math.min(numPeriodsRequested, Math.floor(usable / WF_MIN_SEGMENT_DAYS)));
+
+    const weeklyDates = weekly ? weekly.map(c=>new Date(c.datetime.replace(" ","T")).getTime()) : null;
+    const spyDates = spyDaily ? spyDaily.map(c=>new Date(c.datetime.replace(" ","T")).getTime()) : null;
+    const qqqDates = qqqDaily ? qqqDaily.map(c=>new Date(c.datetime.replace(" ","T")).getTime()) : null;
+    const benchDates = benchDaily ? benchDaily.map(c=>new Date(c.datetime.replace(" ","T")).getTime()) : null;
+
+    const segLen = Math.floor(usable / numPeriods);
+    const segments = [];
+    for(let p=0; p<numPeriods; p++){
+      const segStart = startIdx + p*segLen;
+      const segEnd = (p===numPeriods-1) ? (n-1) : (startIdx + (p+1)*segLen); // last block absorbs any remainder days
+      segments.push(simulateSegment(daily, weekly, weeklyDates, spyDaily, spyDates, qqqDaily, qqqDates, benchDaily, benchDates, segStart, segEnd));
+    }
+
+    const cagrs = segments.map(s=>s.cagr);
+    const positive = cagrs.filter(c=>c>0).length;
+    const negative = cagrs.length - positive;
+    const avgCagr = cagrs.reduce((a,b)=>a+b,0)/cagrs.length;
+    const sortedCagrs = cagrs.slice().sort((a,b)=>a-b);
+    const mid = Math.floor(sortedCagrs.length/2);
+    const medianCagr = sortedCagrs.length%2 ? sortedCagrs[mid] : (sortedCagrs[mid-1]+sortedCagrs[mid])/2;
+    let bestIdx=0, worstIdx=0;
+    segments.forEach((s,i)=>{ if(s.cagr>segments[bestIdx].cagr) bestIdx=i; if(s.cagr<segments[worstIdx].cagr) worstIdx=i; });
+
+    return { numPeriods, requestedPeriods:numPeriodsRequested, segments, positive, negative, avgCagr, medianCagr, best:segments[bestIdx], worst:segments[worstIdx] };
+  }
+
+
+  function renderPrice(symbol, price){
+    $("pcSym").textContent = symbol;
+    $("pcPrice").textContent = formatPrice(price);
+    $("pcAsof").textContent = "actualizado ahora";
+    priceCard.style.display = "flex";
+  }
+  function formatPrice(v){ return (v===null||v===undefined) ? "—" : v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+  function scoreChip(score){
+    if(score >= 0.5) return {cls:"bull", txt:"ALCISTA"};
+    if(score >= 0.15) return {cls:"bull", txt:"SESGO ALCISTA"};
+    if(score <= -0.5) return {cls:"bear", txt:"BAJISTA"};
+    if(score <= -0.15) return {cls:"bear", txt:"SESGO BAJISTA"};
+    return {cls:"mixed", txt:"NEUTRO"};
+  }
+  function renderModuleScore(containerId, score, extraNote){
+    const c = $(containerId);
+    const s = scoreChip(score);
+    c.innerHTML = "";
+    const chip = document.createElement("span");
+    chip.className = "chip " + (s.cls==="bull"?"bull":s.cls==="bear"?"bear":"mixed");
+    chip.textContent = s.txt;
+    c.appendChild(chip);
+    const txt = document.createElement("span");
+    txt.textContent = "score " + (score>=0?"+":"") + score.toFixed(2) + (extraNote ? " · " + extraNote : "");
+    c.appendChild(txt);
+  }
+
+  function renderLadder3(containerId, dataByTf){
+    const el = $(containerId);
+    el.innerHTML = "";
+    TIMEFRAMES.forEach(tf => {
+      const rung = document.createElement("div"); rung.className = "rung";
+      const lab = document.createElement("div"); lab.className = "tf mono"; lab.textContent = tf.label;
+      rung.appendChild(lab);
+      const cells = document.createElement("div"); cells.className = "cells";
+      PERIODS.forEach(p => {
+        const r = dataByTf[tf.key][p];
+        const cell = document.createElement("div");
+        cell.className = "cell " + (r.status==="na" ? "na" : r.status);
+        const plab = document.createElement("div"); plab.className="plab mono"; plab.textContent = p;
+        const sig = document.createElement("div"); sig.className="sig";
+        sig.textContent = r.status==="na" ? "·" : (r.status==="above" ? "▲" : "▼");
+        cell.appendChild(plab); cell.appendChild(sig);
+        cells.appendChild(cell);
+      });
+      rung.appendChild(cells);
+      el.appendChild(rung);
+    });
+  }
+
+  function chipEl(label, value, cls, badge, warn){
+    const d = document.createElement("div");
+    d.className = "chip-tf " + cls + (warn ? " warn" : "");
+    const l = document.createElement("div"); l.className="lbl mono"; l.textContent = label;
+    const v = document.createElement("div"); v.className="val"; v.textContent = value;
+    d.appendChild(l); d.appendChild(v);
+    if(badge){ const b=document.createElement("div"); b.className="badge"; b.textContent=badge; d.appendChild(b); }
+    return d;
+  }
+
+  function renderBB(data){
+    const el = $("chip-bb"); el.innerHTML = "";
+    let above=0, below=0, valid=0;
+    TIMEFRAMES.forEach(tf => {
+      const r = data[tf.key];
+      if(r.status==="na"){ el.appendChild(chipEl(tf.label,"·","neutral")); return; }
+      valid++; if(r.status==="above") above++; else below++;
+      const cls = r.status==="above" ? "up" : "down";
+      const badge = r.extreme === "overbought" ? "sobrecompra" : (r.extreme==="oversold" ? "sobreventa" : "");
+      el.appendChild(chipEl(tf.label, r.status==="above"?"▲":"▼", cls, badge, !!r.extreme));
+    });
+    return valid ? (above-below)/valid : 0;
+  }
+
+  function renderRSI(data){
+    const el = $("chip-rsi"); el.innerHTML = "";
+    let sum=0, valid=0;
+    TIMEFRAMES.forEach(tf => {
+      const r = data[tf.key];
+      if(r.status==="na"){ el.appendChild(chipEl(tf.label,"·","neutral")); return; }
+      valid++;
+      const cls = r.value>60 ? "up" : (r.value<40 ? "down" : "neutral");
+      const badge = r.value>70 ? "sobrecompra" : (r.value<30 ? "sobreventa" : (r.rising?"subiendo":"bajando"));
+      sum += (r.value-50)/50;
+      el.appendChild(chipEl(tf.label, r.value.toFixed(0), cls, badge, r.value>70||r.value<30));
+    });
+    return valid ? sum/valid : 0;
+  }
+
+  function renderStoch(data){
+    const el = $("chip-stoch"); el.innerHTML = "";
+    let sum=0, valid=0;
+    TIMEFRAMES.forEach(tf => {
+      const r = data[tf.key];
+      if(r.status==="na"){ el.appendChild(chipEl(tf.label,"·","neutral")); return; }
+      valid++;
+      const cls = r.k>60 ? "up" : (r.k<40 ? "down" : "neutral");
+      const badge = r.k>80 ? "sobrecompra" : (r.k<20 ? "sobreventa" : (r.k>=r.d?"K>D":"K<D"));
+      sum += (r.k-50)/50;
+      el.appendChild(chipEl(tf.label, r.k.toFixed(0), cls, badge, r.k>80||r.k<20));
+    });
+    return valid ? sum/valid : 0;
+  }
+
+  function renderIchi(data){
+    const el = $("chip-ichi"); el.innerHTML = "";
+    let sum=0, valid=0;
+    TIMEFRAMES.forEach(tf => {
+      const r = data[tf.key];
+      if(r.status==="na"){ el.appendChild(chipEl(tf.label,"·","neutral")); return; }
+      valid++;
+      const val = r.status==="above" ? "▲" : (r.status==="below" ? "▼" : "◆");
+      const cls = r.status==="above" ? "up" : (r.status==="below" ? "down" : "neutral");
+      const score = r.status==="above" ? 1 : (r.status==="below" ? -1 : 0);
+      sum += score;
+      el.appendChild(chipEl(tf.label, val, cls, r.tkBull ? "TK▲" : "TK▼"));
+    });
+    return valid ? sum/valid : 0;
+  }
+
+  function renderAD(data){
+    const el = $("chip-ad"); el.innerHTML = "";
+    let sum=0, valid=0;
+    TIMEFRAMES.forEach(tf => {
+      const r = data[tf.key];
+      if(r.status==="na"){ el.appendChild(chipEl(tf.label,"·","neutral")); return; }
+      valid++;
+      sum += r.rising ? 1 : -1;
+      el.appendChild(chipEl(tf.label, r.rising?"▲":"▼", r.rising?"up":"down", r.rising?"acumulación":"distribución"));
+    });
+    return valid ? sum/valid : 0;
+  }
+
+  function renderPatterns(data){
+    const el = $("patterns-list"); el.innerHTML = "";
+    let bull=0, bear=0;
+    TIMEFRAMES.forEach(tf => {
+      const row = document.createElement("div"); row.className = "pattern-tf";
+      const lab = document.createElement("div"); lab.className = "lbl"; lab.textContent = tf.label;
+      row.appendChild(lab);
+      const found = data[tf.key];
+      if(!found || !found.length){
+        const none = document.createElement("span"); none.className="none"; none.textContent = "sin patrón relevante";
+        row.appendChild(none);
+      } else {
+        found.forEach(p => {
+          if(p.bias==="bullish") bull++; else if(p.bias==="bearish") bear++;
+          const tag = document.createElement("span");
+          tag.className = "pattern-tag " + p.bias;
+          tag.textContent = p.pattern;
+          row.appendChild(tag);
+        });
+      }
+      el.appendChild(row);
+    });
+    const total = bull+bear;
+    return total ? Math.max(-1,Math.min(1,(bull-bear)/5)) : 0;
+  }
+
+  function renderRelativeStrength(benchmark, seriesByTf){
+    const el = $("rel-body");
+    const bench = benchmark.symbol;
+    if(!bench){
+      el.innerHTML = `<div class="rel-excess">Sin benchmark configurado.</div>`;
+      return 0;
+    }
+    if(benchmark.error || !benchmark.series){
+      el.innerHTML = `<div class="rel-excess">No se pudo obtener "${bench}" (${benchmark.error||'ticker inválido'}). Prueba con SPY, QQQ, o un ETF de sector válido.</div>`;
+      return 0;
+    }
+    const rel = computeRelativeStrength(seriesByTf["1day"], benchmark.series, 60);
+    if(!rel){
+      el.innerHTML = `<div class="rel-excess">Historial insuficiente para comparar.</div>`;
+      return 0;
+    }
+    $("rel-desc").textContent = `Compara el rendimiento de los últimos ${rel.lookback} días de mercado contra ${bench}. Si el ticker sube pero rinde menos que ${bench}, es debilidad relativa aunque el precio suba.`;
+    const maxAbs = Math.max(Math.abs(rel.tickerRet), Math.abs(rel.benchRet), 0.05);
+    function barRow(label, val){
+      const pct = (val*100).toFixed(1);
+      const fillPct = Math.min(50, Math.abs(val)/maxAbs*50);
+      const pos = val>=0;
+      return `<div class="rel-bar-row">
+        <div class="rlabel">${label}</div>
+        <div class="rtrack"><div class="rmid"></div><div class="rfill" style="${pos?'left':'right'}:50%; width:${fillPct}%; background:${pos?'#3ECF8E':'#FF5C5C'}"></div></div>
+        <div class="rval mono" style="color:${pos?'#3ECF8E':'#FF5C5C'}">${pos?'+':''}${pct}%</div>
+      </div>`;
+    }
+    let html = `<div class="rel-bars">`;
+    html += barRow("Ticker", rel.tickerRet);
+    html += barRow(bench, rel.benchRet);
+    html += `</div>`;
+    const outperform = rel.excess >= 0;
+    html += `<div class="rel-excess">${outperform?'✅ Superando':'⚠ Rindiendo por debajo de'} ${bench} por <b>${outperform?'+':''}${(rel.excess*100).toFixed(1)}%</b> en ${rel.lookback} días.</div>`;
+    el.innerHTML = html;
+    return Math.max(-1, Math.min(1, rel.excess/0.10));
+  }
+
+  // ---- New module renderers (inspired by @BeardoTrader's thread) ----
+
+  function renderMarketContext(marketSeries, marketErrors){
+    const el = $("marketctx-body");
+    marketErrors = marketErrors || {};
+    const spy = marketSeries.SPY, qqq = marketSeries.QQQ;
+    if(!spy && !qqq){
+      const reasons = [];
+      if(marketErrors.SPY) reasons.push("SPY: " + marketErrors.SPY);
+      if(marketErrors.QQQ) reasons.push("QQQ: " + marketErrors.QQQ);
+      const detail = reasons.length ? reasons.join(" · ") : "sin detalle del error (puede ser un problema momentáneo de red).";
+      el.innerHTML = `<div class="rel-excess">⚠ No se pudo obtener SPY/QQQ en este análisis. Motivo: ${detail} — vuelve a pulsar Analizar para reintentar.</div>`;
+      return 0;
+    }
+    const cloudSpy = spy ? emaCloud(spy.map(c=>c.close)) : null;
+    const cloudQqq = qqq ? emaCloud(qqq.map(c=>c.close)) : null;
+    const rows = [
+      { label:"SPY", cloud:cloudSpy, error:marketErrors.SPY },
+      { label:"QQQ", cloud:cloudQqq, error:marketErrors.QQQ },
+    ];
+    let html = `<div class="chiprow">`;
+    rows.forEach(r => {
+      if(!r.cloud){ html += chipHtml(r.label, "·", "neutral", r.error ? "no disponible" : ""); return; }
+      html += chipHtml(r.label, r.cloud.bullish ? "▲ Nube alcista" : "▼ Nube bajista", r.cloud.bullish ? "up":"down");
+    });
+    html += `</div>`;
+    const partialErrors = rows.filter(r=>r.error).map(r=>r.label+": "+r.error);
+    if(partialErrors.length) html += `<div class="rel-excess">⚠ ${partialErrors.join(' · ')}</div>`;
+    const bullCount = rows.filter(r=>r.cloud && r.cloud.bullish).length;
+    const validCount = rows.filter(r=>r.cloud).length;
+    let verdictTxt, score;
+    if(validCount===0){ verdictTxt = "Sin datos suficientes."; score = 0; }
+    else if(bullCount===validCount){ verdictTxt = "✅ Mercado con viento a favor — más fácil sostener posiciones largas."; score = 1; }
+    else if(bullCount===0){ verdictTxt = "⚠ Mercado con viento en contra — cautela con nuevas posiciones largas."; score = -1; }
+    else { verdictTxt = "◆ Mercado mixto — SPY y QQQ no coinciden, señal de precaución."; score = 0; }
+    html += `<div class="rel-excess">${verdictTxt}</div>`;
+    el.innerHTML = html;
+    return score;
+  }
+
+  function chipHtml(label, value, cls, badge){
+    return `<div class="chip-tf ${cls}"><div class="lbl mono">${label}</div><div class="val">${value}</div>${badge?`<div class="badge">${badge}</div>`:""}</div>`;
+  }
+
+  function renderEmaCloud(seriesByTf){
+    const el = $("chip-emacloud"); el.innerHTML = "";
+    let sum=0, valid=0;
+    TIMEFRAMES.forEach(tf => {
+      const series = seriesByTf[tf.key];
+      const cloud = series ? emaCloud(series.map(c=>c.close)) : null;
+      if(!cloud){ el.appendChild(chipEl(tf.label, "·", "neutral")); return; }
+      valid++;
+      sum += cloud.bullish ? 1 : -1;
+      el.appendChild(chipEl(tf.label, cloud.bullish?"▲":"▼", cloud.bullish?"up":"down"));
+    });
+    return valid ? sum/valid : 0;
+  }
+
+  function renderVwap(seriesByTf, currentPrice){
+    const el = $("chip-vwap"); el.innerHTML = "";
+    let sum=0, valid=0;
+    TIMEFRAMES.forEach(tf => {
+      const series = seriesByTf[tf.key];
+      const v = series ? anchoredVwapFromLow(series, 100) : null;
+      if(!v){ el.appendChild(chipEl(tf.label, "·", "neutral")); return; }
+      valid++;
+      const above = currentPrice >= v.vwap;
+      sum += above ? 1 : -1;
+      el.appendChild(chipEl(tf.label, above?"▲":"▼", above?"up":"down"));
+    });
+    return valid ? sum/valid : 0;
+  }
+
+  function renderHeikin(seriesByTf){
+    const el = $("heikin-body");
+    const weekly = seriesByTf["1week"];
+    const ha = weekly && weekly.length>8 ? heikinAshi(weekly) : null;
+    if(!ha){ el.innerHTML = `<div class="rel-excess">Historial semanal insuficiente.</div>`; return 0; }
+    const last8 = ha.slice(-8);
+    let strip = `<div class="chiprow">`;
+    last8.forEach((c,i) => {
+      const green = c.close >= c.open;
+      strip += chipHtml("S-"+(last8.length-1-i), green?"▲":"▼", green?"up":"down");
+    });
+    strip += `</div>`;
+    const lastGreen = last8[last8.length-1].close >= last8[last8.length-1].open;
+    const streak = (()=>{ let n=0; for(let i=last8.length-1;i>=0;i--){ const g=last8[i].close>=last8[i].open; if(g!==lastGreen) break; n++; } return n; })();
+    strip += `<div class="rel-excess">${lastGreen?'✅':'⚠'} Última vela semanal ${lastGreen?'verde':'roja'} — racha de ${streak} semana(s) en el mismo color.</div>`;
+    el.innerHTML = strip;
+    return lastGreen ? Math.min(1, 0.4 + streak*0.15) : -Math.min(1, 0.4 + streak*0.15);
+  }
+
+  function renderSetup(seriesByTf, currentPrice){
+    const el = $("setup-body");
+    const s = setupChecklist(seriesByTf, currentPrice);
+    let html = `<div class="rel-bars">`;
+    s.conditions.forEach(c => {
+      const icon = c.pass===null ? "·" : (c.pass ? "✅" : "❌");
+      const color = c.pass===null ? "var(--text-dim2)" : (c.pass ? "var(--up)" : "var(--down)");
+      html += `<div class="pattern-tf"><span style="color:${color}; font-size:15px; width:22px; flex:none;">${icon}</span><span style="font-size:13px; color:var(--text-dim);">${c.label}</span></div>`;
+    });
+    html += `</div>`;
+    html += `<div class="rel-excess">${s.passCount} de ${s.total} condiciones cumplidas.</div>`;
+    el.innerHTML = html;
+    return s.score;
+  }
+
+  function renderVerdict(scores){
+    const weights = { marketctx:1.3, sma:1, ema:1, emacloud:1, bb:0.8, rsi:0.8, stoch:0.7, ichi:1, vwap:0.8, ad:0.7, heikin:0.6, patterns:0.6, rel:0.6, setup:1.2 };
+    let wsum=0, wtotal=0;
+    Object.entries(scores).forEach(([k,v])=>{ wsum += v*weights[k]; wtotal += weights[k]; });
+    const overall = wtotal ? wsum/wtotal : 0;
+
+    const s = scoreChip(overall);
+    let icon = overall>0.15 ? "▲" : (overall<-0.15 ? "▼" : "◆");
+    $("vIcon").textContent = icon;
+    const titles = {
+      bull: overall>=0.5 ? "Consenso técnico alcista" : "Sesgo técnico alcista",
+      bear: overall<=-0.5 ? "Consenso técnico bajista" : "Sesgo técnico bajista",
+      mixed: "Señales mixtas — sin consenso claro"
+    };
+    $("vTitle").textContent = titles[s.cls];
+    const chip = $("vChip"); chip.className = "chip " + s.cls; chip.textContent = s.txt;
+
+    const labels = { marketctx:"Contexto de Mercado", sma:"Medias Móviles (SMA)", ema:"EMA", emacloud:"EMA Cloud", bb:"Bollinger", rsi:"RSI", stoch:"Estocástico", ichi:"Ichimoku", vwap:"VWAP Anclado", ad:"Acum/Distrib.", heikin:"Heikin Ashi Semanal", patterns:"Patrones de velas", rel:"Fuerza relativa", setup:"Setup Beardo" };
+    const agree = Object.values(scores).filter(v => Math.sign(v)===Math.sign(overall) && v!==0).length;
+    const totalModules = Object.keys(scores).length;
+    let text = `${agree} de ${totalModules} indicadores apuntan en la misma dirección que el veredicto general. `;
+    if(Math.abs(overall) < 0.15){
+      text += "Los indicadores de tendencia y los osciladores de momentum no coinciden entre sí — en este tipo de escenario suele convenir esperar más confirmación antes de tomar una postura direccional fuerte.";
+    } else if(overall > 0){
+      text += "La mayoría de los indicadores de tendencia (medias, Ichimoku) y momentum (RSI, estocástico) están alineados al alza. Vale la pena revisar si el RSI/estocástico ya están en zona de sobrecompra, lo que podría anticipar una pausa antes de continuar.";
+    } else {
+      text += "La mayoría de los indicadores de tendencia y momentum están alineados a la baja. Si el RSI/estocástico ya están en zona de sobreventa, podría haber un rebote técnico de corto plazo antes de que la tendencia continúe.";
+    }
+    $("vText").textContent = text;
+
+    const breakdown = $("breakdown"); breakdown.innerHTML = "";
+    Object.entries(scores).forEach(([k,v])=>{
+      const row = document.createElement("div"); row.className="breakdown-row";
+      const lab = document.createElement("div"); lab.className="blabel"; lab.textContent = labels[k];
+      const bar = document.createElement("div"); bar.className="bbar";
+      const mid = document.createElement("div"); mid.className="mid"; bar.appendChild(mid);
+      const fill = document.createElement("div");
+      fill.className = v>=0 ? "fillpos" : "fillneg";
+      fill.style.width = Math.abs(v)*50 + "%";
+      bar.appendChild(fill);
+      const sc = document.createElement("div"); sc.className="bscore mono"; sc.textContent = (v>=0?"+":"")+v.toFixed(2);
+      row.appendChild(lab); row.appendChild(bar); row.appendChild(sc);
+      breakdown.appendChild(row);
+    });
+
+    $("verdict").style.display = "block";
+    return overall;
+  }
+
+  function meanArr(arr){ return arr.reduce((a,b)=>a+b,0)/arr.length; }
+  function stddevSimple(arr){ const m=meanArr(arr); return Math.sqrt(meanArr(arr.map(x=>(x-m)*(x-m)))); }
+  function rollingSMA(closes, period){
+    const out = new Array(closes.length).fill(null);
+    let sum = 0;
+    for(let i=0;i<closes.length;i++){
+      sum += closes[i];
+      if(i >= period) sum -= closes[i-period];
+      if(i >= period-1) out[i] = sum/period;
+    }
+    return out;
+  }
+
+  function linRegSlope(ys){
+    const n = ys.length;
+    const xMean = (n-1)/2, yMean = meanArr(ys);
+    let num=0, den=0;
+    for(let i=0;i<n;i++){ num += (i-xMean)*(ys[i]-yMean); den += (i-xMean)*(i-xMean); }
+    return den ? num/den : 0;
+  }
+
+  const MONTHS_ES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+
+  // How many bars to display / project forward, tuned per timeframe so the
+  // horizon stays roughly meaningful (a few sessions intraday, ~6 months daily,
+  // ~1 year weekly, ~2 years monthly).
+  const MOVEMENT_PARAMS = {
+    "5min":{hist:180, proj:180}, "10min":{hist:180, proj:180},
+    "30min":{hist:150, proj:150}, "60min":{hist:150, proj:150},
+    "2h":{hist:120, proj:120}, "3h":{hist:120, proj:120}, "4h":{hist:120, proj:120},
+    "1day":{hist:95, proj:130}, "1week":{hist:80, proj:52}, "1month":{hist:48, proj:24},
+  };
+
+  // ---- Historical-analog engine ----
+  // Instead of a manually-picked weight between "trend" and "indicators", we
+  // look at every point in this ticker's own history that had a similar
+  // configuration (regression slope, RSI, stochastic, SMA alignment) to the
+  // one it's in right now, and use what ACTUALLY happened afterwards those
+  // times as the projection. The weighting is 100% a byproduct of the data —
+  // nobody is choosing 70/30 by hand.
+  function rollingRSIArr(closes, period=14){
+    const out = new Array(closes.length).fill(null);
+    if(closes.length < period+1) return out;
+    let avgGain, avgLoss;
+    for(let i=1;i<closes.length;i++){
+      const diff = closes[i]-closes[i-1];
+      if(i===period){
+        let g=0,l=0;
+        for(let j=1;j<=period;j++){ const d=closes[j]-closes[j-1]; if(d>0) g+=d; else l+=-d; }
+        avgGain=g/period; avgLoss=l/period;
+        out[i]=avgLoss===0?100:100-100/(1+avgGain/avgLoss);
+      } else if(i>period){
+        const gain=diff>0?diff:0, loss=diff<0?-diff:0;
+        avgGain=(avgGain*(period-1)+gain)/period; avgLoss=(avgLoss*(period-1)+loss)/period;
+        out[i]=avgLoss===0?100:100-100/(1+avgGain/avgLoss);
+      }
+    }
+    return out;
+  }
+  function rollingStochKArr(candles, period=14){
+    const out = new Array(candles.length).fill(null);
+    for(let i=period-1;i<candles.length;i++){
+      const win = candles.slice(i-period+1,i+1);
+      const hh=Math.max(...win.map(c=>c.high)), ll=Math.min(...win.map(c=>c.low));
+      out[i] = hh===ll?50:100*(candles[i].close-ll)/(hh-ll);
+    }
+    return out;
+  }
+  function rollingRegSlopeArr(closes, window){
+    const out = new Array(closes.length).fill(null);
+    for(let i=window-1;i<closes.length;i++){
+      out[i] = linRegSlope(closes.slice(i-window+1,i+1).map(Math.log));
+    }
+    return out;
+  }
+  function rollingSigmaArr(closes, window){
+    const out = new Array(closes.length).fill(null);
+    for(let i=window;i<closes.length;i++){
+      const rets=[]; for(let j=i-window+1;j<=i;j++) rets.push(Math.log(closes[j]/closes[j-1]));
+      out[i]=stddevSimple(rets)||1e-6;
+    }
+    return out;
+  }
+  function rollingSmaTrendArr(closes, shortP, longP){
+    const out = new Array(closes.length).fill(null);
+    for(let i=longP-1;i<closes.length;i++){
+      const smaS = closes.slice(i-shortP+1,i+1).reduce((a,b)=>a+b,0)/shortP;
+      const smaL = closes.slice(i-longP+1,i+1).reduce((a,b)=>a+b,0)/longP;
+      const price = closes[i];
+      let score=0; score += price>smaS?1:-1; score += price>smaL?1:-1; score += smaS>smaL?1:-1;
+      out[i]=score/3;
+    }
+    return out;
+  }
+  function buildAnalogSamples(candles, horizonBars){
+    const closes = candles.map(c=>c.close);
+    const n = closes.length;
+    const window = Math.max(15, Math.min(40, Math.floor(n/10)));
+    const rsiArr = rollingRSIArr(closes,14);
+    const stochArr = rollingStochKArr(candles,14);
+    const slopeArr = rollingRegSlopeArr(closes, window);
+    const sigmaArr = rollingSigmaArr(closes, window);
+    const trendArr = rollingSmaTrendArr(closes, Math.max(5,Math.floor(window/2)), window);
+    const samples = [];
+    for(let i=0;i<n;i++){
+      if(rsiArr[i]==null||stochArr[i]==null||slopeArr[i]==null||sigmaArr[i]==null||trendArr[i]==null) continue;
+      const fwdIdx = i+horizonBars;
+      const fwdReturn = fwdIdx < n ? Math.log(closes[fwdIdx]/closes[i]) : null;
+      samples.push({ i, feat:[slopeArr[i]/sigmaArr[i], (rsiArr[i]-50)/50, (stochArr[i]-50)/50, trendArr[i]], fwdReturn });
+    }
+    return samples;
+  }
+  function computeProjectionAnalog(fullCandles, price, horizonBars, minTrainSize=15, kMax=40){
+    const closes = fullCandles.map(c=>c.close);
+    const samples = buildAnalogSamples(fullCandles, horizonBars);
+    if(!samples.length) return { method:"fallback", trainingSize:0 };
+    const current = samples[samples.length-1];
+    const training = samples.filter(s => s.fwdReturn !== null && s.i !== current.i);
+    if(training.length < minTrainSize) return { method:"fallback", trainingSize:training.length };
+
+    const dists = training.map(s => {
+      let d=0; for(let f=0; f<4; f++){ const diff = s.feat[f]-current.feat[f]; d += diff*diff; }
+      return { s, d: Math.sqrt(d) };
+    });
+    dists.sort((a,b)=>a.d-b.d);
+    const k = Math.max(8, Math.min(kMax, Math.round(training.length/5)));
+    const neighbors = dists.slice(0,k).map(x=>x.s);
+
+    const H = horizonBars;
+    // Instead of drawing a smooth curve to a single averaged endpoint, replay
+    // each neighbor's ACTUAL realized path over the following H bars (real
+    // historical ups and downs, not synthetic noise) and average them
+    // point-by-point. The result organically rises and falls like a real
+    // price chart, and is still 100% deterministic — same data, same output.
+    const paths = neighbors.map(s => {
+      const path = new Array(H);
+      for(let j=1;j<=H;j++) path[j-1] = Math.log(closes[s.i+j]/closes[s.i]);
+      return path;
+    });
+    const central=[], upper1=[], lower1=[], upper2=[], lower2=[];
+    for(let j=0;j<H;j++){
+      const vals = paths.map(p=>p[j]);
+      const m = meanArr(vals);
+      const sd = stddevSimple(vals) || 1e-6;
+      const c = price*Math.exp(m);
+      central.push(c); upper1.push(c*Math.exp(sd)); lower1.push(c*Math.exp(-sd));
+      upper2.push(c*Math.exp(2*sd)); lower2.push(c*Math.exp(-2*sd));
+    }
+    const finalReturns = paths.map(p=>p[H-1]);
+    const meanRet = meanArr(finalReturns);
+    const pctPositive = finalReturns.filter(r=>r>0).length/finalReturns.length;
+
+    return { method:"analog", central, upper1, lower1, upper2, lower2, n:neighbors.length, trainingSize:training.length, pctPositive, meanRet };
+  }
+
+
+  // Fallback for tickers/timeframes with too little history to find honest
+  // matches: same regression + indicator blend as before, clearly labeled.
+  function computeProjectionFallback(hist, price, overall, projBars){
+    const logCloses = hist.map(c=>Math.log(c.close));
+    const slope = linRegSlope(logCloses);
+    const logRets = [];
+    for(let i=1;i<hist.length;i++) logRets.push(Math.log(hist[i].close/hist[i-1].close));
+    const sigma = stddevSimple(logRets) || 0.005;
+    const drift = slope*0.7 + (overall*sigma*0.3);
+    const central=[], upper1=[], lower1=[], upper2=[], lower2=[];
+    for(let i=1;i<=projBars;i++){
+      const c = price*Math.exp(drift*i);
+      const band = sigma*Math.sqrt(i);
+      central.push(c); upper1.push(c*Math.exp(band)); lower1.push(c*Math.exp(-band));
+      upper2.push(c*Math.exp(2*band)); lower2.push(c*Math.exp(-2*band));
+    }
+    return { method:"fallback", central, upper1, lower1, upper2, lower2, drift, sigma };
+  }
+
+  function computeProjection(fullSeries, hist, price, overall, projBars){
+    const result = computeProjectionAnalog(fullSeries, price, projBars);
+    if(result.method === "analog") return result;
+    const fb = computeProjectionFallback(hist, price, overall, projBars);
+    fb.trainingSize = result.trainingSize;
+    return fb;
+  }
+
+  let lastMovementCtx = null;
+  let movementTf = "1day";
+
+  // ---- Alert system (support/resistance/invalidation crossing) ----
+  // Honest limitation: this only works while this browser tab/app stays
+  // open — a static HTML file has no server to push notifications when
+  // closed. Real background alerts would need a small backend (roadmap item).
+  let alertsEnabled = false, alertPollTimer = null, alertBaseline = null, lastLevels = null;
+
+  function levelSide(price, level){ return price >= level ? "above" : "below"; }
+
+  function checkAlertLevels(price, sr, invalidation){
+    lastLevels = { support: sr.support, resistance: sr.resistance, invalidation };
+    if(alertsEnabled && !alertBaseline) initAlertBaseline(price);
+  }
+  function initAlertBaseline(price){
+    alertBaseline = {};
+    if(!lastLevels) return;
+    ["support","resistance","invalidation"].forEach(k=>{ if(lastLevels[k]) alertBaseline[k] = levelSide(price, lastLevels[k]); });
+  }
+  function fireAlert(ticker, key, level, price, side){
+    const names = { support:"soporte", resistance:"resistencia", invalidation:"nivel de invalidación" };
+    const dir = side === "above" ? "por ENCIMA de" : "por DEBAJO de";
+    const msg = `${ticker} cruzó ${dir} su ${names[key]} (${level.toFixed(2)}) — precio actual ${price.toFixed(2)}`;
+    const el = $("alertStatus");
+    const banner = document.createElement("div");
+    banner.className = "alert-banner";
+    banner.textContent = "⚠ " + msg;
+    el.prepend(banner);
+    if(window.Notification && Notification.permission === "granted"){
+      try { new Notification("⚠ " + ticker + " cruzó un nivel", { body: msg }); } catch(e){}
+    }
+  }
+  async function pollAlerts(){
+    if(!alertsEnabled || !lastLevels) return;
+    const ticker = tickerInput.value.trim().toUpperCase();
+    if(!ticker) return;
+    let p;
+    try { p = await fetchCurrentPrice(ticker); } catch(e){ return; }
+    $("pcPrice").textContent = formatPrice(p);
+    if(!alertBaseline){ initAlertBaseline(p); return; }
+    ["support","resistance","invalidation"].forEach(k=>{
+      const level = lastLevels[k];
+      if(!level) return;
+      const side = levelSide(p, level);
+      if(alertBaseline[k] && side !== alertBaseline[k]) fireAlert(ticker, k, level, p, side);
+      alertBaseline[k] = side;
+    });
+  }
+  function setAlertsEnabled(on){
+    alertsEnabled = on;
+    const btn = $("alertToggle");
+    if(on){
+      btn.textContent = "🔕 Dejar de vigilar";
+      btn.classList.add("active");
+      alertBaseline = null;
+      if(lastMovementCtx) initAlertBaseline(lastMovementCtx.price);
+      $("alertStatus").innerHTML = `<div class="alert-status-msg">Vigilando soporte, resistencia y nivel de invalidación cada 60s — solo mientras esta pestaña/app siga abierta.</div>`;
+      alertPollTimer = setInterval(pollAlerts, 60000);
+    } else {
+      btn.textContent = "🔔 Vigilar niveles";
+      btn.classList.remove("active");
+      if(alertPollTimer){ clearInterval(alertPollTimer); alertPollTimer = null; }
+      $("alertStatus").innerHTML = "";
+    }
+  }
+  $("alertToggle").addEventListener("click", async ()=>{
+    if(!alertsEnabled){
+      if(window.Notification && Notification.permission === "default"){
+        try { await Notification.requestPermission(); } catch(e){}
+      }
+      setAlertsEnabled(true);
+    } else {
+      setAlertsEnabled(false);
+    }
+  });
+
+  function buildMovementSelector(availableKeys){
+    const el = $("movTfSelector"); el.innerHTML = "";
+    TIMEFRAMES.forEach(tf => {
+      const available = availableKeys.has(tf.key);
+      const btn = document.createElement("button");
+      btn.className = "tf-chip" + (tf.key===movementTf ? " active" : "") + (available ? "" : " tf-chip-disabled");
+      btn.textContent = tf.label;
+      if(!available) btn.title = "No se descargó este marco temporal con los módulos activos actuales — actívalos y vuelve a analizar.";
+      btn.addEventListener("click", ()=>{
+        if(!available){ setStatus("Ese marco temporal no se descargó esta vez — activa un módulo que lo use (o cámbialo aquí) y vuelve a Analizar.", true); return; }
+        movementTf = tf.key;
+        if(lastMovementCtx) renderMovement(lastMovementCtx.seriesByTf, lastMovementCtx.price, lastMovementCtx.overall);
+      });
+      el.appendChild(btn);
+    });
+  }
+
+  function renderMovement(seriesByTf, price, overall){
+    lastMovementCtx = { seriesByTf, price, overall };
+    const availableKeys = new Set(Object.keys(seriesByTf).filter(k => seriesByTf[k] && seriesByTf[k].length));
+    buildMovementSelector(availableKeys);
+
+    const full = seriesByTf[movementTf];
+    const params = MOVEMENT_PARAMS[movementTf];
+    if(!full || full.length < 40){ $("movement").style.display = "none"; return; }
+
+    const histCount = Math.min(params.hist, full.length);
+    const hist = full.slice(-histCount);
+    const sr = computeSupportResistanceLevels(full, price);
+    const proj = computeProjection(full, hist, price, overall, params.proj);
+
+    const scenarioDrift = proj.method === "analog" ? proj.meanRet : proj.drift*params.proj;
+    const bullishScenario = scenarioDrift >= 0;
+    const invalidation = bullishScenario ? sr.support : sr.resistance;
+
+    const times = full.slice(-Math.min(60,full.length)).map(c=>new Date(c.datetime.replace(" ","T")).getTime());
+    const deltas = []; for(let i=1;i<times.length;i++) deltas.push(times[i]-times[i-1]);
+    deltas.sort((a,b)=>a-b);
+    const medDelta = deltas.length ? deltas[Math.floor(deltas.length/2)] : 86400000;
+    const lastTime = new Date(hist[hist.length-1].datetime.replace(" ","T")).getTime();
+    const futureDates = [];
+    for(let i=1;i<=params.proj;i++) futureDates.push(new Date(lastTime + i*medDelta));
+
+    let vals = hist.flatMap(c=>[c.high,c.low]).concat(proj.upper2, proj.lower2);
+    sr.supports.forEach(s=>vals.push(s.price));
+    sr.resistances.forEach(s=>vals.push(s.price));
+    const minV = Math.min(...vals) * 0.97, maxV = Math.max(...vals) * 1.03;
+    const logMin = Math.log(minV), logMax = Math.log(maxV);
+
+    const W = 900, H = 380, padL = 8, padR = 66, padT = 14, padB = 30, volH = 46;
+    const priceBot = H - padB - volH - 6;
+    const plotH = priceBot - padT;
+    const plotW = W - padL - padR;
+    const totalPts = histCount + params.proj;
+    const xOf = i => padL + (i/(totalPts-1)) * plotW;
+    const yOf = v => padT + (1 - (Math.log(v)-logMin)/(logMax-logMin)) * plotH;
+
+    const col = overall > 0.15 ? "#3ECF8E" : (overall < -0.15 ? "#FF5C5C" : "#F2B84B");
+
+    let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">`;
+
+    for(let t=0;t<=4;t++){
+      const v = Math.exp(logMin + (1-t/4)*(logMax-logMin));
+      const y = yOf(v);
+      svg += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#232D39" stroke-width="1"/>`;
+      svg += `<text x="${W-padR+8}" y="${y+4}" fill="#8FA0AE" font-size="11">${v.toFixed(v<10?2:1)}</text>`;
+    }
+
+    // ---- Adaptive x-axis: pick label granularity from the REAL time span
+    // shown (computed from actual timestamps, so weekends/gaps are already
+    // accounted for) — hours for a couple of days, days for a few weeks,
+    // months for up to ~3 years, years beyond that. Vertical gridlines are
+    // drawn now (background, under the candles); the text labels are drawn
+    // at the very end (foreground, on top of everything). ----
+    const allDates = hist.map(c=>new Date(c.datetime.replace(" ","T"))).concat(futureDates);
+    const spanMs = allDates[allDates.length-1] - allDates[0];
+    const DAY_MS = 86400000;
+    let granularity;
+    if(spanMs < 3*DAY_MS) granularity = "hour";
+    else if(spanMs < 60*DAY_MS) granularity = "day";
+    else if(spanMs < 1100*DAY_MS) granularity = "month";
+    else granularity = "year";
+
+    function bucketKey(d){
+      if(granularity === "hour") return d.getFullYear()+"-"+d.getMonth()+"-"+d.getDate()+"-"+d.getHours();
+      if(granularity === "day") return d.getFullYear()+"-"+d.getMonth()+"-"+d.getDate();
+      if(granularity === "month") return d.getFullYear()+"-"+d.getMonth();
+      return d.getFullYear();
+    }
+    function bucketLabel(d){
+      if(granularity === "hour") return String(d.getHours()).padStart(2,"0") + ":00";
+      if(granularity === "day") return d.getDate() + " " + MONTHS_ES[d.getMonth()];
+      if(granularity === "month") return MONTHS_ES[d.getMonth()] + " " + String(d.getFullYear()).slice(-2);
+      return String(d.getFullYear());
+    }
+
+    const xTicks = [];
+    { let lastBucket = null, lastTickX = -9999;
+      const minGap = granularity === "hour" ? 34 : 30;
+      allDates.forEach((d,i) => {
+        const key = bucketKey(d);
+        if(key !== lastBucket){
+          lastBucket = key;
+          const x = xOf(i);
+          if(x - lastTickX >= minGap){ xTicks.push({x, label: bucketLabel(d)}); lastTickX = x; }
+        }
+      });
+    }
+    xTicks.forEach(t => { svg += `<line x1="${t.x}" y1="${padT}" x2="${t.x}" y2="${H-padB}" stroke="#1B222B" stroke-width="1"/>`; });
+
+    const cw = Math.max(1.6, plotW/totalPts*0.6);
+    hist.forEach((c,i) => {
+      const x = xOf(i);
+      const up = c.close >= c.open;
+      const bodyTop = yOf(Math.max(c.open,c.close)), bodyBot = yOf(Math.min(c.open,c.close));
+      svg += `<line x1="${x}" y1="${yOf(c.high)}" x2="${x}" y2="${yOf(c.low)}" stroke="${up?'#3ECF8E':'#FF5C5C'}" stroke-width="1"/>`;
+      svg += `<rect x="${x-cw/2}" y="${bodyTop}" width="${cw}" height="${Math.max(1,bodyBot-bodyTop)}" fill="${up?'#3ECF8E':'#FF5C5C'}"/>`;
+    });
+
+    // Three moving averages over the historical window (long/gray, mid/teal,
+    // short/red) — visual style inspired by @BeardoTrader's charts, computed
+    // on the full series so they're valid from the first displayed bar.
+    const fullCloses = full.map(c=>c.close);
+    const histStartInFull = full.length - histCount;
+    function maLinePath(period, color, widthPx){
+      const rolled = rollingSMA(fullCloses, period).slice(histStartInFull);
+      let d = "", started = false;
+      rolled.forEach((v,i) => {
+        if(v === null) return;
+        const x = xOf(i), y = yOf(v);
+        d += (started ? "L" : "M") + x + " " + y + " ";
+        started = true;
+      });
+      if(d) svg += `<path d="${d}" fill="none" stroke="${color}" stroke-width="${widthPx}" opacity="0.85"/>`;
+    }
+    maLinePath(150, "#9AA5B1", 1.4); // long — gray
+    maLinePath(50,  "#34C6C6", 1.4); // medium — teal
+    maLinePath(20,  "#E8607A", 1.4); // short — red/pink
+
+
+    // volume bars (historical only — future has no real volume)
+    const maxVol = Math.max(...hist.map(c=>c.volume||0), 1);
+    const volTop = H - padB - volH;
+    hist.forEach((c,i) => {
+      const x = xOf(i);
+      const up = c.close >= c.open;
+      const vh = ((c.volume||0)/maxVol) * volH;
+      svg += `<rect x="${x-cw/2}" y="${H-padB-vh}" width="${cw}" height="${vh}" fill="${up?'#3ECF8E':'#FF5C5C'}" opacity="0.35"/>`;
+    });
+    svg += `<line x1="${padL}" y1="${volTop}" x2="${W-padR}" y2="${volTop}" stroke="#232D39" stroke-width="1"/>`;
+
+    const srKindLabel = { pivot:"Pivote", fib:"Fibonacci", confluencia:"Confluencia" };
+    sr.supports.forEach((s,idx)=>{
+      const y = yOf(s.price);
+      const op = 0.6 - idx*0.14;
+      svg += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#3ECF8E" stroke-width="1" stroke-dasharray="4 3" opacity="${op}"/>`;
+      svg += `<text x="${padL+4}" y="${y-4}" fill="#3ECF8E" font-size="10" opacity="${Math.min(0.95,op+0.25)}">Soporte ${s.n} · ${srKindLabel[s.type]} · ${s.price.toFixed(2)}</text>`;
+    });
+    sr.resistances.forEach((s,idx)=>{
+      const y = yOf(s.price);
+      const op = 0.6 - idx*0.14;
+      svg += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#FF5C5C" stroke-width="1" stroke-dasharray="4 3" opacity="${op}"/>`;
+      svg += `<text x="${padL+4}" y="${y-4}" fill="#FF5C5C" font-size="10" opacity="${Math.min(0.95,op+0.25)}">Resistencia ${s.n} · ${srKindLabel[s.type]} · ${s.price.toFixed(2)}</text>`;
+    });
+    if(invalidation){
+      const y = yOf(invalidation);
+      svg += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#F2B84B" stroke-width="1.5"/>`;
+      svg += `<text x="${W-padR-4}" y="${y-4}" fill="#F2B84B" font-size="10" text-anchor="end" font-weight="700">🛑 Invalidación ${invalidation.toFixed(2)}</text>`;
+    }
+
+    function bandPath(upperArr, lowerArr){
+      let d = `M ${xOf(histCount-1)} ${yOf(price)} `;
+      upperArr.forEach((v,i)=>{ d += `L ${xOf(histCount+i)} ${yOf(v)} `; });
+      for(let i=lowerArr.length-1;i>=0;i--){ d += `L ${xOf(histCount+i)} ${yOf(lowerArr[i])} `; }
+      d += `L ${xOf(histCount-1)} ${yOf(price)} Z`;
+      return d;
+    }
+    svg += `<path d="${bandPath(proj.upper2, proj.lower2)}" fill="#5B8DEF" opacity="0.06"/>`;
+    svg += `<path d="${bandPath(proj.upper1, proj.lower1)}" fill="#5B8DEF" opacity="0.12"/>`;
+
+    let pathD = `M ${xOf(histCount-1)} ${yOf(price)} `;
+    proj.central.forEach((v,i) => { pathD += `L ${xOf(histCount+i)} ${yOf(v)} `; });
+    svg += `<path d="${pathD}" fill="none" stroke="#5B8DEF" stroke-width="2.5" stroke-linejoin="round"/>`;
+    svg += `<circle cx="${xOf(histCount-1)}" cy="${yOf(price)}" r="4" fill="${col}"/>`;
+    svg += `<text x="${xOf(histCount-1)}" y="${yOf(price)-10}" fill="${col}" font-size="11" text-anchor="middle" font-weight="700">${price.toFixed(2)}</text>`;
+    const endV = proj.central[proj.central.length-1];
+    svg += `<text x="${xOf(totalPts-1)}" y="${yOf(endV)-8}" fill="#5B8DEF" font-size="11" text-anchor="end" font-weight="700">${endV.toFixed(2)}</text>`;
+
+    svg += `<line x1="${xOf(histCount-1)}" y1="${padT}" x2="${xOf(histCount-1)}" y2="${H-padB}" stroke="#5E6E7C" stroke-width="1" stroke-dasharray="2 3"/>`;
+
+    // Text labels for the x-axis ticks computed earlier — drawn last so they
+    // sit on top of the candles/lines instead of the vertical gridlines
+    // (which were already drawn in the background, right after the price
+    // gridlines) getting drawn over everything.
+    xTicks.forEach(t => { svg += `<text x="${t.x}" y="${H-10}" fill="#8FA0AE" font-size="10.5" text-anchor="middle">${t.label}</text>`; });
+
+    svg += `</svg>`;
+    $("movementSvg").innerHTML = svg;
+
+    // Evidence box — this IS the backtesting summary (idea #3), surfaced
+    // directly from the same historical-analog search that drives the line.
+    const ev = $("movEvidence");
+    if(proj.method === "analog"){
+      const pct = (proj.pctPositive*100).toFixed(0);
+      const ret = (proj.meanRet*100).toFixed(1);
+      ev.innerHTML = `📊 Se encontraron <b>${proj.n} configuraciones históricas similares</b> (misma combinación de pendiente de tendencia, RSI, estocástico y alineación de medias) en los ${proj.trainingSize} periodos analizados de ${TIMEFRAMES.find(t=>t.key===movementTf).label} de este ticker. De esas veces, <b>${pct}% terminó al alza</b> en los siguientes ${params.proj} periodos, con una variación promedio de <b>${ret>=0?'+':''}${ret}%</b>. Esa es la base del escenario de arriba — no una suposición.`;
+    } else {
+      ev.innerHTML = `⚠ No hay suficiente historial en este marco temporal (${proj.trainingSize||0} periodos comparables, se necesitan ~15+) para buscar configuraciones pasadas parecidas. Mostrando una estimación por tendencia reciente + indicadores en su lugar — prueba con un marco temporal mayor (1D, 1S, 1M) para tener más historia.`;
+    }
+
+    $("movement").style.display = "block";
+    checkAlertLevels(price, sr, invalidation);
+  }
+
+  // ================= Module registry & toggle system =================
+  const MODULE_DEFS = [
+    { key:"marketctx", title:"Contexto de Mercado" },
+    { key:"sma", title:"Medias Móviles (SMA)" },
+    { key:"ema", title:"EMA" },
+    { key:"emacloud", title:"EMA Cloud" },
+    { key:"bb", title:"Bollinger" },
+    { key:"rsi", title:"RSI" },
+    { key:"stoch", title:"Estocástico" },
+    { key:"ichi", title:"Ichimoku" },
+    { key:"vwap", title:"VWAP Anclado" },
+    { key:"ad", title:"Acum/Distrib." },
+    { key:"heikin", title:"Heikin Ashi Semanal" },
+    { key:"patterns", title:"Patrones de velas" },
+    { key:"rel", title:"Fuerza relativa" },
+    { key:"setup", title:"Setup Beardo" },
+  ];
+  const TOGGLE_STORAGE_KEY = "ta_scanner_module_toggles";
+  let moduleEnabled = {};
+  (function initToggles(){
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(TOGGLE_STORAGE_KEY) || "{}"); } catch(e){}
+    MODULE_DEFS.forEach(m => { moduleEnabled[m.key] = saved[m.key] !== undefined ? saved[m.key] : true; });
+  })();
+  function saveToggles(){ try { localStorage.setItem(TOGGLE_STORAGE_KEY, JSON.stringify(moduleEnabled)); } catch(e){} }
+
+  function moduleNeedsMet(key, result){
+    if(!result) return true;
+    if(key === "marketctx") return !!(result.marketSeries && (result.marketSeries.SPY || result.marketSeries.QQQ));
+    if(key === "rel") return !!(result.benchmark && result.benchmark.series);
+    if(LIMITED_TF_NEEDS[key]) return LIMITED_TF_NEEDS[key].every(t => !!(result.seriesByTf[t] && result.seriesByTf[t].length));
+    if(FULL_LADDER_MODULES.includes(key)) return TIMEFRAMES.every(tf => !!(result.seriesByTf[tf.key] && result.seriesByTf[tf.key].length));
+    return true;
+  }
+
+  let autoRefetchTimer = null;
+  function scheduleAutoRefetch(moduleTitle){
+    showDataMissingBanner(`Faltan datos para "${moduleTitle}" — pidiéndolos automáticamente…`);
+    clearTimeout(autoRefetchTimer);
+    autoRefetchTimer = setTimeout(()=>{ analyze(); }, 700);
+  }
+
+  function buildTogglePanel(){
+    const grid = $("toggleGrid"); grid.innerHTML = "";
+    MODULE_DEFS.forEach(m => {
+      const label = document.createElement("label");
+      label.className = "toggle-item";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.checked = moduleEnabled[m.key];
+      input.addEventListener("change", ()=>{
+        moduleEnabled[m.key] = input.checked;
+        saveToggles();
+        applyModuleToggleUI(m.key);
+        if(lastResult){
+          recomputeAndRenderVerdictAndMovement(lastResult); // instant partial update from whatever's cached
+          if(input.checked && !moduleNeedsMet(m.key, lastResult)){
+            scheduleAutoRefetch(m.title);
+          }
+        }
+      });
+      const sw = document.createElement("span");
+      sw.className = "switch";
+      const txt = document.createElement("span");
+      txt.textContent = m.title;
+      label.appendChild(input); label.appendChild(sw); label.appendChild(txt);
+      grid.appendChild(label);
+    });
+  }
+  function applyModuleToggleUI(key){
+    const mod = $("mod-" + key);
+    if(!mod) return;
+    if(!lastResult){ mod.style.display = "none"; return; }
+    mod.style.display = moduleEnabled[key] ? "block" : "none";
+  }
+  function applyAllToggleUI(){ MODULE_DEFS.forEach(m => applyModuleToggleUI(m.key)); }
+  $("toggleAllOn").addEventListener("click", ()=>{
+    MODULE_DEFS.forEach(m => moduleEnabled[m.key] = true);
+    saveToggles(); buildTogglePanel(); applyAllToggleUI();
+    if(lastResult){
+      recomputeAndRenderVerdictAndMovement(lastResult);
+      const missing = MODULE_DEFS.filter(m => !moduleNeedsMet(m.key, lastResult));
+      if(missing.length) scheduleAutoRefetch(missing.map(m=>m.title).join(", "));
+    }
+  });
+  $("toggleAllOff").addEventListener("click", ()=>{
+    MODULE_DEFS.forEach(m => moduleEnabled[m.key] = false);
+    saveToggles(); buildTogglePanel(); applyAllToggleUI();
+    clearTimeout(autoRefetchTimer); hideDataMissingBanner();
+    if(lastResult) recomputeAndRenderVerdictAndMovement(lastResult);
+  });
+  buildTogglePanel();
+
+  // ================= Flow =================
+  let lastResult = null;      // cached full analysis (candles + all computed indicators)
+  let lastAllScores = null;   // cached scores for every module (computed regardless of toggle state)
+
+  function computeAllScores(r){
+    const scores = {};
+    scores.marketctx = renderMarketContext(r.marketSeries, r.marketErrors);
+    scores.sma = ladderScore(r.sma);
+    scores.ema = ladderScore(r.ema);
+    scores.emacloud = renderEmaCloud(r.seriesByTf);
+    scores.bb = renderBB(r.bb);
+    scores.rsi = renderRSI(r.rsi);
+    scores.stoch = renderStoch(r.stoch);
+    scores.ichi = renderIchi(r.ichi);
+    scores.vwap = renderVwap(r.seriesByTf, r.currentPrice);
+    scores.ad = renderAD(r.ad);
+    scores.heikin = renderHeikin(r.seriesByTf);
+    scores.patterns = renderPatterns(r.patterns);
+    scores.rel = renderRelativeStrength(r.benchmark, r.seriesByTf);
+    scores.setup = renderSetup(r.seriesByTf, r.currentPrice);
+    return scores;
+  }
+
+  // Re-run only the SMA/EMA ladders' DOM (cheap) plus verdict + movement,
+  // used when toggles change — no network calls, uses cached candle data.
+  function recomputeAndRenderVerdictAndMovement(r){
+    const allScores = computeAllScores(r); // cheap, pure functions over cached candles — also refreshes each module's own visuals
+    lastAllScores = allScores;
+    renderLadder3("ladder-sma", r.sma);
+    renderModuleScore("score-sma", allScores.sma);
+    renderLadder3("ladder-ema", r.ema);
+    renderModuleScore("score-ema", allScores.ema);
+    renderModuleScore("score-marketctx", allScores.marketctx);
+    renderModuleScore("score-emacloud", allScores.emacloud);
+    renderModuleScore("score-bb", allScores.bb);
+    renderModuleScore("score-rsi", allScores.rsi);
+    renderModuleScore("score-stoch", allScores.stoch);
+    renderModuleScore("score-ichi", allScores.ichi);
+    renderModuleScore("score-vwap", allScores.vwap);
+    renderModuleScore("score-ad", allScores.ad);
+    renderModuleScore("score-heikin", allScores.heikin);
+    renderModuleScore("score-patterns", allScores.patterns);
+    renderModuleScore("score-rel", allScores.rel);
+    renderModuleScore("score-setup", allScores.setup);
+
+    const activeScores = {};
+    Object.keys(allScores).forEach(k => { if(moduleEnabled[k]) activeScores[k] = allScores[k]; });
+    const overall = renderVerdict(activeScores);
+    renderMovement(r.seriesByTf, r.currentPrice, overall);
+    applyAllToggleUI();
+    return overall;
+  }
+
+  async function analyze(){
+    const raw = tickerInput.value.trim().toUpperCase();
+    const bench = benchInput.value.trim().toUpperCase();
+    if(!raw){ setStatus("Escribe un ticker primero.", true); return; }
+    setStatus("");
+    if(activeTab === "portfolio"){ portfolioLastTicker = raw; }
+    else { scannerLastTicker = raw; scannerLastBench = bench; }
+    alertBaseline = null; // fresh watch whenever a (possibly new) ticker is analyzed
+    clearTimeout(autoRefetchTimer);
+
+    const freshCalls = countFreshCallsNeeded(raw, bench || null, moduleEnabled, movementTf);
+    if(freshCalls > 0) startEtaCountdown(estimateFetchSeconds(freshCalls), freshCalls);
+
+    try {
+      const r = await runAnalysis(raw, bench || null, moduleEnabled, movementTf);
+      lastResult = r;
+      renderPrice(raw, r.currentPrice);
+
+      recomputeAndRenderVerdictAndMovement(r);
+
+      const activeCount = MODULE_DEFS.filter(m=>moduleEnabled[m.key]).length;
+      const tfFetched = Object.keys(r.seriesByTf).filter(k => r.seriesByTf[k] && r.seriesByTf[k].length).length;
+      setStatus("Listo — " + raw + " · " + activeCount + "/" + MODULE_DEFS.length + " módulos activos · " + tfFetched + "/" + TIMEFRAMES.length + " marcos temporales descargados (solo los que usas).");
+    } catch(err){
+      setStatus(err.message || "Ocurrió un error al analizar el ticker.", true);
+    } finally {
+      stopEtaCountdown();
+      hideDataMissingBanner();
+    }
+  }
+
+  function ladderScore(dataByTf){
+    let above=0, below=0;
+    TIMEFRAMES.forEach(tf => PERIODS.forEach(p => {
+      const s = dataByTf[tf.key][p].status;
+      if(s==="above") above++; else if(s==="below") below++;
+    }));
+    const valid = above+below;
+    return valid ? (above-below)/valid : 0;
+  }
+
+  document.addEventListener("click", (e)=>{
+    const btn = e.target.closest(".info-btn");
+    if(!btn) return;
+    const key = btn.dataset.explain;
+    const panel = $("explain-" + key);
+    if(!panel) return;
+    const open = panel.classList.toggle("open");
+    btn.classList.toggle("active", open);
+  });
+
+  function fmtPct(v){ return (v>=0?"+":"") + (v*100).toFixed(1) + "%"; }
+  function fmtUSD(v){ return "$" + v.toLocaleString("en-US", {minimumFractionDigits:0, maximumFractionDigits:0}); }
+  const BT_START_CAPITAL = 1000;
+
+  // Plain-language verdict: did following this app's own logic actually
+  // make money, and was it better than just buying and holding?
+  function computeBacktestVerdict(bt){
+    const profitable = bt.totalReturn > 0;
+    const beatsBH = bt.cagr > bt.bhCagr;
+    const betterRisk = bt.maxDD < bt.maxDDBH;
+    if(!profitable){
+      return { icon:"❌", cls:"bear", title:"NO habría funcionado",
+        text:`Con esta lógica, tus $${BT_START_CAPITAL.toLocaleString()} habrían terminado en ${fmtUSD(BT_START_CAPITAL*(1+bt.totalReturn))} — perdiste dinero siguiéndola en este ticker y este periodo.` };
+    }
+    if(beatsBH && betterRisk){
+      return { icon:"✅", cls:"bull", title:"SÍ habría funcionado, y bien",
+        text:`Ganaste dinero, le sacaste más rendimiento anual que solo comprar y mantener (${fmtPct(bt.cagr)} vs ${fmtPct(bt.bhCagr)} CAGR), y con menos caídas fuertes en el camino (drawdown de ${(bt.maxDD*100).toFixed(0)}% vs ${(bt.maxDDBH*100).toFixed(0)}%).` };
+    }
+    if(beatsBH){
+      return { icon:"✅", cls:"bull", title:"SÍ habría funcionado",
+        text:`Ganaste dinero y le sacaste más rendimiento anual que solo comprar y mantener (${fmtPct(bt.cagr)} vs ${fmtPct(bt.bhCagr)} CAGR), aunque con caídas de tamaño parecido o mayor en el camino.` };
+    }
+    if(betterRisk){
+      return { icon:"⚠", cls:"mixed", title:"Funcionó a medias",
+        text:`Ganaste dinero y con menos caídas fuertes que comprar y mantener, pero comprar y mantener te habría dado más rendimiento al final (${fmtPct(bt.bhCagr)} vs ${fmtPct(bt.cagr)} CAGR de la estrategia).` };
+    }
+    return { icon:"⚠", cls:"mixed", title:"Ganaste dinero, pero no valió la pena",
+      text:`Terminaste en positivo, pero simplemente comprar y mantener habría dado más rendimiento (${fmtPct(bt.bhCagr)} vs ${fmtPct(bt.cagr)} CAGR) y con menos caídas. La complejidad de seguir la estrategia no se pagó sola aquí.` };
+  }
+
+  function renderBacktestResults(bt, symbol){
+    const el = $("btResults");
+    if(!bt){
+      el.innerHTML = `<div class="rel-excess">No hay suficiente historial diario para correr el backtest (hacen falta al menos ~240 días de datos).</div>`;
+      el.classList.add("show");
+      return;
+    }
+    const stratColor = bt.totalReturn >= 0 ? "var(--up)" : "var(--down)";
+    const finalStratUSD = BT_START_CAPITAL * (1+bt.totalReturn);
+    const finalBHUSD = BT_START_CAPITAL * (1+bt.bhReturn);
+    const v = computeBacktestVerdict(bt);
+
+    let html = `<div class="bt-verdict ${v.cls}">
+      <div class="btv-head"><span>${v.icon}</span><span>${v.title}</span></div>
+      <p>${v.text}</p>
+    </div>`;
+
+    html += `<div class="bt-daterange">📅 Datos desde ${fmtDateShort(bt.firstDataDate)} · primer día en que pudo empezar a operar: ${fmtDateShort(bt.firstTradableDate)} (necesita ~210 velas diarias de "calentamiento" antes de poder calcular medias de 200 periodos) · hasta ${fmtDateShort(bt.lastDate)}.</div>`;
+
+    html += `<div class="bt-capital">
+      <div class="btc-col"><div class="btc-label">Siguiendo la estrategia</div><div class="btc-arrow">${fmtUSD(BT_START_CAPITAL)} → <span style="color:${stratColor}">${fmtUSD(finalStratUSD)}</span></div></div>
+      <div class="btc-col"><div class="btc-label">Solo comprar y mantener</div><div class="btc-arrow">${fmtUSD(BT_START_CAPITAL)} → <span style="color:${bt.bhReturn>=0?'var(--up)':'var(--down)'}">${fmtUSD(finalBHUSD)}</span></div></div>
+    </div>`;
+
+    html += `<div class="bt-metrics">
+      <div class="bt-metric"><div class="btm-label">CAGR (anualizado)</div><div class="btm-value" style="color:${stratColor}">${fmtPct(bt.cagr)}</div><div class="btm-sub">vs. B&H ${fmtPct(bt.bhCagr)}</div></div>
+      <div class="bt-metric"><div class="btm-label">Retorno total</div><div class="btm-value" style="color:${stratColor}">${fmtPct(bt.totalReturn)}</div><div class="btm-sub">vs. Buy&Hold ${fmtPct(bt.bhReturn)} · no comparable entre periodos de distinta duración</div></div>
+      <div class="bt-metric"><div class="btm-label">Máx. drawdown</div><div class="btm-value" style="color:var(--down)">-${(bt.maxDD*100).toFixed(1)}%</div><div class="btm-sub">vs. B&H -${(bt.maxDDBH*100).toFixed(1)}%</div></div>
+      <div class="bt-metric"><div class="btm-label">Tasa de acierto</div><div class="btm-value">${(bt.winRate*100).toFixed(0)}%</div><div class="btm-sub">${bt.tradeCount} operaciones</div></div>
+      <div class="bt-metric"><div class="btm-label">Tiempo invertido</div><div class="btm-value">${(bt.timeInMarket*100).toFixed(0)}%</div><div class="btm-sub">del periodo, en largo</div></div>
+      <div class="bt-metric"><div class="btm-label">Periodo simulado</div><div class="btm-value">${bt.years.toFixed(1)} años</div><div class="btm-sub">${symbol}, velas diarias</div></div>
+    </div>`;
+
+    // Equity curve SVG (log scale, strategy vs buy&hold — dollar axis)
+    const W=900, H=260, padL=8, padR=54, padT=14, padB=26;
+    const plotW=W-padL-padR, plotH=H-padT-padB;
+    const allVals = bt.equityStrategy.concat(bt.equityBH);
+    const minV = Math.min(...allVals)*0.95, maxV = Math.max(...allVals)*1.05;
+    const logMin = Math.log(minV), logMax = Math.log(maxV);
+    const nEq = bt.equityStrategy.length;
+    const xOf = i => padL + (i/(nEq-1))*plotW;
+    const yOf = v2 => padT + (1 - (Math.log(v2)-logMin)/(logMax-logMin))*plotH;
+
+    let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">`;
+    for(let t=0;t<=3;t++){
+      const val = Math.exp(logMin + (1-t/3)*(logMax-logMin));
+      const y = yOf(val);
+      svg += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#232D39" stroke-width="1"/>`;
+      svg += `<text x="${W-padR+8}" y="${y+4}" fill="#8FA0AE" font-size="10">${fmtUSD(val*BT_START_CAPITAL)}</text>`;
+    }
+    function pathFor(arr){
+      let d = "";
+      arr.forEach((val,i)=>{ d += (i===0?"M":"L") + xOf(i) + " " + yOf(val) + " "; });
+      return d;
+    }
+    svg += `<path d="${pathFor(bt.equityBH)}" fill="none" stroke="#8FA0AE" stroke-width="1.6" opacity="0.8"/>`;
+    svg += `<path d="${pathFor(bt.equityStrategy)}" fill="none" stroke="#5B8DEF" stroke-width="2.2"/>`;
+    svg += `</svg>`;
+
+    html += `<div class="bt-legend">
+      <span><i style="background:#5B8DEF"></i> Estrategia (siguiendo el veredicto) — capital en $</span>
+      <span><i style="background:#8FA0AE"></i> Comprar y mantener</span>
+    </div>`;
+    html += `<div class="bt-chart">${svg}</div>`;
+
+    // Trade log — actual buys/sells in dollars, most recent first
+    if(bt.trades.length){
+      const shown = bt.trades.slice().reverse();
+      html += `<div class="bt-trades-head">Operaciones (compra/venta) — ${bt.trades.length} en total, más recientes primero</div>`;
+      html += `<div class="bt-trades">`;
+      shown.forEach(t=>{
+        const gainUSD = BT_START_CAPITAL*(t.exitEquityMult - t.entryEquityMult);
+        const win = t.ret >= 0;
+        html += `<div class="bt-trade">
+          <div class="btt-dates">${fmtDateShort(t.entryDate)} → ${fmtDateShort(t.exitDate)}${t.stillOpen?' <span class="btt-open">(abierta)</span>':''}</div>
+          <div class="btt-prices">Compra $${t.entryPrice.toFixed(2)} → Venta $${t.exitPrice.toFixed(2)}</div>
+          <div class="btt-capital">${fmtUSD(BT_START_CAPITAL*t.entryEquityMult)} → ${fmtUSD(BT_START_CAPITAL*t.exitEquityMult)}</div>
+          <div class="btt-ret" style="color:${win?'var(--up)':'var(--down)'}">${fmtPct(t.ret)} (${gainUSD>=0?'+':''}${fmtUSD(Math.round(gainUSD))})</div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    el.innerHTML = html;
+    el.classList.add("show");
+  }
+  function fmtDateShort(dt){
+    const d = new Date(dt.replace(" ","T"));
+    return d.getDate() + " " + MONTHS_ES[d.getMonth()] + " " + d.getFullYear();
+  }
+
+  // Renders the multi-period walk-forward robustness table: how many of the
+  // N sequential blocks were profitable, average/median CAGR across blocks,
+  // and which block was the best/worst — the point being to show a spread
+  // instead of a single potentially-lucky (or unlucky) number.
+  function renderWalkForwardMultiResults(wf, symbol){
+    const el = $("wfResults");
+    if(!wf){
+      el.innerHTML = `<div class="rel-excess">No hay suficiente historial para dividirlo en varios periodos de al menos ~6 meses cada uno — se necesita más historia diaria de la disponible para ${symbol}.</div>`;
+      el.classList.add("show");
+      return;
+    }
+    const reduced = wf.numPeriods < wf.requestedPeriods;
+    let html = `<div class="bt-trades-head" style="margin-top:22px;">🔁 Walk-forward multi-periodo — ${wf.numPeriods} bloque${wf.numPeriods===1?'':'s'} secuencial${wf.numPeriods===1?'':'es'} de historia${reduced ? ` (reducido de ${wf.requestedPeriods} pedidos — no hay suficiente historial diario para más)` : ''}</div>`;
+    html += `<div class="bt-desc" style="margin:4px 0 12px;">Divide todo el historial disponible en ${wf.numPeriods} tramos consecutivos y corre la misma simulación de forma independiente en cada uno (el capital se reinicia al empezar cada tramo). Como los pesos de los módulos son fijos — no se ajustan con los datos —, esto funciona como prueba de consistencia entre distintos regímenes de mercado, no como una separación train/validation/test de un modelo entrenado.</div>`;
+
+    const posColor = "var(--up)", negColor = "var(--down)";
+    html += `<div class="bt-metrics">
+      <div class="bt-metric"><div class="btm-label">Periodos positivos</div><div class="btm-value" style="color:${posColor}">${wf.positive}/${wf.numPeriods}</div><div class="btm-sub">${wf.negative} negativo${wf.negative===1?'':'s'}</div></div>
+      <div class="bt-metric"><div class="btm-label">CAGR promedio</div><div class="btm-value" style="color:${wf.avgCagr>=0?posColor:negColor}">${fmtPct(wf.avgCagr)}</div><div class="btm-sub">entre los ${wf.numPeriods} bloques</div></div>
+      <div class="bt-metric"><div class="btm-label">CAGR mediana</div><div class="btm-value" style="color:${wf.medianCagr>=0?posColor:negColor}">${fmtPct(wf.medianCagr)}</div><div class="btm-sub">menos sensible a un bloque extremo</div></div>
+      <div class="bt-metric"><div class="btm-label">Mejor periodo</div><div class="btm-value" style="color:${posColor}">${fmtPct(wf.best.cagr)}</div><div class="btm-sub">${fmtDateShort(wf.best.startDate)} → ${fmtDateShort(wf.best.endDate)}</div></div>
+      <div class="bt-metric"><div class="btm-label">Peor periodo</div><div class="btm-value" style="color:${wf.worst.cagr>=0?posColor:negColor}">${fmtPct(wf.worst.cagr)}</div><div class="btm-sub">${fmtDateShort(wf.worst.startDate)} → ${fmtDateShort(wf.worst.endDate)}</div></div>
+    </div>`;
+
+    html += `<div class="bt-trades">`;
+    wf.segments.forEach((s,i)=>{
+      const win = s.cagr >= 0;
+      html += `<div class="bt-trade">
+        <div class="btt-dates">Periodo ${i+1}: ${fmtDateShort(s.startDate)} → ${fmtDateShort(s.endDate)}</div>
+        <div class="btt-prices">${s.tradeCount} operaciones · ${(s.timeInMarket*100).toFixed(0)}% del tiempo invertido</div>
+        <div class="btt-capital">Retorno total ${fmtPct(s.totalReturn)}</div>
+        <div class="btt-ret" style="color:${win?'var(--up)':'var(--down)'}">CAGR ${fmtPct(s.cagr)}</div>
+      </div>`;
+    });
+    html += `</div>`;
+
+    el.innerHTML = html;
+    el.classList.add("show");
+  }
+
+  $("runBacktestBtn").addEventListener("click", async ()=>{
+    const symbol = tickerInput.value.trim().toUpperCase();
+    const bench = benchInput.value.trim().toUpperCase() || "SPY";
+    if(!symbol){ $("btStatus").textContent = "Escribe un ticker arriba primero."; return; }
+    const btn = $("runBacktestBtn");
+    btn.disabled = true;
+    $("btResults").classList.remove("show");
+    $("wfResults").classList.remove("show");
+    $("btStatus").textContent = "Descargando historial completo…";
+    try {
+      const daily = await fetchSeries(symbol, "1day", 5000);
+      $("btStatus").textContent = "Historial diario listo (" + daily.length + " velas) — trayendo semanal y mercado…";
+      const [weekly, spyDaily, qqqDaily, benchDaily] = await Promise.all([
+        fetchSeries(symbol, "1week", 1000),
+        fetchSeries("SPY", "1day", 5000),
+        fetchSeries("QQQ", "1day", 5000),
+        bench === "SPY" ? Promise.resolve(null) : fetchSeries(bench, "1day", 5000),
+      ]);
+      $("btStatus").textContent = "Simulando " + daily.length + " días, día por día…";
+      await sleep(30); // let the status paint before the (synchronous) crunch
+      const startDateStr = $("btStartDate").value || null;
+      const bt = runBacktest(daily, weekly, spyDaily, qqqDaily, benchDaily || spyDaily, startDateStr);
+      renderBacktestResults(bt, symbol);
+
+      // Reuses the exact same already-downloaded series — no extra Twelve
+      // Data calls — to also run the 5-block walk-forward robustness check.
+      // Always uses the FULL available history (ignores the "empezar desde"
+      // date above, which is a single-period setting) so the consistency
+      // check gets as many blocks of data as possible.
+      const wf = runWalkForwardMultiPeriod(daily, weekly, spyDaily, qqqDaily, benchDaily || spyDaily, 5);
+      renderWalkForwardMultiResults(wf, symbol);
+
+      $("btStatus").textContent = bt ? ("Listo — " + bt.years.toFixed(1) + " años simulados.") : "";
+    } catch(err){
+      $("btStatus").textContent = err.message || "Ocurrió un error corriendo el backtest.";
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  analyzeBtn.addEventListener("click", analyze);
+  tickerInput.addEventListener("keydown", (e)=>{ if(e.key === "Enter") analyze(); });
+
+  if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+    window.addEventListener("load", ()=>{ navigator.serviceWorker.register("sw.js").catch(()=>{}); });
+  }
+
+  if(!getApiKey()){ setStatus("Configura tu API key de Twelve Data (⚙ arriba a la derecha) para empezar."); }
+
+  // ================= Portfolio (seguimiento de posiciones) =================
+  const PORT_LOTS_KEY = "ta_scanner_portfolio_lots";
+  const PORT_CCY_KEY = "ta_scanner_portfolio_currency";
+  const FX_URL = "https://api.frankfurter.dev/v1/latest?base=USD&symbols=MXN";
+
+  function loadPortLots(){ try { return JSON.parse(localStorage.getItem(PORT_LOTS_KEY) || "[]"); } catch(e){ return []; } }
+  function savePortLots(){ try { localStorage.setItem(PORT_LOTS_KEY, JSON.stringify(portLots)); } catch(e){} }
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+  let portLots = loadPortLots();
+  let displayCurrency = localStorage.getItem(PORT_CCY_KEY) || "USD";
+  let usdMxnRate = null, usdMxnRateTs = 0;
+  let portPrices = {};
+  let portRefreshTimer = null;
+  let activeTab = "scanner";
+  let scannerLastTicker = null, scannerLastBench = null;
+  let portfolioLastTicker = null;
+
+  function groupLotsByTicker(){
+    const groups = {};
+    portLots.forEach(l=>{ (groups[l.ticker] = groups[l.ticker] || []).push(l); });
+    return groups;
+  }
+  function positionSummary(lots){
+    const totalShares = lots.reduce((s,l)=>s+l.shares,0);
+    const totalCost = lots.reduce((s,l)=>s+l.shares*l.price,0);
+    return { totalShares, totalCost, avgCost: totalShares>0 ? totalCost/totalShares : 0 };
+  }
+
+  async function fetchUsdMxnRate(force){
+    const now = Date.now();
+    if(!force && usdMxnRate!=null && (now-usdMxnRateTs) < 60*60*1000) return usdMxnRate;
+    try {
+      const res = await fetch(FX_URL);
+      const data = await res.json();
+      if(data && data.rates && typeof data.rates.MXN === "number"){
+        usdMxnRate = data.rates.MXN; usdMxnRateTs = now;
+        $("fxRateNote").textContent = "1 USD ≈ " + usdMxnRate.toFixed(2) + " MXN";
+      }
+    } catch(e){
+      if(!usdMxnRate) $("fxRateNote").textContent = "No se pudo obtener el tipo de cambio.";
+    }
+    return usdMxnRate;
+  }
+  function convertUSD(v){ return (displayCurrency==="USD" || usdMxnRate==null) ? v : v*usdMxnRate; }
+  function fmtCcy(v){
+    const sym = displayCurrency==="USD" ? "$" : "MX$";
+    return sym + v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+
+  function updatePriceInputCurrencyUI(){
+    const input = $("portPriceInput");
+    if(input) input.placeholder = "Precio de compra (" + displayCurrency + ")";
+  }
+
+  function setDisplayCurrency(ccy){
+    displayCurrency = ccy;
+    try { localStorage.setItem(PORT_CCY_KEY, ccy); } catch(e){}
+    $("ccyUSD").classList.toggle("active", ccy==="USD");
+    $("ccyMXN").classList.toggle("active", ccy==="MXN");
+    updatePriceInputCurrencyUI();
+    renderPortfolioTable();
+  }
+  $("ccyUSD").addEventListener("click", ()=>setDisplayCurrency("USD"));
+  $("ccyMXN").addEventListener("click", async ()=>{ await fetchUsdMxnRate(); setDisplayCurrency("MXN"); });
+
+  function setPortFormStatus(msg, isErr){
+    const el = $("portFormStatus");
+    el.textContent = msg || "";
+    el.className = "port-form-status" + (isErr ? " err" : (msg ? " ok" : ""));
+  }
+
+  $("portAddBtn").addEventListener("click", async ()=>{
+    const ticker = $("portTickerInput").value.trim().toUpperCase();
+    const shares = parseFloat($("portSharesInput").value);
+    const enteredPrice = parseFloat($("portPriceInput").value);
+    const entryCcy = displayCurrency; // capture in whatever currency is selected right now
+    if(!ticker){ setPortFormStatus("Escribe un ticker.", true); return; }
+    if(!(shares>0)){ setPortFormStatus("El número de acciones debe ser mayor a 0.", true); return; }
+    if(!(enteredPrice>0)){ setPortFormStatus("El precio de compra debe ser mayor a 0.", true); return; }
+
+    let priceUSD = enteredPrice;
+    if(entryCcy === "MXN"){
+      const btn = $("portAddBtn");
+      btn.disabled = true;
+      setPortFormStatus("Obteniendo tipo de cambio…");
+      const rate = await fetchUsdMxnRate();
+      btn.disabled = false;
+      if(!rate){ setPortFormStatus("No se pudo obtener el tipo de cambio USD/MXN — intenta de nuevo en un momento.", true); return; }
+      priceUSD = enteredPrice / rate; // internal storage/calculations always in USD, consistent with live prices from Twelve Data
+    }
+
+    // entryCcy/entryPrice preserve exactly what the person typed, so the lot
+    // history below can always show "captured in MXN at $X" honestly instead
+    // of silently relabeling it as USD.
+    portLots.push({ id:uid(), ticker, shares, price:priceUSD, entryCcy, entryPrice:enteredPrice, ts:Date.now() });
+    savePortLots();
+    $("portTickerInput").value = ""; $("portSharesInput").value = ""; $("portPriceInput").value = "";
+    setPortFormStatus(entryCcy === "MXN" ? `Compra agregada (${enteredPrice.toFixed(2)} MXN ≈ $${priceUSD.toFixed(2)} USD).` : "Compra agregada.");
+    renderPortfolioTable();
+    populateTickerSelect();
+    refreshPortfolioPrices();
+  });
+
+  function deleteLot(id){ portLots = portLots.filter(l=>l.id!==id); savePortLots(); renderPortfolioTable(); populateTickerSelect(); }
+  function deletePosition(ticker){ portLots = portLots.filter(l=>l.ticker!==ticker); savePortLots(); renderPortfolioTable(); populateTickerSelect(); }
+
+  function renderPortfolioTable(){
+    const groups = groupLotsByTicker();
+    const tickers = Object.keys(groups);
+    $("portfolioEmptyState").style.display = tickers.length ? "none" : "block";
+    const host = $("portfolioTable");
+    if(!tickers.length){ host.innerHTML = ""; $("portLastUpdate").textContent = ""; return; }
+    let html = "";
+    tickers.forEach(ticker=>{
+      const lots = groups[ticker];
+      const sum = positionSummary(lots);
+      const info = portPrices[ticker];
+      const curPrice = info && info.price!=null ? info.price : null;
+      const curVal = curPrice!=null ? curPrice*sum.totalShares : null;
+      const gainUSD = curVal!=null ? curVal-sum.totalCost : null;
+      const gainPct = (curVal!=null && sum.totalCost>0) ? gainUSD/sum.totalCost : null;
+      const gainCls = gainUSD==null ? "" : (gainUSD>=0 ? "pos" : "neg");
+      html += `<div class="port-row">
+        <div class="port-row-head">
+          <span class="port-ticker mono">${ticker}</span>
+          <span class="port-shares">${sum.totalShares} acc. @ ${fmtCcy(convertUSD(sum.avgCost))} prom.</span>
+          <button class="port-del" data-ticker="${ticker}" title="Eliminar posición completa">🗑</button>
+        </div>
+        <div class="port-row-body">
+          <div class="port-stat"><div class="pslabel">Precio actual</div><div class="psval">${curPrice!=null?fmtCcy(convertUSD(curPrice)):(info&&info.error?"⚠ error":"…")}</div></div>
+          <div class="port-stat"><div class="pslabel">Costo total</div><div class="psval">${fmtCcy(convertUSD(sum.totalCost))}</div></div>
+          <div class="port-stat"><div class="pslabel">Valor actual</div><div class="psval">${curVal!=null?fmtCcy(convertUSD(curVal)):"…"}</div></div>
+          <div class="port-stat"><div class="pslabel">Ganancia/Pérdida</div><div class="psval ${gainCls}">${gainUSD!=null?((gainUSD>=0?"+":"")+fmtCcy(convertUSD(gainUSD))+" ("+(gainPct*100).toFixed(1)+"%)"):"…"}</div></div>
+        </div>
+        <div class="port-lots">
+          ${lots.map(l=>{
+            const ccy = l.entryCcy || "USD"; // older lots saved before this fix have no entryCcy — they were always USD
+            const amt = l.entryPrice!=null ? l.entryPrice : l.price;
+            const sym = ccy==="MXN" ? "MX$" : "$";
+            return `<div class="port-lot"><span>${l.shares} acc. @ ${sym}${amt.toFixed(2)} ${ccy} — ${new Date(l.ts).toLocaleDateString("es-MX")}</span><button class="port-lot-del" data-id="${l.id}">✕</button></div>`;
+          }).join("")}
+        </div>
+      </div>`;
+    });
+    host.innerHTML = html;
+    host.querySelectorAll(".port-del").forEach(b=>b.addEventListener("click", ()=>{ if(confirm("¿Eliminar toda la posición de "+b.dataset.ticker+"?")) deletePosition(b.dataset.ticker); }));
+    host.querySelectorAll(".port-lot-del").forEach(b=>b.addEventListener("click", ()=>deleteLot(b.dataset.id)));
+    const stamps = Object.values(portPrices).map(p=>p.ts).filter(Boolean);
+    $("portLastUpdate").textContent = stamps.length ? ("Precios actualizados: " + new Date(Math.max(...stamps)).toLocaleTimeString("es-MX")) : "";
+  }
+
+  async function refreshPortfolioPrices(){
+    const tickers = Object.keys(groupLotsByTicker());
+    if(!tickers.length) return;
+    if(displayCurrency === "MXN") await fetchUsdMxnRate();
+    for(const t of tickers){
+      try {
+        const p = await fetchCurrentPrice(t);
+        portPrices[t] = { price:p, ts:Date.now(), error:null };
+      } catch(e){
+        portPrices[t] = Object.assign({}, portPrices[t], { error: e.message || "error" });
+      }
+      renderPortfolioTable();
+    }
+  }
+  function startPortfolioAutoRefresh(){
+    clearInterval(portRefreshTimer);
+    portRefreshTimer = setInterval(refreshPortfolioPrices, 30*60*1000);
+  }
+
+  function populateTickerSelect(){
+    const sel = $("portTickerSelect");
+    const tickers = Object.keys(groupLotsByTicker());
+    if(!tickers.length){ sel.innerHTML=""; return; }
+    const keep = tickers.includes(portfolioLastTicker) ? portfolioLastTicker : tickers[0];
+    sel.innerHTML = tickers.map(t=>`<option value="${t}"${t===keep?" selected":""}>${t}</option>`).join("");
+    portfolioLastTicker = keep;
+  }
+  $("portTickerSelect").addEventListener("change", ()=>{
+    portfolioLastTicker = $("portTickerSelect").value;
+    tickerInput.value = portfolioLastTicker;
+    if(!benchInput.value) benchInput.value = "SPY";
+    analyze();
+  });
+
+  function moveAnalysisSectionTo(hostId){
+    const sec = $("analysisSection"), host = $(hostId);
+    if(sec && host && sec.parentElement !== host) host.appendChild(sec);
+  }
+
+  function switchTab(tab){
+    activeTab = tab;
+    $("tabBtnScanner").classList.toggle("active", tab==="scanner");
+    $("tabBtnPortfolio").classList.toggle("active", tab==="portfolio");
+    $("tabpanel-scanner").style.display = tab==="scanner" ? "" : "none";
+    $("tabpanel-portfolio").style.display = tab==="portfolio" ? "" : "none";
+    if(tab === "scanner"){
+      moveAnalysisSectionTo("scannerAnalysisHost");
+      if(scannerLastTicker){
+        tickerInput.value = scannerLastTicker;
+        benchInput.value = scannerLastBench || benchInput.value || "SPY";
+        analyze();
+      }
+    } else {
+      populateTickerSelect();
+      const tickers = Object.keys(groupLotsByTicker());
+      if(tickers.length){
+        $("portNoPositionMsg").style.display = "none";
+        $("portAnalysisPicker").style.display = "flex";
+        $("portfolioAnalysisHost").style.display = "";
+        moveAnalysisSectionTo("portfolioAnalysisHost");
+        tickerInput.value = portfolioLastTicker;
+        if(!benchInput.value) benchInput.value = "SPY";
+        analyze();
+      } else {
+        $("portAnalysisPicker").style.display = "none";
+        $("portfolioAnalysisHost").style.display = "none";
+        $("portNoPositionMsg").style.display = "block";
+      }
+    }
+  }
+  $("tabBtnScanner").addEventListener("click", ()=>switchTab("scanner"));
+  $("tabBtnPortfolio").addEventListener("click", ()=>switchTab("portfolio"));
+
+  // ---- init ----
+  updatePriceInputCurrencyUI();
+  renderPortfolioTable();
+  populateTickerSelect();
+  if(Object.keys(groupLotsByTicker()).length){ fetchUsdMxnRate(); refreshPortfolioPrices(); }
+  startPortfolioAutoRefresh();
+})();
+</script>
+</body>
+</html>
