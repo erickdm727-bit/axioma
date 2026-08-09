@@ -3,7 +3,7 @@
 // if the connection drops mid-session. It deliberately does NOT cache or
 // intercept calls to other origins (Twelve Data, the FX rate API) — those
 // must always hit the network live, never a stale cached response.
-const CACHE_NAME = "axioma-shell-v1";
+const CACHE_NAME = "axioma-shell-v2";
 const SHELL_FILES = ["./index7.html"];
 
 self.addEventListener("install", (event) => {
@@ -27,7 +27,17 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return; // let API calls pass straight through, uncached
+  // Network-first: always try to fetch the latest version when online, so
+  // app updates (HTML/CSS/JS changes) show up the next time you open the app
+  // with a connection, instead of being stuck on whatever was cached first.
+  // Only falls back to the cached copy if the network request fails (offline).
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
+    fetch(event.request)
+      .then((res) => {
+        const resClone = res.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, resClone));
+        return res;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
