@@ -624,12 +624,26 @@
       <div class="port-form-hint" id="portFormHint">El precio se captura en la moneda que tengas seleccionada abajo (USD o MXN) y se convierte automáticamente a USD internamente (con el tipo de cambio del momento) para poder promediar compras hechas en distintas monedas. Puedes agregar varias compras del mismo ticker — se calcula el costo promedio ponderado automáticamente.</div>
     </div>
 
+    <div class="port-form-card">
+      <h3>Registrar venta</h3>
+      <div class="port-form-row">
+        <input id="portSellTickerInput" type="text" placeholder="Ticker, ej. GOOG" autocomplete="off" spellcheck="false">
+        <input id="portSellSharesInput" type="number" min="0" step="any" placeholder="Acciones a vender">
+        <input id="portSellPriceInput" type="number" min="0" step="any" placeholder="Precio de venta (USD)">
+        <button class="btn" id="portSellBtn" type="button">Registrar venta</button>
+      </div>
+      <div class="port-form-status" id="portSellFormStatus"></div>
+      <div class="port-form-hint" id="portSellFormHint">Vende parte o toda tu posición en un ticker. La ganancia o pérdida realizada se calcula contra tu costo promedio ponderado y se acumula en el resumen del portafolio.</div>
+    </div>
+
     <div class="port-currency-row">
       <span>Mostrar valores en</span>
       <button class="ccy-btn active" id="ccyUSD" type="button">USD</button>
       <button class="ccy-btn" id="ccyMXN" type="button">MXN</button>
       <span class="fx-note" id="fxRateNote"></span>
     </div>
+
+    <div class="port-form-card" id="portfolioSummary" style="display:none"></div>
 
     <div class="port-empty" id="portfolioEmptyState">Aún no registras ninguna posición — agrega tu primera compra arriba.</div>
     <div class="port-last-update" id="portLastUpdate"></div>
@@ -1145,18 +1159,29 @@
     return val;
   }
 
+  function computeQuarterlyPivot(candlesAsc){
+    if(!candlesAsc || candlesAsc.length < 2) return null;
+    const lastDate = new Date(candlesAsc[candlesAsc.length-1].datetime.replace(" ","T"));
+    const curQ = Math.floor(lastDate.getMonth()/3);
+    let prevQ = curQ - 1, prevYear = lastDate.getFullYear();
+    if(prevQ < 0){ prevQ = 3; prevYear -= 1; }
+    const start = new Date(prevYear, prevQ*3, 1);
+    const end = new Date(prevYear, prevQ*3+3, 1);
+    const inQuarter = candlesAsc.filter(c=>{
+      const d = new Date(c.datetime.replace(" ","T"));
+      return d >= start && d < end;
+    });
+    if(inQuarter.length < 5) return null;
+    const high = Math.max(...inQuarter.map(c=>c.high));
+    const low = Math.min(...inQuarter.map(c=>c.low));
+    const close = inQuarter[inQuarter.length-1].close;
+    const pp = (high+low+close)/3;
+    return { pp, r1: 2*pp-low, s1: 2*pp-high, quarter:prevQ+1, year:prevYear };
+  }
+
   function computeSupportResistanceLevels(candlesAsc, price){
-    // Combines two standard technical methods instead of relying on just one:
-    //  1) Swing fractals — actual prices where the market already turned
-    //     (3-bar high/low pivots) over the last ~90 bars.
-    //  2) Fibonacci retracements — 23.6/38.2/50/61.8/78.6% of the most
-    //     significant swing (high↔low) in that same window, which is what a
-    //     large share of discretionary traders also watch.
-    // Levels from both methods landing within ~0.6% of each other are merged
-    // into a single "confluencia" level — levels multiple independent
-    // methods agree on tend to be the more reliable ones.
     const arr = candlesAsc.slice(-90);
-    if(arr.length < 10) return { support:null, resistance:null, supports:[], resistances:[] };
+    if(arr.length < 10) return { support:null, resistance:null, supports:[], resistances:[], quarterlyPivot:null };
     const highs=[], lows=[];
     for(let i=3;i<arr.length-3;i++){
       const w = arr.slice(i-3,i+4);
@@ -1174,6 +1199,12 @@
       [0.236,0.382,0.5,0.618,0.786].forEach(r=>{
         candidates.push({ price: swingHigh - range*r, type:"fib" });
       });
+    }
+    const qp = computeQuarterlyPivot(candlesAsc);
+    if(qp){
+      candidates.push({ price: qp.pp, type:"qpivot" });
+      candidates.push({ price: qp.r1, type:"qpivot" });
+      candidates.push({ price: qp.s1, type:"qpivot" });
     }
     const tol = Math.max(price*0.006, 0.01);
     candidates.sort((a,b)=>a.price-b.price);
@@ -1197,7 +1228,7 @@
     return {
       support: supports[0] ? supports[0].price : null,
       resistance: resistances[0] ? resistances[0].price : null,
-      supports, resistances,
+      supports, resistances, quarterlyPivot: qp,
     };
   }
 
@@ -2270,6 +2301,30 @@
     });
   }
 
+  function svgCandles(candles, xOf, yOf, cw){
+    let s = "";
+    candles.forEach((c,i) => {
+      const x = xOf(i);
+      const up = c.close >= c.open;
+      const bodyTop = yOf(Math.max(c.open,c.close)), bodyBot = yOf(Math.min(c.open,c.close));
+      s += `<line x1="${x}" y1="${yOf(c.high)}" x2="${x}" y2="${yOf(c.low)}" stroke="${up?'#3ECF8E':'#FF5C5C'}" stroke-width="1"/>`;
+      s += `<rect x="${x-cw/2}" y="${bodyTop}" width="${cw}" height="${Math.max(1,bodyBot-bodyTop)}" fill="${up?'#3ECF8E':'#FF5C5C'}"/>`;
+    });
+    return s;
+  }
+  function svgLevelLines(levels, xOf, yOf, xLeft, xRight){
+    let s = "";
+    levels.forEach((lv, idx) => {
+      const y = yOf(lv.price);
+      const op = 0.6 - idx*0.14;
+      s += `<line x1="${xLeft}" y1="${y}" x2="${xRight}" y2="${y}" stroke="${lv.color}" stroke-width="1" stroke-dasharray="4 3" opacity="${op}"/>`;
+      if(lv.label){
+        s += `<text x="${xLeft+4}" y="${y-4}" fill="${lv.color}" font-size="10" opacity="${Math.min(0.95,op+0.25)}">${lv.label}</text>`;
+      }
+    });
+    return s;
+  }
+
   function renderMovement(seriesByTf, price, overall){
     lastMovementCtx = { seriesByTf, price, overall };
     const availableKeys = new Set(Object.keys(seriesByTf).filter(k => seriesByTf[k] && seriesByTf[k].length));
@@ -2364,13 +2419,7 @@
     xTicks.forEach(t => { svg += `<line x1="${t.x}" y1="${padT}" x2="${t.x}" y2="${H-padB}" stroke="#1B222B" stroke-width="1"/>`; });
 
     const cw = Math.max(1.6, plotW/totalPts*0.6);
-    hist.forEach((c,i) => {
-      const x = xOf(i);
-      const up = c.close >= c.open;
-      const bodyTop = yOf(Math.max(c.open,c.close)), bodyBot = yOf(Math.min(c.open,c.close));
-      svg += `<line x1="${x}" y1="${yOf(c.high)}" x2="${x}" y2="${yOf(c.low)}" stroke="${up?'#3ECF8E':'#FF5C5C'}" stroke-width="1"/>`;
-      svg += `<rect x="${x-cw/2}" y="${bodyTop}" width="${cw}" height="${Math.max(1,bodyBot-bodyTop)}" fill="${up?'#3ECF8E':'#FF5C5C'}"/>`;
-    });
+    svg += svgCandles(hist, xOf, yOf, cw);
 
     // Three moving averages over the historical window (long/gray, mid/teal,
     // short/red) — visual style inspired by @BeardoTrader's charts, computed
@@ -2404,19 +2453,9 @@
     });
     svg += `<line x1="${padL}" y1="${volTop}" x2="${W-padR}" y2="${volTop}" stroke="#232D39" stroke-width="1"/>`;
 
-    const srKindLabel = { pivot:"Pivote", fib:"Fibonacci", confluencia:"Confluencia" };
-    sr.supports.forEach((s,idx)=>{
-      const y = yOf(s.price);
-      const op = 0.6 - idx*0.14;
-      svg += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#3ECF8E" stroke-width="1" stroke-dasharray="4 3" opacity="${op}"/>`;
-      svg += `<text x="${padL+4}" y="${y-4}" fill="#3ECF8E" font-size="10" opacity="${Math.min(0.95,op+0.25)}">Soporte ${s.n} · ${srKindLabel[s.type]} · ${s.price.toFixed(2)}</text>`;
-    });
-    sr.resistances.forEach((s,idx)=>{
-      const y = yOf(s.price);
-      const op = 0.6 - idx*0.14;
-      svg += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#FF5C5C" stroke-width="1" stroke-dasharray="4 3" opacity="${op}"/>`;
-      svg += `<text x="${padL+4}" y="${y-4}" fill="#FF5C5C" font-size="10" opacity="${Math.min(0.95,op+0.25)}">Resistencia ${s.n} · ${srKindLabel[s.type]} · ${s.price.toFixed(2)}</text>`;
-    });
+    const srKindLabel = { pivot:"Pivote", fib:"Fibonacci", confluencia:"Confluencia", qpivot:"Pivote trimestral" };
+    svg += svgLevelLines(sr.supports.map((s,idx)=>({price:s.price, color:"#3ECF8E", label:`Soporte ${s.n} · ${srKindLabel[s.type]} · ${s.price.toFixed(2)}`})), xOf, yOf, padL, W-padR);
+    svg += svgLevelLines(sr.resistances.map((s,idx)=>({price:s.price, color:"#FF5C5C", label:`Resistencia ${s.n} · ${srKindLabel[s.type]} · ${s.price.toFixed(2)}`})), xOf, yOf, padL, W-padR);
     if(invalidation){
       const y = yOf(invalidation);
       svg += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#F2B84B" stroke-width="1.5"/>`;
@@ -2883,15 +2922,24 @@
   const PORT_CCY_KEY = "ta_scanner_portfolio_currency";
   const FX_URL = "https://api.frankfurter.dev/v1/latest?base=USD&symbols=MXN";
 
+  const PORT_SALES_KEY = "ta_scanner_portfolio_sales";
+
   function loadPortLots(){ try { return JSON.parse(localStorage.getItem(PORT_LOTS_KEY) || "[]"); } catch(e){ return []; } }
   function savePortLots(){
     if(!safeLocalStorageSet(PORT_LOTS_KEY, JSON.stringify(portLots))){
       setPortFormStatus("⚠ No se pudo guardar tu portafolio en este dispositivo (almacenamiento lleno o bloqueado) — vuelve a intentarlo o libera espacio.", true);
     }
   }
+  function loadPortSales(){ try { return JSON.parse(localStorage.getItem(PORT_SALES_KEY) || "[]"); } catch(e){ return []; } }
+  function savePortSales(){
+    if(!safeLocalStorageSet(PORT_SALES_KEY, JSON.stringify(portSales))){
+      setPortFormStatus("⚠ No se pudo guardar tus ventas en este dispositivo (almacenamiento lleno o bloqueado) — vuelve a intentarlo o libera espacio.", true);
+    }
+  }
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
 
   let portLots = loadPortLots();
+  let portSales = loadPortSales();
   let displayCurrency = localStorage.getItem(PORT_CCY_KEY) || "USD";
   let usdMxnRate = null, usdMxnRateTs = 0;
   let portPrices = {};
@@ -2910,6 +2958,34 @@
     const totalShares = lots.reduce((s,l)=>s+l.shares,0);
     const totalCost = lots.reduce((s,l)=>s+l.shares*l.price,0);
     return { totalShares, totalCost, avgCost: totalShares>0 ? totalCost/totalShares : 0 };
+  }
+
+  function sellShares(ticker, sharesSold, sellPriceUSD){
+    const lots = portLots.filter(l=>l.ticker===ticker).sort((a,b)=>(a.ts||0)-(b.ts||0));
+    const sum = positionSummary(lots);
+    if(sharesSold <= 0 || sharesSold > sum.totalShares + 1e-9){
+      throw new Error("Cantidad de acciones inválida.");
+    }
+    const avgCost = sum.avgCost;
+    let remaining = sharesSold;
+    const keptLots = [];
+    for(const l of portLots){
+      if(l.ticker !== ticker){ keptLots.push(l); continue; }
+      if(remaining <= 0){ keptLots.push(l); continue; }
+      if(l.shares <= remaining + 1e-9){
+        remaining -= l.shares;
+      } else {
+        keptLots.push(Object.assign({}, l, { shares: l.shares - remaining }));
+        remaining = 0;
+      }
+    }
+    portLots = keptLots;
+    savePortLots();
+    return { avgCost, sharesSold, sellPriceUSD, gainUSD: (sellPriceUSD - avgCost) * sharesSold };
+  }
+  function recordRealizedSale(sale){
+    portSales.push(Object.assign({ id: uid(), ts: Date.now() }, sale));
+    savePortSales();
   }
 
   async function fetchUsdMxnRate(force){
@@ -2936,6 +3012,8 @@
   function updatePriceInputCurrencyUI(){
     const input = $("portPriceInput");
     if(input) input.placeholder = "Precio de compra (" + displayCurrency + ")";
+    const sellInput = $("portSellPriceInput");
+    if(sellInput) sellInput.placeholder = "Precio de venta (" + displayCurrency + ")";
   }
 
   function setDisplayCurrency(ccy){
@@ -2983,10 +3061,44 @@
     portLots.push({ id:uid(), ticker, shares, price:priceUSD, entryCcy, entryPrice:enteredPrice, ts:Date.now() });
     savePortLots();
     $("portTickerInput").value = ""; $("portSharesInput").value = ""; $("portPriceInput").value = "";
-    setPortFormStatus(entryCcy === "MXN" ? `Compra agregada (${enteredPrice.toFixed(2)} MXN ≈ $${priceUSD.toFixed(2)} USD).` : "Compra agregada.");
+    setPortFormStatus(entryCcy === "MXN" ? `Compra agregada (${enteredPrice.toFixed(2)} MXN ≈ ${priceUSD.toFixed(2)} USD).` : "Compra agregada.");
     renderPortfolioTable();
     populateTickerSelect();
     refreshPortfolioAll();
+  });
+
+  $("portSellBtn").addEventListener("click", async ()=>{
+    const ticker = $("portSellTickerInput").value.trim().toUpperCase();
+    const sharesSold = parseFloat($("portSellSharesInput").value);
+    const enteredPrice = parseFloat($("portSellPriceInput").value);
+    const entryCcy = displayCurrency;
+    if(!ticker){ setPortSellFormStatus("Escribe un ticker.", true); return; }
+    const lots = portLots.filter(l=>l.ticker===ticker);
+    if(!lots.length){ setPortSellFormStatus("No tienes posición abierta en ese ticker.", true); return; }
+    if(!(sharesSold>0)){ setPortSellFormStatus("El número de acciones debe ser mayor a 0.", true); return; }
+    if(!(enteredPrice>0)){ setPortSellFormStatus("El precio de venta debe ser mayor a 0.", true); return; }
+
+    let sellPriceUSD = enteredPrice;
+    if(entryCcy === "MXN"){
+      const btn = $("portSellBtn");
+      btn.disabled = true;
+      setPortSellFormStatus("Obteniendo tipo de cambio…");
+      const rate = await fetchUsdMxnRate();
+      btn.disabled = false;
+      if(!rate){ setPortSellFormStatus("No se pudo obtener el tipo de cambio USD/MXN — intenta de nuevo en un momento.", true); return; }
+      sellPriceUSD = enteredPrice / rate;
+    }
+
+    try {
+      const result = sellShares(ticker, sharesSold, sellPriceUSD);
+      recordRealizedSale({ ticker, shares: sharesSold, avgCost: result.avgCost, sellPrice: sellPriceUSD, entryCcy, entrySellPrice: enteredPrice, gainUSD: result.gainUSD });
+      $("portSellTickerInput").value = ""; $("portSellSharesInput").value = ""; $("portSellPriceInput").value = "";
+      setPortSellFormStatus(`Venta registrada. Ganancia/pérdida realizada: ${result.gainUSD.toFixed(2)} USD.`);
+      renderPortfolioTable();
+      populateTickerSelect();
+    } catch(e){
+      setPortSellFormStatus(e.message || "No se pudo registrar la venta.", true);
+    }
   });
 
   function deleteLot(id){ portLots = portLots.filter(l=>l.id!==id); savePortLots(); renderPortfolioTable(); populateTickerSelect(); }
@@ -2994,7 +3106,7 @@
 
   function renderPortfolioSRBlock(ticker){
     const info = portSRData[ticker];
-    const srKindLabel = { pivot:"Pivote", fib:"Fibonacci", confluencia:"Confluencia" };
+    const srKindLabel = { pivot:"Pivote", fib:"Fibonacci", confluencia:"Confluencia", qpivot:"Pivote trimestral" };
     if(!info){
       return `<div class="rel-excess">Calculando niveles de soporte/resistencia…</div>`;
     }
@@ -3014,10 +3126,80 @@
     } else {
       html += `<div class="rel-excess">${info.alert.icon} ${info.alert.text}</div>`;
     }
+    if(info.daily && info.daily.length){
+      html += renderPortfolioMiniChart(info.daily, info.price, info.sr);
+    }
     return html;
   }
 
+  function renderPortfolioMiniChart(daily, price, sr){
+    if(!daily || daily.length < 5) return "";
+    const hist = daily.slice(-90);
+    const levels = [];
+    (sr.supports||[]).forEach(s=>levels.push({price:s.price, color:"#3ECF8E", label:null}));
+    (sr.resistances||[]).forEach(s=>levels.push({price:s.price, color:"#FF5C5C", label:null}));
+    if(sr.quarterlyPivot){
+      levels.push({price:sr.quarterlyPivot.pp, color:"#5B8DEF", label:"PP"});
+    }
+    let vals = hist.flatMap(c=>[c.high,c.low]).concat(levels.map(l=>l.price), [price]);
+    const minV = Math.min(...vals) * 0.98, maxV = Math.max(...vals) * 1.02;
+    const logMin = Math.log(minV), logMax = Math.log(maxV);
+    const W = 700, H = 180, padL = 8, padR = 56, padT = 10, padB = 24;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const xOf = i => padL + (i/(hist.length-1)) * plotW;
+    const yOf = v => padT + (1 - (Math.log(v)-logMin)/(logMax-logMin)) * plotH;
+    const cw = Math.max(1.4, plotW/hist.length*0.6);
+
+    let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">`;
+    let lastMonth = null;
+    hist.forEach((c,i)=>{
+      const d = new Date(c.datetime.replace(" ","T"));
+      const key = d.getFullYear()+"-"+d.getMonth();
+      if(key !== lastMonth){
+        lastMonth = key;
+        const x = xOf(i);
+        svg += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${H-padB}" stroke="#1B222B" stroke-width="1"/>`;
+        svg += `<text x="${x+2}" y="${H-6}" fill="#8FA0AE" font-size="9">${MONTHS_ES[d.getMonth()]}</text>`;
+      }
+    });
+    svg += svgCandles(hist, xOf, yOf, cw);
+    svg += svgLevelLines(levels, xOf, yOf, padL, W-padR);
+    const py = yOf(price);
+    svg += `<line x1="${padL}" y1="${py}" x2="${W-padR}" y2="${py}" stroke="#F2B84B" stroke-width="1.2" stroke-dasharray="2 2"/>`;
+    svg += `<circle cx="${W-padR}" cy="${py}" r="3" fill="#F2B84B"/>`;
+    svg += `<text x="${W-padR+4}" y="${py+3}" fill="#F2B84B" font-size="10">${price.toFixed(2)}</text>`;
+    svg += `</svg>`;
+    return `<div class="port-mini-chart">${svg}</div>`;
+  }
+
+  function renderPortfolioSummary(){
+    const groups = groupLotsByTicker();
+    const tickers = Object.keys(groups);
+    const host = $("portfolioSummary");
+    if(!host) return;
+    if(!tickers.length){ host.style.display = "none"; return; }
+    let totalValue = 0, totalInvested = 0, hasAllPrices = true;
+    tickers.forEach(ticker=>{
+      const sum = positionSummary(groups[ticker]);
+      totalInvested += sum.totalCost;
+      const info = portPrices[ticker];
+      const curPrice = info && info.price!=null ? info.price : null;
+      if(curPrice==null){ hasAllPrices = false; return; }
+      totalValue += curPrice * sum.totalShares;
+    });
+    const unrealizedUSD = hasAllPrices ? (totalValue - totalInvested) : null;
+    const realizedUSD = portSales.reduce((s,sale)=>s+(sale.gainUSD||0), 0);
+    host.style.display = "block";
+    host.innerHTML = `<div class="port-summary-grid">
+      <div class="port-stat"><div class="pslabel">Valor actual</div><div class="psval">${hasAllPrices?fmtCcy(convertUSD(totalValue)):"—"}</div></div>
+      <div class="port-stat"><div class="pslabel">Invertido</div><div class="psval">${fmtCcy(convertUSD(totalInvested))}</div></div>
+      <div class="port-stat"><div class="pslabel">P&L no realizada</div><div class="psval ${unrealizedUSD==null?"":(unrealizedUSD>=0?"pos":"neg")}">${unrealizedUSD==null?"—":fmtCcy(convertUSD(unrealizedUSD))}</div></div>
+      <div class="port-stat"><div class="pslabel">P&L realizada</div><div class="psval ${realizedUSD>=0?"pos":"neg"}">${fmtCcy(convertUSD(realizedUSD))}</div></div>
+    </div>`;
+  }
+
   function renderPortfolioTable(){
+    renderPortfolioSummary();
     const groups = groupLotsByTicker();
     const tickers = Object.keys(groups);
     $("portfolioEmptyState").style.display = tickers.length ? "none" : "block";
@@ -3125,7 +3307,7 @@
         const price = (portPrices[t] && portPrices[t].price!=null) ? portPrices[t].price : daily[daily.length-1].close;
         const sr = computeSupportResistanceLevels(daily, price);
         const alert = buildPortfolioSRAlert(daily, price, sr);
-        portSRData[t] = { sr, alert, error:null };
+        portSRData[t] = { sr, alert, error:null, daily, price };
       } catch(e){
         portSRData[t] = Object.assign({}, portSRData[t], { error: e.message || "error" });
       }
