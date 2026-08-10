@@ -3447,11 +3447,15 @@
   updatePriceInputCurrencyUI();
   renderPortfolioTable();
   populateTickerSelect();
-  if(Object.keys(groupLotsByTicker()).length){ fetchUsdMxnRate(); refreshPortfolioAll(); }
-  startPortfolioAutoRefresh();
   renderScannerTickerChips();
-  if(Object.keys(groupLotsByTicker()).length){ refreshScannerCacheAll(); }
+  startPortfolioAutoRefresh();
   startScannerAutoRefresh();
+  (async () => {
+    if(!Object.keys(groupLotsByTicker()).length) return;
+    await fetchUsdMxnRate();
+    await refreshPortfolioAll(); // portfolio numbers first — the person is looking at these
+    await refreshScannerCacheAll(); // then fill the Scanner cache in the background, without competing for API slots
+  })();
 })();
 </script>
 </body>
