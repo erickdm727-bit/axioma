@@ -357,6 +357,11 @@
     <span class="bench-hint">mercado general = SPY · o pon un ETF de sector, ej. XLK (tech), XLF (financiero), XLE (energía)</span>
   </div>
 
+  <div class="port-form-card" id="scannerPortfolioChips" style="display:none">
+    <div class="pslabel">Tu portafolio (caché automático cada 2h) — toca para ver al instante</div>
+    <div class="scanner-chip-row" id="scannerChipRow"></div>
+  </div>
+
   <div id="scannerAnalysisHost"><div id="analysisSection">
   <div class="toggle-panel">
     <div class="toggle-panel-head">
@@ -3264,6 +3269,72 @@
     portRefreshTimer = setInterval(refreshPortfolioAll, 30*60*1000);
   }
 
+  // ===== Scanner cache for portfolio tickers: auto-refresh every 2h so
+  // opening Scanner on an owned ticker is instant, without touching the
+  // shared Scanner UI unless the person explicitly picks a chip. =====
+  let scannerCache = {}; // ticker -> { result, updatedAt, error }
+  let scannerRefreshTimer = null;
+
+  function renderScannerTickerChips(){
+    const host = $("scannerChipRow");
+    const wrap = $("scannerPortfolioChips");
+    if(!host || !wrap) return;
+    const tickers = Object.keys(groupLotsByTicker());
+    if(!tickers.length){ wrap.style.display = "none"; host.innerHTML = ""; return; }
+    wrap.style.display = "block";
+    host.innerHTML = tickers.map(t => {
+      const c = scannerCache[t];
+      const active = t === scannerLastTicker ? " active" : "";
+      let sub;
+      if(c && c.result) sub = new Date(c.updatedAt).toLocaleTimeString("es-MX");
+      else if(c && c.error) sub = "⚠ error";
+      else sub = "cargando…";
+      return `<button class="ccy-btn scanner-chip${active}" data-ticker="${t}" type="button">${t} <span class="fx-note">· ${sub}</span></button>`;
+    }).join("");
+  }
+
+  function loadScannerTicker(ticker){
+    tickerInput.value = ticker;
+    const c = scannerCache[ticker];
+    if(c && c.result){
+      scannerLastTicker = ticker;
+      lastResult = c.result;
+      renderPrice(ticker, c.result.currentPrice);
+      recomputeAndRenderVerdictAndMovement(c.result);
+      setStatus("Mostrando caché de portafolio — actualizado " + new Date(c.updatedAt).toLocaleTimeString("es-MX") + ". Pulsa \"Analizar\" para forzar una consulta nueva.");
+      renderScannerTickerChips();
+    } else {
+      analyze();
+    }
+  }
+
+  document.addEventListener("click", (e)=>{
+    const chip = e.target.closest(".scanner-chip");
+    if(!chip) return;
+    loadScannerTicker(chip.dataset.ticker);
+  });
+
+  async function refreshScannerCacheAll(){
+    if(analyzeBtn.disabled) return; // don't collide with a live manual analysis
+    const tickers = Object.keys(groupLotsByTicker());
+    if(!tickers.length) return;
+    for(const t of tickers){
+      if(analyzeBtn.disabled) break;
+      try {
+        const r = await runAnalysis(t, null, moduleEnabled, movementTf);
+        scannerCache[t] = { result: r, updatedAt: Date.now(), error: null };
+      } catch(e){
+        scannerCache[t] = Object.assign({}, scannerCache[t], { error: e.message || "error", updatedAt: Date.now() });
+      }
+      renderScannerTickerChips();
+    }
+  }
+
+  function startScannerAutoRefresh(){
+    clearInterval(scannerRefreshTimer);
+    scannerRefreshTimer = setInterval(refreshScannerCacheAll, 2*60*60*1000);
+  }
+
   const PORT_SR_PROXIMITY = 0.02; // dentro de 2% cuenta como "cerca" de un nivel
   function buildPortfolioSRAlert(daily, currentPrice, sr){
     const s1 = sr.supports[0], s2 = sr.supports[1];
@@ -3378,6 +3449,9 @@
   populateTickerSelect();
   if(Object.keys(groupLotsByTicker()).length){ fetchUsdMxnRate(); refreshPortfolioAll(); }
   startPortfolioAutoRefresh();
+  renderScannerTickerChips();
+  if(Object.keys(groupLotsByTicker()).length){ refreshScannerCacheAll(); }
+  startScannerAutoRefresh();
 })();
 </script>
 </body>
