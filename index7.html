@@ -3437,6 +3437,18 @@
   $("tabBtnScanner").addEventListener("click", ()=>switchTab("scanner"));
   $("tabBtnPortfolio").addEventListener("click", ()=>switchTab("portfolio"));
 
+  // ---- shared cache (written every ~20 min by the "Refresh portfolio cache" GitHub Action) ----
+  const SHARED_CACHE_MAX_AGE_MS = 25 * 60 * 1000; // a bit more than the 20-min cron, to tolerate a slow run
+  async function loadSharedPortfolioCache(){
+    try {
+      const res = await fetch("data/portfolio-cache.json", { cache: "no-store" });
+      if(!res.ok) return null;
+      return await res.json();
+    } catch(e){
+      return null;
+    }
+  }
+
   // ---- init ----
   updatePriceInputCurrencyUI();
   renderPortfolioTable();
@@ -3447,7 +3459,23 @@
   (async () => {
     if(!Object.keys(groupLotsByTicker()).length) return;
     await fetchUsdMxnRate();
-    await refreshPortfolioAll(); // portfolio numbers first — the person is looking at these
+    const shared = await loadSharedPortfolioCache();
+    const sharedIsFresh = shared && typeof shared.generatedAt === "number" && (Date.now() - shared.generatedAt) < SHARED_CACHE_MAX_AGE_MS;
+    if(sharedIsFresh){
+      // instant paint from the shared cache — no device-side API credits spent
+      Object.entries(shared.tickers || {}).forEach(([t, entry]) => {
+        if(entry.error){
+          portPrices[t] = Object.assign({}, portPrices[t], { error: entry.error, ts: entry.updatedAt });
+          portSRData[t] = Object.assign({}, portSRData[t], { error: entry.error });
+        } else {
+          portPrices[t] = { price: entry.price, ts: entry.updatedAt, error: null };
+          portSRData[t] = { sr: entry.sr, alert: entry.alert, error: null, daily: entry.daily, price: entry.price };
+        }
+      });
+      renderPortfolioTable();
+    } else {
+      await refreshPortfolioAll(); // no usable shared cache — fall back to live fetch, portfolio numbers first
+    }
     await refreshScannerCacheAll(); // then fill the Scanner cache in the background, without competing for API slots
   })();
 })();
