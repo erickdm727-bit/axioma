@@ -611,6 +611,15 @@
     <div id="wfResults" class="bt-results"></div>
   </div>
 
+  <!-- Movement guide calibration backtest -->
+  <div class="backtest-card" id="movCalCard">
+    <div class="bt-head">
+      <h3>📈 Calibración de la Guía de Movimiento</h3>
+    </div>
+    <div class="bt-desc">Corre junto con el backtest de arriba (mismo botón, mismos datos ya descargados, sin gastar API extra). Prueba la guía de movimiento en muchos puntos del pasado, usando <strong>solo datos disponibles hasta cada fecha</strong> — sin ver el futuro — y compara la proyección contra lo que realmente pasó después. Es la forma honesta de saber si de verdad tiene puntería o solo se ve bien.</div>
+    <div id="movCalResults" class="bt-results"></div>
+  </div>
+
   <div class="disclaimer">
     Todos los cálculos (SMA, EMA, Bollinger, RSI, Estocástico, Ichimoku, A/D, patrones de velas) se hacen en tu navegador a partir de datos históricos de mercado. Es un conjunto de indicadores técnicos y no considera fundamentales, noticias ni el libro de órdenes. Ninguna combinación de indicadores garantiza el movimiento futuro del precio. No constituye recomendación de inversión.
   </div>
@@ -2873,6 +2882,92 @@
     el.classList.add("show");
   }
 
+  // ================= Movement-guide calibration backtest =================
+  // Tests the historical-analog projection engine itself (not the verdict
+  // strategy above): at many points in the past, build the SAME projection
+  // using only data available up to that point, then compare it against
+  // what actually happened. This is the honest way to know whether the
+  // movement guide has real predictive skill or is just a coincidence that
+  // looks nice on screen. Reuses computeProjectionAnalog verbatim — no
+  // separate copy of the modeling logic to drift out of sync.
+  function runMovementCalibration(daily, step=10, lookbackCap=800){
+    const params = MOVEMENT_PARAMS["1day"];
+    const H = params.proj;
+    const minAnchor = 40; // same floor renderMovement uses before it'll even try
+    const maxAnchor = daily.length - 1 - H;
+    if(maxAnchor < minAnchor) return null;
+
+    const samples = [];
+    for(let a = minAnchor; a <= maxAnchor; a += step){
+      const sliceStart = Math.max(0, a - lookbackCap + 1);
+      const slice = daily.slice(sliceStart, a + 1);
+      const price = slice[slice.length - 1].close;
+      const proj = computeProjectionAnalog(slice, price, H);
+      if(proj.method !== "analog") continue; // only score the analog engine, not its fallback
+      const m = Math.log(proj.central[proj.central.length - 1] / price);
+      const sd = Math.log(proj.upper1[proj.upper1.length - 1] / proj.central[proj.central.length - 1]);
+      const realized = Math.log(daily[a + H].close / price);
+      samples.push({ m, sd, realized, pctPositive: proj.pctPositive, n: proj.n, trainingSize: proj.trainingSize });
+    }
+    if(samples.length < 10) return { samples, tooFew: true };
+
+    const withDir = samples.filter(s => s.m !== 0);
+    const dirHits = withDir.filter(s => Math.sign(s.m) === Math.sign(s.realized)).length;
+    const directionAcc = withDir.length ? dirHits / withDir.length : null;
+
+    const upFrac = samples.filter(s => s.realized > 0).length / samples.length;
+    const baselineAcc = Math.max(upFrac, 1 - upFrac);
+
+    const xs = samples.map(s=>s.m), ys = samples.map(s=>s.realized);
+    const mx = meanArr(xs), my = meanArr(ys);
+    let cov=0, vx=0, vy=0;
+    for(let i=0;i<samples.length;i++){ cov += (xs[i]-mx)*(ys[i]-my); vx += (xs[i]-mx)**2; vy += (ys[i]-my)**2; }
+    const ic = (vx>0 && vy>0) ? cov/Math.sqrt(vx*vy) : null;
+
+    const within1 = samples.filter(s => s.realized >= s.m - s.sd && s.realized <= s.m + s.sd).length / samples.length;
+    const within2 = samples.filter(s => s.realized >= s.m - 2*s.sd && s.realized <= s.m + 2*s.sd).length / samples.length;
+
+    const confBull = samples.filter(s => s.pctPositive >= 0.6);
+    const confBear = samples.filter(s => s.pctPositive <= 0.4);
+    const confBullMean = confBull.length ? meanArr(confBull.map(s=>s.realized)) : null;
+    const confBearMean = confBear.length ? meanArr(confBear.map(s=>s.realized)) : null;
+
+    const effectiveN = Math.max(1, Math.round(samples.length * step / H));
+
+    return {
+      tooFew:false, n:samples.length, effectiveN, horizonDays:H, step,
+      directionAcc, baselineAcc, ic, within1, within2,
+      confBull: confBull.length, confBullMean, confBear: confBear.length, confBearMean,
+    };
+  }
+
+  function renderMovementCalibration(res, symbol){
+    const el = $("movCalResults");
+    if(!res){
+      el.innerHTML = `<div class="rel-excess">No hay suficiente historial diario para calibrar la guía de movimiento (el horizonte es de ~130 días, hacen falta varios años de datos).</div>`;
+      el.classList.add("show");
+      return;
+    }
+    if(res.tooFew){
+      el.innerHTML = `<div class="rel-excess">Solo se pudieron probar ${res.samples.length} puntos históricos de ${symbol} — muy pocos para sacar una conclusión confiable. Hace falta más historial diario para este ticker.</div>`;
+      el.classList.add("show");
+      return;
+    }
+    const icTxt = res.ic == null ? "—" : res.ic.toFixed(2);
+    const icNote = res.ic == null ? "" : (res.ic > 0.15 ? " (algo de puntería real)" : res.ic > 0.03 ? " (puntería débil)" : res.ic > -0.03 ? " (básicamente nula — como tirar una moneda)" : " (peor que el azar)");
+    let html = `<div class="bt-metrics">
+      <div class="bt-metric"><div class="btm-label">Acierto direccional</div><div class="btm-value">${(res.directionAcc*100).toFixed(0)}%</div><div class="btm-sub">vs. ${(res.baselineAcc*100).toFixed(0)}% apostando siempre a la dirección más común</div></div>
+      <div class="bt-metric"><div class="btm-label">Puntería real (IC)</div><div class="btm-value">${icTxt}</div><div class="btm-sub">${icNote}</div></div>
+      <div class="bt-metric"><div class="btm-label">Cobertura ±1σ</div><div class="btm-value">${(res.within1*100).toFixed(0)}%</div><div class="btm-sub">ideal ≈ 68%</div></div>
+      <div class="bt-metric"><div class="btm-label">Cobertura ±2σ</div><div class="btm-value">${(res.within2*100).toFixed(0)}%</div><div class="btm-sub">ideal ≈ 95%</div></div>
+      <div class="bt-metric"><div class="btm-label">Cuando decía "alcista"</div><div class="btm-value" style="color:${res.confBullMean>0?'var(--up)':'var(--down)'}">${res.confBullMean==null?"—":(res.confBullMean*100).toFixed(1)+"%"}</div><div class="btm-sub">retorno real promedio, ${res.confBull} casos</div></div>
+      <div class="bt-metric"><div class="btm-label">Cuando decía "bajista"</div><div class="btm-value" style="color:${res.confBearMean>0?'var(--up)':'var(--down)'}">${res.confBearMean==null?"—":(res.confBearMean*100).toFixed(1)+"%"}</div><div class="btm-sub">retorno real promedio, ${res.confBear} casos</div></div>
+    </div>`;
+    html += `<div class="bt-daterange">🔬 ${res.n} puntos probados cada ~${res.step} días hábiles, horizonte de ${res.horizonDays} días, sin ver el futuro en ninguno. Como el horizonte es más largo que la separación entre pruebas, las muestras se traslapan — el número de puntos realmente independientes es más parecido a ${res.effectiveN}, así que trátalo como una señal orientativa, no como un p-valor limpio.</div>`;
+    el.innerHTML = html;
+    el.classList.add("show");
+  }
+
   $("runBacktestBtn").addEventListener("click", async ()=>{
     const symbol = tickerInput.value.trim().toUpperCase();
     const bench = benchInput.value.trim().toUpperCase() || "SPY";
@@ -2904,6 +2999,11 @@
       // check gets as many blocks of data as possible.
       const wf = runWalkForwardMultiPeriod(daily, weekly, spyDaily, qqqDaily, benchDaily || spyDaily, 5);
       renderWalkForwardMultiResults(wf, symbol);
+
+      // Reuses the same already-downloaded daily series — no extra Twelve
+      // Data calls — to also calibrate the movement guide's analog engine.
+      const movCal = runMovementCalibration(daily);
+      renderMovementCalibration(movCal, symbol);
 
       $("btStatus").textContent = bt ? ("Listo — " + bt.years.toFixed(1) + " años simulados.") : "";
     } catch(err){
