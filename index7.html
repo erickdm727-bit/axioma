@@ -821,7 +821,7 @@
   // ---- Rate limiter: never fire more than RATE_LIMIT requests in any
   // rolling RATE_WINDOW_MS window, no matter how many the app wants to send
   // at once. Requests just wait their turn instead of erroring out. ----
-  const RATE_LIMIT = 8;
+  const RATE_LIMIT = 6; // kept below Twelve Data's real 8/min so overlapping refreshes and page reloads don't blow the server-side quota
   const RATE_WINDOW_MS = 60000;
   let callTimestamps = [];
   let rateLimitQueueLength = 0;
@@ -3251,18 +3251,10 @@
   }
 
   async function refreshPortfolioPrices(){
-    const tickers = Object.keys(groupLotsByTicker());
-    if(!tickers.length) return;
+    // Price is now derived from the same daily series refreshPortfolioLevels
+    // fetches (last close) instead of a separate /price call per ticker —
+    // halves the API credits this refresh needs. Only the FX rate is fetched here.
     if(displayCurrency === "MXN") await fetchUsdMxnRate();
-    for(const t of tickers){
-      try {
-        const p = await fetchCurrentPrice(t);
-        portPrices[t] = { price:p, ts:Date.now(), error:null };
-      } catch(e){
-        portPrices[t] = Object.assign({}, portPrices[t], { error: e.message || "error" });
-      }
-      renderPortfolioTable();
-    }
   }
   function startPortfolioAutoRefresh(){
     clearInterval(portRefreshTimer);
@@ -3375,11 +3367,13 @@
     for(const t of tickers){
       try {
         const daily = await fetchSeries(t, "1day", 260);
-        const price = (portPrices[t] && portPrices[t].price!=null) ? portPrices[t].price : daily[daily.length-1].close;
+        const price = daily[daily.length-1].close;
+        portPrices[t] = { price, ts: Date.now(), error: null };
         const sr = computeSupportResistanceLevels(daily, price);
         const alert = buildPortfolioSRAlert(daily, price, sr);
         portSRData[t] = { sr, alert, error:null, daily, price };
       } catch(e){
+        portPrices[t] = Object.assign({}, portPrices[t], { error: e.message || "error" });
         portSRData[t] = Object.assign({}, portSRData[t], { error: e.message || "error" });
       }
       renderPortfolioTable();
