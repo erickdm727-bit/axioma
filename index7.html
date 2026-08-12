@@ -309,6 +309,9 @@
   .fx-note{font-size:11.5px; color:var(--text-dim2); margin-left:auto;}
   .port-empty{color:var(--text-dim); font-size:13.5px; padding:20px; text-align:center; border:1px dashed var(--line); border-radius:var(--radius); margin-bottom:12px;}
   .port-last-update{font-size:11px; color:var(--text-dim2); margin:-4px 0 12px;}
+  .port-last-update-row{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:-4px 0 12px;}
+  .port-last-update-row .port-last-update{margin:0;}
+  .port-updated{font-size:11px; color:var(--text-dim2);}
   .port-row{border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); padding:14px 16px; margin-bottom:12px;}
   .port-row-head{display:flex; align-items:center; gap:12px; margin-bottom:10px; flex-wrap:wrap;}
   .port-ticker{font-size:15px; font-weight:700;}
@@ -660,7 +663,10 @@
     <div class="port-form-card" id="portfolioSummary" style="display:none"></div>
 
     <div class="port-empty" id="portfolioEmptyState">Aún no registras ninguna posición — agrega tu primera compra arriba.</div>
-    <div class="port-last-update" id="portLastUpdate"></div>
+    <div class="port-last-update-row">
+      <div class="port-last-update" id="portLastUpdate"></div>
+      <button class="btn-resim" id="portRefreshBtn" type="button">🔄 Actualizar ahora</button>
+    </div>
     <div id="portfolioTable"></div>
 
     <div class="port-analysis-picker" id="portAnalysisPicker" style="display:none">
@@ -2968,6 +2974,20 @@
     el.classList.add("show");
   }
 
+  $("portRefreshBtn").addEventListener("click", async ()=>{
+    const btn = $("portRefreshBtn");
+    const prevLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "Actualizando…";
+    try {
+      await fetchUsdMxnRate();
+      await refreshPortfolioLevels();
+    } finally {
+      btn.textContent = prevLabel;
+      btn.disabled = false;
+    }
+  });
+
   $("runBacktestBtn").addEventListener("click", async ()=>{
     const symbol = tickerInput.value.trim().toUpperCase();
     const bench = benchInput.value.trim().toUpperCase() || "SPY";
@@ -3112,6 +3132,16 @@
   function fmtCcy(v){
     const sym = displayCurrency==="USD" ? "$" : "MX$";
     return sym + v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+
+  function fmtRelativeTime(ts){
+    if(!ts) return "";
+    const min = Math.floor((Date.now() - ts) / 60000);
+    if(min < 1) return "justo ahora";
+    if(min < 60) return "hace " + min + " min";
+    const h = Math.floor(min / 60);
+    if(h < 24) return "hace " + h + "h " + (min % 60) + "min";
+    return "hace " + Math.floor(h / 24) + "d";
   }
 
   function updatePriceInputCurrencyUI(){
@@ -3324,6 +3354,7 @@
         <div class="port-row-head">
           <span class="port-ticker mono">${ticker}</span>
           <span class="port-shares">${sum.totalShares} acc. @ ${fmtCcy(convertUSD(sum.avgCost))} prom.</span>
+          <span class="port-updated">${info && info.ts ? fmtRelativeTime(info.ts) : ""}</span>
           <button class="port-del" data-ticker="${ticker}" title="Eliminar posición completa">🗑</button>
         </div>
         <div class="port-row-body">
@@ -3347,7 +3378,7 @@
     host.querySelectorAll(".port-del").forEach(b=>b.addEventListener("click", ()=>{ if(confirm("¿Eliminar toda la posición de "+b.dataset.ticker+"?")) deletePosition(b.dataset.ticker); }));
     host.querySelectorAll(".port-lot-del").forEach(b=>b.addEventListener("click", ()=>deleteLot(b.dataset.id)));
     const stamps = Object.values(portPrices).map(p=>p.ts).filter(Boolean);
-    $("portLastUpdate").textContent = stamps.length ? ("Precios actualizados: " + new Date(Math.max(...stamps)).toLocaleTimeString("es-MX")) : "";
+    $("portLastUpdate").textContent = stamps.length ? ("Precios: " + fmtRelativeTime(Math.max(...stamps)) + " (" + new Date(Math.max(...stamps)).toLocaleTimeString("es-MX") + ")") : "";
   }
 
   async function refreshPortfolioPrices(){
@@ -3461,8 +3492,8 @@
       text: parts.length ? `Precio a ${parts.join(" y ")} — sin niveles clave inmediatos que vigilar.` : "No hay suficiente historial para calcular soportes/resistencias confiables todavía." };
   }
 
-  async function refreshPortfolioLevels(){
-    const tickers = Object.keys(groupLotsByTicker());
+  async function refreshPortfolioLevels(onlyTickers){
+    const tickers = onlyTickers || Object.keys(groupLotsByTicker());
     if(!tickers.length) return;
     for(const t of tickers){
       try {
@@ -3537,8 +3568,14 @@
   $("tabBtnScanner").addEventListener("click", ()=>switchTab("scanner"));
   $("tabBtnPortfolio").addEventListener("click", ()=>switchTab("portfolio"));
 
-  // ---- shared cache (written every ~20 min by the "Refresh portfolio cache" GitHub Action) ----
-  const SHARED_CACHE_MAX_AGE_MS = 25 * 60 * 1000; // a bit more than the 20-min cron, to tolerate a slow run
+  // ---- shared cache, written by the "Refresh portfolio cache" GitHub
+  // Action. NOTE: GitHub runs scheduled workflows on ITS OWN schedule, not
+  // strictly ours — observed gaps in practice have ranged from 20 minutes
+  // to several hours, regardless of the cron interval in the workflow file.
+  // So this cache is best-effort freshness, never a guarantee — which is
+  // exactly why we always show it (with an honest per-ticker timestamp)
+  // instead of gating on an age cutoff and silently falling back to a live
+  // fetch that spends this device's own API credits without being asked.
   async function loadSharedPortfolioCache(){
     try {
       const res = await fetch("data/portfolio-cache.json", { cache: "no-store" });
@@ -3560,10 +3597,12 @@
     if(!Object.keys(groupLotsByTicker()).length) return;
     await fetchUsdMxnRate();
     const shared = await loadSharedPortfolioCache();
-    const sharedIsFresh = shared && typeof shared.generatedAt === "number" && (Date.now() - shared.generatedAt) < SHARED_CACHE_MAX_AGE_MS;
-    if(sharedIsFresh){
-      // instant paint from the shared cache — no device-side API credits spent
-      Object.entries(shared.tickers || {}).forEach(([t, entry]) => {
+    if(shared && shared.tickers){
+      // Always paint whatever the shared cache has, however old — no
+      // device-side API credits spent just from opening the app. The
+      // per-ticker timestamp in Portfolio shows exactly how stale it is;
+      // use "🔄 Actualizar ahora" there to force a live refresh on demand.
+      Object.entries(shared.tickers).forEach(([t, entry]) => {
         if(entry.error){
           portPrices[t] = Object.assign({}, portPrices[t], { error: entry.error, ts: entry.updatedAt });
           portSRData[t] = Object.assign({}, portSRData[t], { error: entry.error });
@@ -3573,8 +3612,12 @@
         }
       });
       renderPortfolioTable();
+      // Only live-fetch tickers the shared cache has never heard of (e.g. a
+      // position you just added that isn't in data/watchlist.json yet).
+      const missing = Object.keys(groupLotsByTicker()).filter(t => !(t in shared.tickers));
+      if(missing.length) await refreshPortfolioLevels(missing);
     } else {
-      await refreshPortfolioAll(); // no usable shared cache — fall back to live fetch, portfolio numbers first
+      await refreshPortfolioAll(); // no shared cache at all yet (first-ever load) — fetch live once
     }
     await refreshScannerCacheAll(); // then fill the Scanner cache in the background, without competing for API slots
   })();
