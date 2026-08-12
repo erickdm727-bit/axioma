@@ -1331,7 +1331,6 @@
   async function runAnalysis(symbol, benchmarkSymbol, enabled, movementTf, priority){
     setStatus("Consultando solo lo necesario…");
     setProgress(5);
-    analyzeBtn.disabled = true;
     try {
     const seriesByTf = {};
 
@@ -1368,7 +1367,7 @@
         });
       }
       await Promise.all(jobs);
-    } catch(err){ analyzeBtn.disabled=false; setProgress(null); throw err; }
+    } catch(err){ setProgress(null); throw err; }
 
     TIMEFRAMES.forEach(tf => {
       if(tf.kind === "derive" && seriesByTf[tf.base]) seriesByTf[tf.key] = aggregate(seriesByTf[tf.base], tf.group);
@@ -1438,9 +1437,9 @@
     setTimeout(()=>setProgress(null), 400);
     return out;
     } finally {
-      // guarantees the button never gets stuck disabled, no matter where
-      // inside this function something throws (price fetch, indicator math, etc.)
-      analyzeBtn.disabled = false;
+      // no analyzeBtn.disabled handling here anymore — that's owned entirely by
+      // analyze() via userAnalyzing, so background cache-warming calls to this
+      // same function never lock the button away from the user.
     }
   }
 
@@ -2724,6 +2723,7 @@
     const prevBtnLabel = analyzeBtn.textContent;
     analyzeBtn.disabled = true;
     analyzeBtn.textContent = "Analizando…";
+    userAnalyzing = true;
     try {
       // priority=true: this jumps ahead of any queued-but-not-yet-started background
       // requests (like the portfolio auto-refresh) for the next available rate-limit
@@ -2742,6 +2742,7 @@
     } finally {
       analyzeBtn.disabled = false;
       analyzeBtn.textContent = prevBtnLabel;
+      userAnalyzing = false;
       stopEtaCountdown();
       hideDataMissingBanner();
     }
@@ -3495,6 +3496,7 @@
   // opening Scanner on an owned ticker is instant, without touching the
   // shared Scanner UI unless the person explicitly picks a chip. =====
   let scannerCache = {}; // ticker -> { result, updatedAt, error }
+  let userAnalyzing = false; // true only while the user's own foreground "Analizar" click is running — background scanner-cache warming must never disable the button because of this
   let scannerRefreshTimer = null;
 
   function renderScannerTickerChips(){
@@ -3537,11 +3539,11 @@
   });
 
   async function refreshScannerCacheAll(){
-    if(analyzeBtn.disabled) return; // don't collide with a live manual analysis
+    if(userAnalyzing) return; // don't collide with a live manual analysis
     const tickers = Object.keys(groupLotsByTicker());
     if(!tickers.length) return;
     for(const t of tickers){
-      if(analyzeBtn.disabled) break;
+      if(userAnalyzing) break;
       try {
         const r = await runAnalysis(t, null, moduleEnabled, movementTf);
         scannerCache[t] = { result: r, updatedAt: Date.now(), error: null };
