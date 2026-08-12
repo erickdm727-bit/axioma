@@ -1332,6 +1332,7 @@
     setStatus("Consultando solo lo necesario…");
     setProgress(5);
     analyzeBtn.disabled = true;
+    try {
     const seriesByTf = {};
 
     const neededTfKeys = computeNeededTimeframeKeys(enabled, movementTf);
@@ -1435,8 +1436,12 @@
 
     setProgress(100);
     setTimeout(()=>setProgress(null), 400);
-    analyzeBtn.disabled = false;
     return out;
+    } finally {
+      // guarantees the button never gets stuck disabled, no matter where
+      // inside this function something throws (price fetch, indicator math, etc.)
+      analyzeBtn.disabled = false;
+    }
   }
 
   // Compares el ticker's own return against a benchmark's (SPY by default,
