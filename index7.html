@@ -312,6 +312,17 @@
   .port-last-update-row{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:-4px 0 12px;}
   .port-last-update-row .port-last-update{margin:0;}
   .port-updated{font-size:11px; color:var(--text-dim2);}
+  .movements-card{border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); padding:14px 16px; margin:18px 0;}
+  .movements-header{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;}
+  .movements-header h3{margin:0; font-size:15px;}
+  .movements-list{display:flex; flex-direction:column; gap:8px; max-height:340px; overflow-y:auto;}
+  .movement-row{display:flex; flex-direction:column; gap:2px; padding:8px 10px; border-radius:8px; background:var(--bg2, rgba(255,255,255,0.03)); border-left:3px solid var(--line);}
+  .movement-buy{border-left-color:#2ecc71;}
+  .movement-sell{border-left-color:#e74c3c;}
+  .movement-date{font-size:11px; color:var(--text-dim2);}
+  .movement-desc{font-size:13px;}
+  .movement-gain-pos{color:#2ecc71; font-weight:600;}
+  .movement-gain-neg{color:#e74c3c; font-weight:600;}
   .port-row{border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); padding:14px 16px; margin-bottom:12px;}
   .port-row-head{display:flex; align-items:center; gap:12px; margin-bottom:10px; flex-wrap:wrap;}
   .port-ticker{font-size:15px; font-weight:700;}
@@ -675,6 +686,13 @@
       <button class="btn-ghost" id="portOpenScannerBtn" type="button">Abrir en Scanner →</button>
     </div>
     <div class="port-no-position" id="portNoPositionMsg" style="display:none">Agrega una posición para ver sus niveles de soporte/resistencia.</div>
+    <div class="movements-card" id="movementsCard">
+      <div class="movements-header">
+        <h3>📜 Historial de movimientos</h3>
+        <button class="btn-ghost" id="movementsToggleBtn" type="button">Ocultar</button>
+      </div>
+      <div id="portMovementsList" class="movements-list"></div>
+    </div>
   </div>
 </main>
 
@@ -3062,9 +3080,38 @@
     }
   }
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+  const PORT_MOVEMENTS_KEY = "ta_scanner_portfolio_movements";
+  function loadPortMovements(){ try { return JSON.parse(localStorage.getItem(PORT_MOVEMENTS_KEY) || "[]"); } catch(e){ return []; } }
+  function savePortMovements(){ safeLocalStorageSet(PORT_MOVEMENTS_KEY, JSON.stringify(portMovements)); }
+  function recordMovement(mv){
+    portMovements.push(Object.assign({ id: uid(), ts: Date.now() }, mv));
+    savePortMovements();
+  }
+  function renderMovementsHistory(){
+    const host = $("portMovementsList");
+    if(!host) return;
+    if(!portMovements.length){
+      host.innerHTML = '<div class="port-empty" style="margin:0">Aún no hay movimientos registrados.</div>';
+      return;
+    }
+    const sorted = portMovements.slice().sort((a,b)=>b.ts-a.ts);
+    host.innerHTML = sorted.map(function(mv){
+      const d = new Date(mv.ts);
+      const dateTxt = d.toLocaleDateString("es-MX",{day:"numeric",month:"long",year:"numeric"}) + ", " + d.toLocaleTimeString("es-MX",{hour:"numeric",minute:"2-digit"});
+      const priceTxt = mv.entryCcy === "MXN" ? (mv.enteredPrice.toFixed(2) + " MXN") : ("$" + mv.price.toFixed(2) + " USD");
+      if(mv.type === "buy"){
+        return '<div class="movement-row movement-buy"><div class="movement-date">' + dateTxt + '</div><div class="movement-desc">Compraste <b>' + mv.shares + '</b> acciones de <b>' + mv.ticker + '</b> a ' + priceTxt + '</div></div>';
+      } else {
+        const gainTxt = mv.gainUSD>=0 ? ("+$" + mv.gainUSD.toFixed(2)) : ("-$" + Math.abs(mv.gainUSD).toFixed(2));
+        const gainClass = mv.gainUSD>=0 ? "movement-gain-pos" : "movement-gain-neg";
+        return '<div class="movement-row movement-sell"><div class="movement-date">' + dateTxt + '</div><div class="movement-desc">Vendiste <b>' + mv.shares + '</b> acciones de <b>' + mv.ticker + '</b> a ' + priceTxt + ' <span class="' + gainClass + '">(' + gainTxt + ' USD)</span></div></div>';
+      }
+    }).join("");
+  }
 
   let portLots = loadPortLots();
   let portSales = loadPortSales();
+  let portMovements = loadPortMovements();
   let displayCurrency = localStorage.getItem(PORT_CCY_KEY) || "USD";
   let usdMxnRate = null, usdMxnRateTs = 0;
   let portPrices = {};
@@ -3170,6 +3217,12 @@
     el.className = "port-form-status" + (isErr ? " err" : (msg ? " ok" : ""));
   }
 
+  function setPortSellFormStatus(msg, isErr){
+    const el = $("portSellFormStatus");
+    el.textContent = msg || "";
+    el.className = "port-form-status" + (isErr ? " err" : (msg ? " ok" : ""));
+  }
+
   $("portAddBtn").addEventListener("click", async ()=>{
     const ticker = $("portTickerInput").value.trim().toUpperCase();
     const shares = parseFloat($("portSharesInput").value);
@@ -3195,10 +3248,12 @@
     // of silently relabeling it as USD.
     portLots.push({ id:uid(), ticker, shares, price:priceUSD, entryCcy, entryPrice:enteredPrice, ts:Date.now() });
     savePortLots();
+    recordMovement({ type:"buy", ticker, shares, price:priceUSD, entryCcy, enteredPrice });
     $("portTickerInput").value = ""; $("portSharesInput").value = ""; $("portPriceInput").value = "";
     setPortFormStatus(entryCcy === "MXN" ? `Compra agregada (${enteredPrice.toFixed(2)} MXN ≈ ${priceUSD.toFixed(2)} USD).` : "Compra agregada.");
     renderPortfolioTable();
     populateTickerSelect();
+    renderMovementsHistory();
     refreshPortfolioAll();
   });
 
@@ -3227,13 +3282,35 @@
     try {
       const result = sellShares(ticker, sharesSold, sellPriceUSD);
       recordRealizedSale({ ticker, shares: sharesSold, avgCost: result.avgCost, sellPrice: sellPriceUSD, entryCcy, entrySellPrice: enteredPrice, gainUSD: result.gainUSD });
+      recordMovement({ type:"sell", ticker, shares: sharesSold, price: sellPriceUSD, entryCcy, enteredPrice, gainUSD: result.gainUSD });
       $("portSellTickerInput").value = ""; $("portSellSharesInput").value = ""; $("portSellPriceInput").value = "";
-      setPortSellFormStatus(`Venta registrada. Ganancia/pérdida realizada: ${result.gainUSD.toFixed(2)} USD.`);
+      const remLots = portLots.filter(l=>l.ticker===ticker);
+      const remSum = positionSummary(remLots);
+      const curPrice = portPrices[ticker];
+      let extra;
+      if(remSum.totalShares > 1e-9){
+        const valTxt = (curPrice!=null) ? (" (valor actual ≈ $" + (curPrice*remSum.totalShares).toFixed(2) + " USD)") : "";
+        extra = " Te quedan " + remSum.totalShares + " acciones de " + ticker + valTxt + ".";
+      } else {
+        extra = " Cerraste tu posición completa en " + ticker + ".";
+      }
+      const gainTxt = result.gainUSD >= 0 ? ("ganaste $" + result.gainUSD.toFixed(2) + " USD") : ("perdiste $" + Math.abs(result.gainUSD).toFixed(2) + " USD");
+      setPortSellFormStatus("Venta registrada: " + gainTxt + " en esta operación." + extra);
       renderPortfolioTable();
       populateTickerSelect();
+      renderMovementsHistory();
     } catch(e){
       setPortSellFormStatus(e.message || "No se pudo registrar la venta.", true);
     }
+  });
+
+  $("movementsToggleBtn") && $("movementsToggleBtn").addEventListener("click", ()=>{
+    const list = $("portMovementsList");
+    const btn = $("movementsToggleBtn");
+    if(!list || !btn) return;
+    const hidden = list.style.display === "none";
+    list.style.display = hidden ? "" : "none";
+    btn.textContent = hidden ? "Ocultar" : "Mostrar";
   });
 
   function deleteLot(id){ portLots = portLots.filter(l=>l.id!==id); savePortLots(); renderPortfolioTable(); populateTickerSelect(); }
@@ -3589,6 +3666,7 @@
   // ---- init ----
   updatePriceInputCurrencyUI();
   renderPortfolioTable();
+  renderMovementsHistory();
   populateTickerSelect();
   renderScannerTickerChips();
   startPortfolioAutoRefresh();
