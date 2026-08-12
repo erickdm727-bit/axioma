@@ -857,20 +857,29 @@
   const RATE_LIMIT = 6; // kept below Twelve Data's real 8/min so overlapping refreshes and page reloads don't blow the server-side quota
   const RATE_WINDOW_MS = 60000;
   let callTimestamps = [];
-  let rateLimitQueueLength = 0;
-  async function acquireRateSlot(){
-    while(true){
-      const now = Date.now();
-      callTimestamps = callTimestamps.filter(t => now - t < RATE_WINDOW_MS);
-      if(callTimestamps.length < RATE_LIMIT){
-        callTimestamps.push(now);
-        return;
-      }
-      rateLimitQueueLength++;
-      const waitMs = RATE_WINDOW_MS - (now - callTimestamps[0]) + 300;
-      setStatus(`Límite de ${RATE_LIMIT} peticiones/min de Twelve Data alcanzado — esperando ${Math.ceil(waitMs/1000)}s para seguir (sin perder lo ya traído)…`);
-      await sleep(Math.min(waitMs, 4000)); // recheck periodically in case the window frees up sooner
+  let rateLimitWaiters = []; // { resolve, priority, ts } — queued requests waiting their turn. Higher-priority ones (a fresh "Analizar" click) jump ahead of queued-but-not-yet-started background ones; anything already mid-fetch is never interrupted.
+  let rateLimitTimer = null;
+  function pumpRateLimitQueue(){
+    const now = Date.now();
+    callTimestamps = callTimestamps.filter(t => now - t < RATE_WINDOW_MS);
+    while(callTimestamps.length < RATE_LIMIT && rateLimitWaiters.length){
+      rateLimitWaiters.sort((a,b) => (b.priority - a.priority) || (a.ts - b.ts));
+      const w = rateLimitWaiters.shift();
+      callTimestamps.push(Date.now());
+      w.resolve();
     }
+    clearTimeout(rateLimitTimer);
+    if(rateLimitWaiters.length){
+      const waitMs = callTimestamps.length ? Math.max(300, RATE_WINDOW_MS - (now - callTimestamps[0]) + 300) : 500;
+      setStatus(`Límite de ${RATE_LIMIT} peticiones/min de Twelve Data alcanzado — esperando ${Math.ceil(waitMs/1000)}s para seguir (sin perder lo ya traído)…`);
+      rateLimitTimer = setTimeout(pumpRateLimitQueue, Math.min(waitMs, 4000));
+    }
+  }
+  function acquireRateSlot(priority){
+    return new Promise((resolve)=>{
+      rateLimitWaiters.push({ resolve, priority: priority ? 1 : 0, ts: Date.now() });
+      pumpRateLimitQueue();
+    });
   }
 
   // Rough ETA in seconds for a batch of `totalCalls` fresh requests, given
@@ -908,7 +917,7 @@
     return !!cached && (Date.now() - cached.ts) < cacheTtlFor(path, params);
   }
 
-  async function tdFetch(path, params){
+  async function tdFetch(path, params, priority){
     const key = getApiKey();
     if(!key){ overlay.style.display = "flex"; throw new Error("Falta tu API key de Twelve Data. Pégala en ⚙ API key."); }
     const cacheKey = cacheKeyFor(path, params);
@@ -922,7 +931,7 @@
     let networkAttempt = 0, rateAttempt = 0;
     const MAX_NETWORK_RETRIES = 3, MAX_RATE_RETRIES = 3;
     while(true){
-      await acquireRateSlot();
+      await acquireRateSlot(priority);
       let res;
       try {
         res = await fetch(url.toString());
@@ -955,8 +964,8 @@
     }
   }
 
-  async function fetchSeries(symbol, interval, outputsize){
-    const data = await tdFetch("/time_series", { symbol, interval, outputsize });
+  async function fetchSeries(symbol, interval, outputsize, priority){
+    const data = await tdFetch("/time_series", { symbol, interval, outputsize }, priority);
     if(!data.values || !Array.isArray(data.values)) throw new Error(`Sin datos para ${symbol} en ${interval}. Revisa el ticker.`);
     return data.values.map(v => ({
       datetime:v.datetime,
@@ -1319,7 +1328,7 @@
   }
 
   // ================= Analysis pipeline =================
-  async function runAnalysis(symbol, benchmarkSymbol, enabled, movementTf){
+  async function runAnalysis(symbol, benchmarkSymbol, enabled, movementTf, priority){
     setStatus("Consultando solo lo necesario…");
     setProgress(5);
     analyzeBtn.disabled = true;
@@ -1337,13 +1346,13 @@
     const marketErrors = { SPY:null, QQQ:null };
     try {
       const jobs = fetchesNeeded.map(async (tf) => {
-        const s = await fetchSeries(symbol, tf.interval, tf.outputsize);
+        const s = await fetchSeries(symbol, tf.interval, tf.outputsize, priority);
         seriesByTf[tf.key] = s;
         done++; setProgress(5 + (done/totalFetches)*70);
       });
       if(needBenchmark){
         jobs.push((async ()=>{
-          try { benchmarkSeries = await fetchSeries(benchmarkSymbol, "1day", 260); }
+          try { benchmarkSeries = await fetchSeries(benchmarkSymbol, "1day", 260, priority); }
           catch(e){ benchmarkError = e.message; }
           done++; setProgress(5 + (done/totalFetches)*70);
         })());
@@ -1351,7 +1360,7 @@
       if(needMarketCtx){
         ["SPY","QQQ"].forEach(sym => {
           jobs.push((async ()=>{
-            try { marketSeries[sym] = await fetchSeries(sym, "1day", 100); }
+            try { marketSeries[sym] = await fetchSeries(sym, "1day", 100, priority); }
             catch(e){ marketErrors[sym] = e.message; }
             done++; setProgress(5 + (done/totalFetches)*70);
           })());
@@ -2707,8 +2716,14 @@
     const freshCalls = countFreshCallsNeeded(raw, bench || null, moduleEnabled, movementTf);
     if(freshCalls > 0) startEtaCountdown(estimateFetchSeconds(freshCalls), freshCalls);
 
+    const prevBtnLabel = analyzeBtn.textContent;
+    analyzeBtn.disabled = true;
+    analyzeBtn.textContent = "Analizando…";
     try {
-      const r = await runAnalysis(raw, bench || null, moduleEnabled, movementTf);
+      // priority=true: this jumps ahead of any queued-but-not-yet-started background
+      // requests (like the portfolio auto-refresh) for the next available rate-limit
+      // slots. Anything already mid-fetch keeps running untouched.
+      const r = await runAnalysis(raw, bench || null, moduleEnabled, movementTf, true);
       lastResult = r;
       renderPrice(raw, r.currentPrice);
 
@@ -2720,6 +2735,8 @@
     } catch(err){
       setStatus(err.message || "Ocurrió un error al analizar el ticker.", true);
     } finally {
+      analyzeBtn.disabled = false;
+      analyzeBtn.textContent = prevBtnLabel;
       stopEtaCountdown();
       hideDataMissingBanner();
     }
