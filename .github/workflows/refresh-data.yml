@@ -2,7 +2,7 @@ name: Refresh portfolio cache
 
 on:
   schedule:
-    - cron: "*/20 * * * *"
+      - cron: "0 * * * *"  # GitHub delays sub-hourly cron heavily; hourly is more realistic
   workflow_dispatch: {}
 
 permissions:
