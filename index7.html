@@ -2675,7 +2675,7 @@
   function renderPresetTabs(){
     const host = $("presetTabsRow");
     if(!host) return;
-    let html = '<button type="button" class="preset-tab' + (activePresetId===null?" active":"") + '" data-preset="custom">Personalizar</button>';
+    let html = '<button type="button" class="preset-tab' + (activePresetId===null?" active":"") + '" data-preset="custom">Personalizado</button>';
     html += instrumentPresets.map(function(p){
       return '<button type="button" class="preset-tab' + (activePresetId===p.id?" active":"") + '" data-preset="' + p.id + '">' + escapePresetName(p.name) + '<span class="preset-del" data-del="' + p.id + '" title="Eliminar">\u2715</span></button>';
     }).join("");
