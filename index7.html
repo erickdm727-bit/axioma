@@ -314,6 +314,18 @@
   .ccy-btn.active{background:var(--accent-dim); border-color:var(--accent); color:var(--accent);}
   .fx-note{font-size:11.5px; color:var(--text-dim2); margin-left:auto;}
   .port-empty{color:var(--text-dim); font-size:13.5px; padding:20px; text-align:center; border:1px dashed var(--line); border-radius:var(--radius); margin-bottom:12px;}
+  .ext-counter-row{display:flex; align-items:center; gap:12px; margin:4px 0 12px;}
+  .ext-counter-bar{flex:1; height:8px; background:var(--panel-2); border:1px solid var(--line); border-radius:99px; overflow:hidden;}
+  .ext-counter-fill{height:100%; background:var(--accent); width:0%; transition:width .2s;}
+  .ext-counter-fill.full{background:var(--down);}
+  .ext-counter-text{font-size:12.5px; color:var(--text-dim); white-space:nowrap; font-weight:600;}
+  .ext-sync-banner{font-size:12.5px; color:var(--mixed); background:var(--mixed-dim); border:1px solid var(--mixed); border-radius:8px; padding:10px 12px; margin:10px 0; line-height:1.5;}
+  .ext-ticker-chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
+  .ext-chip{display:flex; align-items:center; gap:8px; background:var(--panel-2); border:1px solid var(--line); border-radius:99px; padding:6px 6px 6px 12px; font-size:12.5px;}
+  .ext-chip-ticker{font-weight:700;}
+  .ext-chip-src{color:var(--text-dim2); font-size:10.5px;}
+  .ext-chip-rm{background:none; border:none; color:var(--text-dim2); cursor:pointer; font-size:13px; padding:2px 6px; border-radius:99px;}
+  .ext-chip-rm:hover{color:var(--down); background:var(--down-dim);}
   .port-last-update{font-size:11px; color:var(--text-dim2); margin:-4px 0 12px;}
   .port-last-update-row{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:-4px 0 12px;}
   .port-last-update-row .port-last-update{margin:0;}
@@ -364,6 +376,7 @@
   <div class="tabbar">
     <button class="tabbtn active" id="tabBtnScanner" type="button">Scanner</button>
     <button class="tabbtn" id="tabBtnPortfolio" type="button">Portafolio</button>
+    <button class="tabbtn" id="tabBtnExtended" type="button">Horario extendido</button>
   </div>
 
   <div id="tabpanel-scanner" class="tabpanel">
@@ -699,6 +712,24 @@
         <button class="btn-ghost" id="movementsToggleBtn" type="button">Ocultar</button>
       </div>
       <div id="portMovementsList" class="movements-list"></div>
+    </div>
+  </div>
+
+  <div id="tabpanel-extended" class="tabpanel" style="display:none">
+    <div class="port-form-card">
+      <h3>🌙 Horario extendido — archivo histórico</h3>
+      <div class="ext-counter-row">
+        <div class="ext-counter-bar"><div id="extCounterFill" class="ext-counter-fill"></div></div>
+        <span id="extCounterText" class="ext-counter-text">0 de 70</span>
+      </div>
+      <div class="port-form-hint">Se guarda 1 vez al día (pre-mercado, mercado y post-mercado) para cada ticker de esta lista, vía un job automático en GitHub — así el historial se acumula con el tiempo aunque el proveedor de datos solo retenga un mes. Los tickers de tu portafolio se agregan solos (mientras haya cupo); aquí puedes agregar otros manualmente.</div>
+      <div class="port-form-row">
+        <input id="extTickerInput" type="text" placeholder="Ticker, ej. NVDA" autocomplete="off" spellcheck="false">
+        <button class="btn" id="extAddBtn" type="button">Agregar a la lista</button>
+      </div>
+      <div class="port-form-status" id="extFormStatus"></div>
+      <div id="extSyncBanner" class="ext-sync-banner" style="display:none"></div>
+      <div id="extTickerChips" class="ext-ticker-chips"></div>
     </div>
   </div>
 </main>
@@ -3173,12 +3204,16 @@
   const FX_URL = "https://api.frankfurter.dev/v1/latest?base=USD&symbols=MXN";
 
   const PORT_SALES_KEY = "ta_scanner_portfolio_sales";
+  const EXTENDED_HOURS_KEY = "ta_scanner_extended_hours_tickers";
+  const EXTENDED_HOURS_CAP = 70;
 
   function loadPortLots(){ try { return JSON.parse(localStorage.getItem(PORT_LOTS_KEY) || "[]"); } catch(e){ return []; } }
   function savePortLots(){
     if(!safeLocalStorageSet(PORT_LOTS_KEY, JSON.stringify(portLots))){
       setPortFormStatus("⚠ No se pudo guardar tu portafolio en este dispositivo (almacenamiento lleno o bloqueado) — vuelve a intentarlo o libera espacio.", true);
     }
+    syncExtendedHoursAutoTickers();
+    renderExtendedHoursTab();
   }
   function loadPortSales(){ try { return JSON.parse(localStorage.getItem(PORT_SALES_KEY) || "[]"); } catch(e){ return []; } }
   function savePortSales(){
@@ -3728,8 +3763,10 @@
     activeTab = tab;
     $("tabBtnScanner").classList.toggle("active", tab==="scanner");
     $("tabBtnPortfolio").classList.toggle("active", tab==="portfolio");
+    $("tabBtnExtended").classList.toggle("active", tab==="extended");
     $("tabpanel-scanner").style.display = tab==="scanner" ? "" : "none";
     $("tabpanel-portfolio").style.display = tab==="portfolio" ? "" : "none";
+    $("tabpanel-extended").style.display = tab==="extended" ? "" : "none";
     if(tab === "scanner"){
       moveAnalysisSectionTo("scannerAnalysisHost");
       if(scannerLastTicker){
@@ -3737,7 +3774,7 @@
         benchInput.value = scannerLastBench || benchInput.value || "SPY";
         analyze();
       }
-    } else {
+    } else if(tab === "portfolio"){
       populateTickerSelect();
       const tickers = Object.keys(groupLotsByTicker());
       if(tickers.length){
@@ -3748,10 +3785,130 @@
         $("portAnalysisPicker").style.display = "none";
         $("portNoPositionMsg").style.display = "block";
       }
+    } else if(tab === "extended"){
+      renderExtendedHoursTab();
     }
   }
   $("tabBtnScanner").addEventListener("click", ()=>switchTab("scanner"));
   $("tabBtnPortfolio").addEventListener("click", ()=>switchTab("portfolio"));
+  $("tabBtnExtended").addEventListener("click", ()=>switchTab("extended"));
+
+  // ---- Extended-hours archiving: portfolio tickers are auto-added
+  // (subject to a hard cap of EXTENDED_HOURS_CAP), plus any tickers the
+  // user manually adds in the "Horario extendido" tab. The list lives in
+  // localStorage; "official" sync to the repo (read by the daily GitHub
+  // Action that pulls StockData.org data) happens by asking Claude to
+  // push it in chat -- no GitHub write token is ever stored in the
+  // browser, only a read of the last-synced file to show a pending-changes
+  // banner.
+  function loadExtendedHoursTickers(){ try { return JSON.parse(localStorage.getItem(EXTENDED_HOURS_KEY) || "[]"); } catch(e){ return []; } }
+  function saveExtendedHoursTickers(list){
+    if(!safeLocalStorageSet(EXTENDED_HOURS_KEY, JSON.stringify(list))){
+      const el = $("extFormStatus");
+      if(el){ el.textContent = "⚠ No se pudo guardar la lista en este dispositivo."; el.className = "port-form-status err"; }
+    }
+  }
+
+  function syncExtendedHoursAutoTickers(){
+    const list = loadExtendedHoursTickers();
+    const portfolioTickers = Object.keys(groupLotsByTicker());
+    let changed = false;
+    for(const t of portfolioTickers){
+      if(!list.some(e=>e.ticker===t)){
+        if(list.length < EXTENDED_HOURS_CAP){
+          list.push({ ticker: t, source: "portfolio", addedAt: Date.now() });
+          changed = true;
+        }
+      }
+    }
+    if(changed) saveExtendedHoursTickers(list);
+    return list;
+  }
+
+  function addExtendedHoursTicker(raw){
+    const t = (raw || "").trim().toUpperCase();
+    if(!t) return { ok:false, msg:"Escribe un ticker." };
+    const list = loadExtendedHoursTickers();
+    if(list.some(e=>e.ticker===t)) return { ok:false, msg: t + " ya está en la lista." };
+    if(list.length >= EXTENDED_HOURS_CAP) return { ok:false, msg: "Límite de " + EXTENDED_HOURS_CAP + " alcanzado — quita alguno antes de agregar otro." };
+    list.push({ ticker: t, source: "manual", addedAt: Date.now() });
+    saveExtendedHoursTickers(list);
+    return { ok:true };
+  }
+
+  function removeExtendedHoursTicker(t){
+    const list = loadExtendedHoursTickers().filter(e=>e.ticker!==t);
+    saveExtendedHoursTickers(list);
+  }
+
+  let extendedHoursRemoteTickers = null; // last-synced list read from the repo, for the pending-changes banner
+  async function loadExtendedHoursRemote(){
+    try {
+      const res = await fetch("data/extended-hours-tickers.json", { cache: "no-store" });
+      if(!res.ok) { extendedHoursRemoteTickers = []; return; }
+      const j = await res.json();
+      extendedHoursRemoteTickers = Array.isArray(j.tickers) ? j.tickers : [];
+    } catch(e){ extendedHoursRemoteTickers = null; }
+  }
+
+  function escapeExtTicker(str){ return String(str).replace(/[&<>"']/g, function(c){ return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]; }); }
+
+  async function renderExtendedHoursTab(){
+    syncExtendedHoursAutoTickers();
+    const list = loadExtendedHoursTickers();
+    const pct = Math.min(100, Math.round(list.length / EXTENDED_HOURS_CAP * 100));
+    $("extCounterFill").style.width = pct + "%";
+    $("extCounterFill").classList.toggle("full", list.length >= EXTENDED_HOURS_CAP);
+    $("extCounterText").textContent = list.length + " de " + EXTENDED_HOURS_CAP;
+    $("extTickerChips").innerHTML = list.length ? list.map(function(e){
+      return '<span class="ext-chip" data-ticker="' + escapeExtTicker(e.ticker) + '">' +
+        '<span class="ext-chip-ticker">' + escapeExtTicker(e.ticker) + '</span>' +
+        '<span class="ext-chip-src">' + (e.source === "portfolio" ? "portafolio" : "manual") + '</span>' +
+        '<button class="ext-chip-rm" data-ticker="' + escapeExtTicker(e.ticker) + '" type="button" title="Quitar">✕</button>' +
+        '</span>';
+    }).join("") : '<div class="port-empty">Todavía no hay tickers en la lista.</div>';
+
+    if(extendedHoursRemoteTickers === null) await loadExtendedHoursRemote();
+    const banner = $("extSyncBanner");
+    if(extendedHoursRemoteTickers){
+      const localSet = new Set(list.map(e=>e.ticker));
+      const remoteSet = new Set(extendedHoursRemoteTickers);
+      const added = [...localSet].filter(t=>!remoteSet.has(t));
+      const removed = [...remoteSet].filter(t=>!localSet.has(t));
+      if(added.length || removed.length){
+        const parts = [];
+        if(added.length) parts.push("agregar: " + added.join(", "));
+        if(removed.length) parts.push("quitar: " + removed.join(", "));
+        banner.textContent = "⏳ Cambios pendientes de sincronizar en GitHub (" + parts.join(" · ") + ") — dile a Claude \"sincroniza el horario extendido\" para aplicarlos.";
+        banner.style.display = "block";
+      } else {
+        banner.style.display = "none";
+      }
+    } else {
+      banner.style.display = "none";
+    }
+  }
+
+  $("extAddBtn").addEventListener("click", function(){
+    const r = addExtendedHoursTicker($("extTickerInput").value);
+    const statusEl = $("extFormStatus");
+    if(r.ok){
+      $("extTickerInput").value = "";
+      statusEl.textContent = "✓ Agregado.";
+      statusEl.className = "port-form-status ok";
+      renderExtendedHoursTab();
+    } else {
+      statusEl.textContent = "⚠ " + r.msg;
+      statusEl.className = "port-form-status err";
+    }
+  });
+  $("extTickerInput").addEventListener("keydown", function(e){ if(e.key === "Enter") $("extAddBtn").click(); });
+  $("extTickerChips").addEventListener("click", function(e){
+    const btn = e.target.closest(".ext-chip-rm");
+    if(!btn) return;
+    removeExtendedHoursTicker(btn.dataset.ticker);
+    renderExtendedHoursTab();
+  });
 
   // ---- shared cache, written by the "Refresh portfolio cache" GitHub
   // Action. NOTE: GitHub runs scheduled workflows on ITS OWN schedule, not
