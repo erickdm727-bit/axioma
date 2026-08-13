@@ -66,6 +66,12 @@
   .bench-hint{font-size:11px; color:var(--text-dim2);}
 
   .toggle-panel{border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); padding:14px 16px; margin-bottom:18px;}
+  .preset-tabs-row{display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:12px;}
+  .preset-tab{background:var(--panel-2); border:1px solid var(--line); color:var(--text-dim); font-size:12.5px; padding:6px 10px 6px 14px; border-radius:99px; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:6px;}
+  .preset-tab.active{background:var(--accent-dim); border-color:var(--accent); color:var(--accent);}
+  .preset-tab-add{background:transparent; border:1px dashed var(--line); color:var(--text-dim2); font-size:12.5px; padding:6px 14px; border-radius:99px; cursor:pointer; font-weight:600;}
+  .preset-del{font-size:11px; opacity:0.6; padding:0 2px;}
+  .preset-del:hover{opacity:1; color:#e74c3c;}
   .toggle-panel-head{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
   .toggle-panel-head h4{font-size:13px; margin:0; font-weight:700;}
   .toggle-panel-head .thint{font-size:11px; color:var(--text-dim2); margin-left:auto;}
@@ -378,6 +384,7 @@
 
   <div id="scannerAnalysisHost"><div id="analysisSection">
   <div class="toggle-panel">
+    <div class="preset-tabs-row" id="presetTabsRow"></div>
     <div class="toggle-panel-head">
       <h4>⚙ Instrumentos activos</h4>
       <div class="toggle-quick">
@@ -2575,6 +2582,11 @@
     { key:"setup", title:"Setup Beardo" },
   ];
   const TOGGLE_STORAGE_KEY = "ta_scanner_module_toggles";
+  const INSTRUMENT_PRESETS_KEY = "ta_scanner_instrument_presets";
+  function loadInstrumentPresets(){ try { return JSON.parse(localStorage.getItem(INSTRUMENT_PRESETS_KEY) || "[]"); } catch(e){ return []; } }
+  function saveInstrumentPresets(){ safeLocalStorageSet(INSTRUMENT_PRESETS_KEY, JSON.stringify(instrumentPresets)); }
+  let instrumentPresets = loadInstrumentPresets(); // [{id, name, modules:{key:bool,...}}]
+  let activePresetId = null; // null = "Personalizar" (manual mode, same as before presets existed)
   let moduleEnabled = {};
   (function initToggles(){
     let saved = {};
@@ -2653,6 +2665,78 @@
     if(lastResult) recomputeAndRenderVerdictAndMovement(lastResult);
   });
   buildTogglePanel();
+
+  function escapePresetName(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c];
+    });
+  }
+
+  function renderPresetTabs(){
+    const host = $("presetTabsRow");
+    if(!host) return;
+    let html = '<button type="button" class="preset-tab' + (activePresetId===null?" active":"") + '" data-preset="custom">Personalizar</button>';
+    html += instrumentPresets.map(function(p){
+      return '<button type="button" class="preset-tab' + (activePresetId===p.id?" active":"") + '" data-preset="' + p.id + '">' + escapePresetName(p.name) + '<span class="preset-del" data-del="' + p.id + '" title="Eliminar">\u2715</span></button>';
+    }).join("");
+    html += '<button type="button" class="preset-tab-add" id="addPresetBtn">+ Agregar método</button>';
+    host.innerHTML = html;
+  }
+
+  function applyInstrumentPreset(id){
+    if(id === "custom"){
+      activePresetId = null;
+      renderPresetTabs();
+      return;
+    }
+    const preset = instrumentPresets.find(function(p){ return p.id === id; });
+    if(!preset) return;
+    MODULE_DEFS.forEach(function(m){ if(preset.modules[m.key] !== undefined) moduleEnabled[m.key] = preset.modules[m.key]; });
+    saveToggles(); buildTogglePanel(); applyAllToggleUI();
+    activePresetId = id;
+    renderPresetTabs();
+    if(lastResult){
+      recomputeAndRenderVerdictAndMovement(lastResult);
+      const missing = MODULE_DEFS.filter(function(m){ return !moduleNeedsMet(m.key, lastResult); });
+      if(missing.length) scheduleAutoRefetch(missing.map(function(m){ return m.title; }).join(", "));
+    }
+  }
+
+  function addInstrumentPreset(){
+    const name = prompt("Nombre del método (ej. Método 1):");
+    if(!name || !name.trim()) return;
+    const snapshot = {};
+    MODULE_DEFS.forEach(function(m){ snapshot[m.key] = !!moduleEnabled[m.key]; });
+    const preset = { id: uid(), name: name.trim(), modules: snapshot };
+    instrumentPresets.push(preset);
+    saveInstrumentPresets();
+    activePresetId = preset.id;
+    renderPresetTabs();
+  }
+
+  function deleteInstrumentPreset(id){
+    instrumentPresets = instrumentPresets.filter(function(p){ return p.id !== id; });
+    saveInstrumentPresets();
+    if(activePresetId === id) activePresetId = null;
+    renderPresetTabs();
+  }
+
+  const presetTabsHost = $("presetTabsRow");
+  if(presetTabsHost){
+    presetTabsHost.addEventListener("click", function(e){
+      const delBtn = e.target.closest(".preset-del");
+      if(delBtn){
+        e.stopPropagation();
+        if(confirm("¿Eliminar este método?")) deleteInstrumentPreset(delBtn.dataset.del);
+        return;
+      }
+      const addBtn = e.target.closest("#addPresetBtn");
+      if(addBtn){ addInstrumentPreset(); return; }
+      const tab = e.target.closest(".preset-tab");
+      if(tab){ applyInstrumentPreset(tab.dataset.preset); }
+    });
+  }
+  renderPresetTabs();
 
   // ================= Flow =================
   let lastResult = null;      // cached full analysis (candles + all computed indicators)
