@@ -1066,6 +1066,47 @@
     return parseFloat(data.price);
   }
 
+  // ---- Extended-hours 4h candles (opt-in override) ----
+  // Builds 4h candles spanning the full trading day (pre-market ~4:00-9:30 ET,
+  // regular 9:30-16:00 ET, after-hours 16:00-20:00 ET) from the minute bars
+  // archived daily by the GitHub Action into data/extended-hours/<TICKER>.json.
+  // Falls back silently to the regular-session 4h from Twelve Data wherever
+  // there isn't enough archived history yet.
+  async function loadExtendedHoursBars(ticker){
+    try {
+      const res = await fetch("data/extended-hours/" + encodeURIComponent(ticker) + ".json", { cache:"no-store" });
+      if(!res.ok) return null;
+      const j = await res.json();
+      return Array.isArray(j.bars) ? j.bars : null;
+    } catch(e){ return null; }
+  }
+
+  function buildExtendedHours4hCandles(bars){
+    if(!bars || !bars.length) return [];
+    const sorted = bars.slice().sort((a,b) => a.t < b.t ? -1 : a.t > b.t ? 1 : 0);
+    const byBucket = new Map();
+    sorted.forEach(b => {
+      if(!b || !b.t) return;
+      const day = b.t.slice(0,10);
+      const hh = parseInt(b.t.slice(11,13), 10);
+      const bucketIdx = Math.min(3, Math.floor(Math.max(0, hh-4) / 4)); // 4-8,8-12,12-16,16-20 ET
+      const key = day + "|" + bucketIdx;
+      let g = byBucket.get(key);
+      if(!g){
+        g = { key, open:b.o, high:b.h, low:b.l, close:b.c, volume:(b.v||0), datetime: day + " " + String(4+bucketIdx*4).padStart(2,"0") + ":00:00" };
+        byBucket.set(key, g);
+      } else {
+        g.high = Math.max(g.high, b.h);
+        g.low = Math.min(g.low, b.l);
+        g.close = b.c;
+        g.volume += (b.v||0);
+      }
+    });
+    return Array.from(byBucket.values())
+      .sort((a,b) => a.key < b.key ? -1 : 1)
+      .map(g => ({ datetime:g.datetime, open:g.open, high:g.high, low:g.low, close:g.close, volume:g.volume }));
+  }
+
   // ================= Shared math =================
   function aggregate(rawAsc, groupSize){
     const groups = [];
@@ -1476,6 +1517,18 @@
       if(tf.kind === "derive" && seriesByTf[tf.base]) seriesByTf[tf.key] = aggregate(seriesByTf[tf.base], tf.group);
     });
 
+    // Opt-in: build extended-hours 4h candles if any eligible module wants them.
+    const wantsExtended4h = EXTENDED_HOURS_MODULE_KEYS.some(k => enabled[k] && moduleExtendedHours[k]);
+    if(wantsExtended4h){
+      try {
+        const ehBars = await loadExtendedHoursBars(symbol);
+        if(ehBars && ehBars.length){
+          const extCandles = buildExtendedHours4hCandles(ehBars);
+          if(extCandles.length >= 2) seriesByTf["4h_ext"] = extCandles;
+        }
+      } catch(e){ /* silent fallback to regular-session 4h */ }
+    }
+
     setProgress(80);
     let currentPrice;
     try {
@@ -1533,16 +1586,26 @@
       const ad = adLine(candles);
       out.ad[tf.key] = ad ? { rising: ad.rising } : { status:"na" };
 
-      const wr = williamsR(candles);
+      // Opt-in extended-hours override: only kicks in on the 4h timeframe,
+      // only for indicators the user explicitly flagged, and only when the
+      // archive actually produced usable candles — otherwise falls back to
+      // the regular-session `candles` used by every other indicator.
+      const extCandles4h = (tf.key === "4h" && seriesByTf["4h_ext"] && seriesByTf["4h_ext"].length >= 2) ? seriesByTf["4h_ext"] : null;
+      const williamsCandles = (moduleExtendedHours.williams && extCandles4h) ? extCandles4h : candles;
+      const cloudA2050Candles = (moduleExtendedHours.emacloud2050 && extCandles4h) ? extCandles4h : candles;
+      const cloudB50100Candles = (moduleExtendedHours.emacloud50100 && extCandles4h) ? extCandles4h : candles;
+      const srCandles = (moduleExtendedHours.sr && extCandles4h) ? extCandles4h : candles;
+
+      const wr = williamsR(williamsCandles);
       out.williams[tf.key] = wr ? { value: wr.value, rising: wr.value > wr.prev } : { status:"na" };
 
-      const cloudA = emaCloud(closes, 20, 50);
+      const cloudA = emaCloud(cloudA2050Candles.map(c=>c.close), 20, 50);
       out.emacloud2050[tf.key] = cloudA ? { bullish: cloudA.bullish } : { status:"na" };
 
-      const cloudB = emaCloud(closes, 50, 100);
+      const cloudB = emaCloud(cloudB50100Candles.map(c=>c.close), 50, 100);
       out.emacloud50100[tf.key] = cloudB ? { bullish: cloudB.bullish } : { status:"na" };
 
-      const srRes = computeSupportResistanceLevels(candles, currentPrice);
+      const srRes = computeSupportResistanceLevels(srCandles, currentPrice);
       let srOut = { status:"na" };
       if(srRes){
         const s1 = srRes.supports[0], r1 = srRes.resistances[0];
@@ -2785,6 +2848,23 @@
     try { saved = JSON.parse(localStorage.getItem(TOGGLE_STORAGE_KEY) || "{}"); } catch(e){}
     MODULE_DEFS.forEach(m => { moduleEnabled[m.key] = saved[m.key] !== undefined ? saved[m.key] : true; });
   })();
+
+  // ---- Extended-hours opt-in (per indicator, not per preset): lets Williams
+  // %R, both EMA Clouds, and Soportes/Resistencias optionally use 4h candles
+  // built from archived pre-market/after-hours minute bars instead of the
+  // regular-session 4h from Twelve Data. Off by default. ----
+  const EXTENDED_HOURS_MODULE_KEYS = ["williams","emacloud2050","emacloud50100","sr"];
+  const EXTENDED_HOURS_MODULES_KEY = "ta_scanner_extended_hours_modules";
+  function loadExtendedHoursModules(){
+    const out = {};
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(EXTENDED_HOURS_MODULES_KEY) || "{}"); } catch(e){}
+    EXTENDED_HOURS_MODULE_KEYS.forEach(k => { out[k] = !!saved[k]; });
+    return out;
+  }
+  function saveExtendedHoursModules(){ safeLocalStorageSet(EXTENDED_HOURS_MODULES_KEY, JSON.stringify(moduleExtendedHours)); }
+  let moduleExtendedHours = loadExtendedHoursModules();
+
   function saveToggles(){
     if(!safeLocalStorageSet(TOGGLE_STORAGE_KEY, JSON.stringify(moduleEnabled))){
       setStatus("⚠ No se pudieron guardar tus preferencias de módulos activos en este dispositivo.", true);
@@ -2836,6 +2916,26 @@
       txt.textContent = m.title;
       label.appendChild(input); label.appendChild(sw); label.appendChild(txt);
       grid.appendChild(label);
+
+      if(EXTENDED_HOURS_MODULE_KEYS.includes(m.key)){
+        const ehLabel = document.createElement("label");
+        ehLabel.className = "toggle-item";
+        ehLabel.style.opacity = "0.85";
+        ehLabel.title = "Usa velas de 4h construidas con el historial de pre-market/after-hours archivado (pestaña \"Horario extendido\") en vez del 4h de sesión regular. Se aplica la próxima vez que corras el análisis \u2014 mientras más días acumulados en el archivo, más confiable.";
+        const ehInput = document.createElement("input");
+        ehInput.type = "checkbox";
+        ehInput.checked = !!moduleExtendedHours[m.key];
+        ehInput.addEventListener("change", ()=>{
+          moduleExtendedHours[m.key] = ehInput.checked;
+          saveExtendedHoursModules();
+        });
+        const ehSw = document.createElement("span");
+        ehSw.className = "switch";
+        const ehTxt = document.createElement("span");
+        ehTxt.textContent = "\u21B3 horario extendido (4h)";
+        ehLabel.appendChild(ehInput); ehLabel.appendChild(ehSw); ehLabel.appendChild(ehTxt);
+        grid.appendChild(ehLabel);
+      }
     });
   }
   function applyModuleToggleUI(key){
