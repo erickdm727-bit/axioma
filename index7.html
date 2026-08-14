@@ -2797,6 +2797,10 @@
       input.addEventListener("change", ()=>{
         moduleEnabled[m.key] = input.checked;
         saveToggles();
+        if(activePresetId !== null){
+          const activePreset = instrumentPresets.find(function(p){ return p.id === activePresetId; });
+          if(activePreset){ activePreset.modules[m.key] = input.checked; saveInstrumentPresets(); }
+        }
         applyModuleToggleUI(m.key);
         if(lastResult){
           recomputeAndRenderVerdictAndMovement(lastResult); // instant partial update from whatever's cached
