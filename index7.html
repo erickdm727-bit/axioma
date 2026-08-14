@@ -679,7 +679,7 @@
       <h3>🤖 Backtest de Estrategia (Walk-Forward)</h3>
       <button class="btn-bt" id="runBacktestBtn" type="button">▶ Correr backtest</button>
     </div>
-    <div class="bt-desc">Simula día por día, con datos diarios, qué habría dicho el veredicto general de esta app en el pasado — usando <strong>solo información disponible hasta ese día</strong>, sin ver el futuro — y qué le habría pasado a tu dinero siguiéndolo (solo largos: comprado cuando el veredicto es alcista, en efectivo cuando deja de serlo). Corre con todos los módulos calculables desde velas diarias, sobre todo el historial que Twelve Data tenga disponible para el ticker.</div>
+    <div class="bt-desc">Simula día por día, con datos diarios, qué habría dicho el veredicto general de esta app en el pasado — usando <strong>solo información disponible hasta ese día</strong>, sin ver el futuro — y qué le habría pasado a tu dinero siguiéndolo (solo largos: comprado cuando el veredicto es alcista, en efectivo cuando deja de serlo). Usa exactamente los indicadores que tengas prendidos ahora mismo (los del método/pestaña activa) — apaga o cambia de método antes de correrlo para probar esa combinación específica. Solo cuentan los calculables desde velas diarias; corre sobre todo el historial que Twelve Data tenga disponible para el ticker.</div>
     <div class="bt-startdate-row">
       <label for="btStartDate">Empezar a operar desde</label>
       <input type="date" id="btStartDate">
@@ -1593,7 +1593,7 @@
   // simulates a long-only strategy following it. Reuses the exact same
   // indicator functions as the live modules — just fed a trailing window
   // instead of "up to now".
-  const BT_WEIGHTS = { marketctx:1.3, sma:1, ema:1, emacloud:1, bb:0.8, rsi:0.8, stoch:0.7, ichi:1, vwap:0.8, ad:0.7, heikin:0.6, patterns:0.6, rel:0.6, setup:1.2 };
+  const BT_WEIGHTS = { marketctx:1.3, sma:1, ema:1, emacloud:1, bb:0.8, rsi:0.8, stoch:0.7, ichi:1, vwap:0.8, ad:0.7, heikin:0.6, patterns:0.6, rel:0.6, setup:1.2, williams:0.7, emacloud2050:1, emacloud50100:1, sr:0.9 };
   const BT_WARMUP = 210;
 
   function btFindIndexOnOrBefore(datesMs, ts){
@@ -1687,6 +1687,26 @@
       if(brk){ setupTotal++; if(brk.breakout) setupPass++; }
       scores.setup = setupTotal ? (setupPass/setupTotal)*2-1 : null;
 
+      const wrRes = williamsR(win);
+      scores.williams = wrRes ? (wrRes.value+50)/50 : null;
+
+      const cloudA2050 = emaCloud(closes, 20, 50);
+      scores.emacloud2050 = cloudA2050 ? (cloudA2050.bullish?1:-1) : null;
+
+      const cloudB50100 = emaCloud(closes, 50, 100);
+      scores.emacloud50100 = cloudB50100 ? (cloudB50100.bullish?1:-1) : null;
+
+      const srBtRes = computeSupportResistanceLevels(win, price);
+      let srBtScore = null;
+      if(srBtRes){
+        const btS1 = srBtRes.supports[0], btR1 = srBtRes.resistances[0];
+        if(btS1 && btR1){
+          const btPos = (price - btS1.price) / (btR1.price - btS1.price);
+          srBtScore = Math.max(-1, Math.min(1, 1 - 2*btPos));
+        } else if(btS1){ srBtScore = 0.3; } else if(btR1){ srBtScore = -0.3; }
+      }
+      scores.sr = srBtScore;
+
       // Only modules with an actual computable value this day count toward
       // the weighted average — missing data (e.g. SPY/QQQ/weekly history
       // not reaching this far back) is excluded, not treated as a diluting
@@ -1696,6 +1716,7 @@
       let wsum=0, wtotal=0;
       Object.keys(scores).forEach(k=>{
         if(scores[k] === null) return;
+        if(!moduleEnabled[k]) return; // only count indicators the active method/preset has turned on
         const w=BT_WEIGHTS[k]||1; wsum+=scores[k]*w; wtotal+=w;
       });
       const composite = wtotal ? wsum/wtotal : 0;
@@ -2201,7 +2222,7 @@
   }
 
   function renderVerdict(scores){
-    const weights = { marketctx:1.3, sma:1, ema:1, emacloud:1, bb:0.8, rsi:0.8, stoch:0.7, ichi:1, vwap:0.8, ad:0.7, heikin:0.6, patterns:0.6, rel:0.6, setup:1.2, williams:0.7, emacloud2050:1, emacloud50100:1, sr:0.9 };
+    const weights = BT_WEIGHTS; // single source of truth shared with the walk-forward backtest
     let wsum=0, wtotal=0;
     Object.entries(scores).forEach(([k,v])=>{ wsum += v*weights[k]; wtotal += weights[k]; });
     const overall = wtotal ? wsum/wtotal : 0;
