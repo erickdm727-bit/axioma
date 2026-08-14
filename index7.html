@@ -90,6 +90,7 @@
   .module{position:relative;}
   .module.module-off .module-body-wrap{opacity:0.35; filter:grayscale(0.4); pointer-events:none;}
   .module-off-banner{display:none; font-size:11.5px; color:var(--mixed); background:var(--mixed-dim); border:1px solid rgba(242,184,75,0.35); padding:6px 10px; border-radius:7px; margin-bottom:10px;}
+  .module-alert{display:none; font-size:11.5px; line-height:1.4; color:var(--accent); background:var(--accent-dim); border:1px solid rgba(91,141,239,0.35); padding:6px 10px; border-radius:7px; margin-top:8px;}
   .module.module-off .module-off-banner{display:block;}
   .btn{background:var(--accent); color:#08101F; border:none; font-weight:600; font-size:15px; padding:0 22px; border-radius:var(--radius); cursor:pointer; transition:filter .15s, transform .05s;}
   .btn:hover{filter:brightness(1.08);}
@@ -481,6 +482,7 @@
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-bb"></div>
     <div class="module-score" id="score-bb"></div>
+    <div class="module-alert" id="alert-bb"></div>
   </div>
   </div>
 
@@ -493,6 +495,7 @@
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-rsi"></div>
     <div class="module-score" id="score-rsi"></div>
+    <div class="module-alert" id="alert-rsi"></div>
   </div>
   </div>
 
@@ -505,6 +508,7 @@
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-stoch"></div>
     <div class="module-score" id="score-stoch"></div>
+    <div class="module-alert" id="alert-stoch"></div>
   </div>
   </div>
 
@@ -601,6 +605,7 @@
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-williams"></div>
     <div class="module-score" id="score-williams"></div>
+    <div class="module-alert" id="alert-williams"></div>
   </div>
   </div>
 
@@ -1205,6 +1210,74 @@
     return { k, d };
   }
 
+
+  // ---- Rolling historical series for RSI/Stochastic/Williams %R (used only
+  // to detect "near its own historical extreme" reversal zones — daily and
+  // weekly timeframes only, see HIST_ALERT_TIMEFRAMES below). ----
+  function rsiSeries(closesAsc, period=14){
+    if(closesAsc.length < period+2) return [];
+    const out = [];
+    let gains=0, losses=0;
+    for(let i=1;i<=period;i++){ const d=closesAsc[i]-closesAsc[i-1]; if(d>=0) gains+=d; else losses-=d; }
+    let avgGain=gains/period, avgLoss=losses/period;
+    out.push(avgLoss===0 ? 100 : 100-100/(1+avgGain/avgLoss));
+    for(let i=period+1;i<closesAsc.length;i++){
+      const d=closesAsc[i]-closesAsc[i-1]; const g=d>0?d:0, l=d<0?-d:0;
+      avgGain=(avgGain*(period-1)+g)/period; avgLoss=(avgLoss*(period-1)+l)/period;
+      out.push(avgLoss===0 ? 100 : 100-100/(1+avgGain/avgLoss));
+    }
+    return out;
+  }
+
+  function stochKSeries(candlesAsc, period=14){
+    if(candlesAsc.length < period) return [];
+    const out = [];
+    for(let i=period;i<=candlesAsc.length;i++){
+      const win = candlesAsc.slice(i-period, i);
+      const hh = Math.max(...win.map(c=>c.high)), ll = Math.min(...win.map(c=>c.low));
+      const close = candlesAsc[i-1].close;
+      out.push(hh===ll ? 50 : 100*(close-ll)/(hh-ll));
+    }
+    return out;
+  }
+
+  function williamsRSeries(candlesAsc, period=14){
+    if(candlesAsc.length < period) return [];
+    const out = [];
+    for(let i=period;i<=candlesAsc.length;i++){
+      const win = candlesAsc.slice(i-period, i);
+      const hh = Math.max(...win.map(c=>c.high)), ll = Math.min(...win.map(c=>c.low));
+      const close = candlesAsc[i-1].close;
+      out.push(hh===ll ? -50 : ((hh-close)/(hh-ll))*-100);
+    }
+    return out;
+  }
+
+  // Flags when `current` sits within ~12% of the series' own historical
+  // min/max (its own range for THIS ticker/timeframe, not a fixed textbook
+  // threshold like RSI<30). Needs at least 20 historical points to say
+  // anything meaningful about "extremes".
+  function nearHistoricalExtreme(seriesAsc, current){
+    if(!seriesAsc || seriesAsc.length < 20) return null;
+    const histMin = Math.min(...seriesAsc), histMax = Math.max(...seriesAsc);
+    const range = histMax - histMin;
+    if(range <= 0) return null;
+    const distMin = current - histMin, distMax = histMax - current;
+    const threshold = range * 0.12;
+    if(distMin <= threshold && distMin <= distMax) return { side:"low", histExtreme:histMin };
+    if(distMax <= threshold) return { side:"high", histExtreme:histMax };
+    return null;
+  }
+
+  const HIST_ALERT_TIMEFRAMES = ["1day","1week"];
+
+  function buildHistAlertMessage(label, tfLabel, current, currentPrice, extreme){
+    if(!extreme) return null;
+    const dir = extreme.side === "low" ? "mínimo" : "máximo";
+    const bias = extreme.side === "low" ? "alcista" : "bajista";
+    return "🔔 " + label + " " + tfLabel + " cerca de su " + dir + " histórico (" + current.toFixed(0) + ", " + dir + " registrado " + extreme.histExtreme.toFixed(0) + ") — posible zona de reversión " + bias + " cerca de $" + currentPrice.toFixed(2) + ".";
+  }
+
   function adLine(candlesAsc){
     if(candlesAsc.length < 12) return null;
     let ad = 0; const series = [];
@@ -1568,14 +1641,32 @@
       if(bb){
         let status = currentPrice >= bb.mid ? "above" : "below";
         let extreme = currentPrice > bb.upper ? "overbought" : (currentPrice < bb.lower ? "oversold" : null);
-        out.bb[tf.key] = { status, extreme, value: bb.mid };
+        let bbHistAlert = null;
+        if(HIST_ALERT_TIMEFRAMES.includes(tf.key)){
+          const percentB = (currentPrice - bb.lower) / ((bb.upper - bb.lower) || 1e-9);
+          if(percentB <= 0.15) bbHistAlert = { message: "🔔 Bollinger " + tf.label + " cerca de/rompiendo la banda inferior ($" + bb.lower.toFixed(2) + ") — posible zona de reversión alcista." };
+          else if(percentB >= 0.85) bbHistAlert = { message: "🔔 Bollinger " + tf.label + " cerca de/rompiendo la banda superior ($" + bb.upper.toFixed(2) + ") — posible zona de reversión bajista." };
+        }
+        out.bb[tf.key] = { status, extreme, value: bb.mid, histAlert: bbHistAlert };
       } else out.bb[tf.key] = { status:"na" };
 
       const r = rsi(closes);
-      out.rsi[tf.key] = r ? { value:r.value, rising: r.value>r.prev } : { status:"na" };
+      let rsiHistAlert = null;
+      if(r && HIST_ALERT_TIMEFRAMES.includes(tf.key)){
+        const rsiHist = nearHistoricalExtreme(rsiSeries(closes), r.value);
+        const msg = buildHistAlertMessage("RSI", tf.label, r.value, currentPrice, rsiHist);
+        if(msg) rsiHistAlert = { message: msg };
+      }
+      out.rsi[tf.key] = r ? { value:r.value, rising: r.value>r.prev, histAlert: rsiHistAlert } : { status:"na" };
 
       const st = stochastic(candles);
-      out.stoch[tf.key] = st ? { k:st.k, d:st.d } : { status:"na" };
+      let stochHistAlert = null;
+      if(st && HIST_ALERT_TIMEFRAMES.includes(tf.key)){
+        const stochHist = nearHistoricalExtreme(stochKSeries(candles), st.k);
+        const msg = buildHistAlertMessage("Estocástico", tf.label, st.k, currentPrice, stochHist);
+        if(msg) stochHistAlert = { message: msg };
+      }
+      out.stoch[tf.key] = st ? { k:st.k, d:st.d, histAlert: stochHistAlert } : { status:"na" };
 
       const ic = ichimoku(candles);
       if(ic){
@@ -1597,7 +1688,13 @@
       const srCandles = (moduleExtendedHours.sr && extCandles4h) ? extCandles4h : candles;
 
       const wr = williamsR(williamsCandles);
-      out.williams[tf.key] = wr ? { value: wr.value, rising: wr.value > wr.prev } : { status:"na" };
+      let williamsHistAlert = null;
+      if(wr && HIST_ALERT_TIMEFRAMES.includes(tf.key)){
+        const wrHist = nearHistoricalExtreme(williamsRSeries(candles), wr.value);
+        const msg = buildHistAlertMessage("Williams %R", tf.label, wr.value, currentPrice, wrHist);
+        if(msg) williamsHistAlert = { message: msg };
+      }
+      out.williams[tf.key] = wr ? { value: wr.value, rising: wr.value > wr.prev, histAlert: williamsHistAlert } : { status:"na" };
 
       const cloudA = emaCloud(cloudA2050Candles.map(c=>c.close), 20, 50);
       out.emacloud2050[tf.key] = cloudA ? { bullish: cloudA.bullish } : { status:"na" };
@@ -1997,9 +2094,22 @@
     return d;
   }
 
+    function setModuleAlert(elId, messages){
+    const el = $(elId);
+    if(!el) return;
+    if(messages && messages.length){
+      el.textContent = messages.join(" ");
+      el.style.display = "block";
+    } else {
+      el.textContent = "";
+      el.style.display = "none";
+    }
+  }
+
   function renderBB(data){
     const el = $("chip-bb"); el.innerHTML = "";
     let above=0, below=0, valid=0;
+    const alerts = [];
     TIMEFRAMES.forEach(tf => {
       const r = data[tf.key];
       if(r.status==="na"){ el.appendChild(chipEl(tf.label,"·","neutral")); return; }
@@ -2007,13 +2117,16 @@
       const cls = r.status==="above" ? "up" : "down";
       const badge = r.extreme === "overbought" ? "sobrecompra" : (r.extreme==="oversold" ? "sobreventa" : "");
       el.appendChild(chipEl(tf.label, r.status==="above"?"▲":"▼", cls, badge, !!r.extreme));
+      if(r.histAlert) alerts.push(r.histAlert.message);
     });
+    setModuleAlert("alert-bb", alerts);
     return valid ? (above-below)/valid : 0;
   }
 
   function renderRSI(data){
     const el = $("chip-rsi"); el.innerHTML = "";
     let sum=0, valid=0;
+    const alerts = [];
     TIMEFRAMES.forEach(tf => {
       const r = data[tf.key];
       if(r.status==="na"){ el.appendChild(chipEl(tf.label,"·","neutral")); return; }
@@ -2022,13 +2135,16 @@
       const badge = r.value>70 ? "sobrecompra" : (r.value<30 ? "sobreventa" : (r.rising?"subiendo":"bajando"));
       sum += (r.value-50)/50;
       el.appendChild(chipEl(tf.label, r.value.toFixed(0), cls, badge, r.value>70||r.value<30));
+      if(r.histAlert) alerts.push(r.histAlert.message);
     });
+    setModuleAlert("alert-rsi", alerts);
     return valid ? sum/valid : 0;
   }
 
   function renderStoch(data){
     const el = $("chip-stoch"); el.innerHTML = "";
     let sum=0, valid=0;
+    const alerts = [];
     TIMEFRAMES.forEach(tf => {
       const r = data[tf.key];
       if(r.status==="na"){ el.appendChild(chipEl(tf.label,"·","neutral")); return; }
@@ -2037,13 +2153,16 @@
       const badge = r.k>80 ? "sobrecompra" : (r.k<20 ? "sobreventa" : (r.k>=r.d?"K>D":"K<D"));
       sum += (r.k-50)/50;
       el.appendChild(chipEl(tf.label, r.k.toFixed(0), cls, badge, r.k>80||r.k<20));
+      if(r.histAlert) alerts.push(r.histAlert.message);
     });
+    setModuleAlert("alert-stoch", alerts);
     return valid ? sum/valid : 0;
   }
 
   function renderWilliams(data){
     const el = $("chip-williams"); el.innerHTML = "";
     let sum=0, valid=0;
+    const alerts = [];
     TIMEFRAMES.forEach(tf => {
       const r = data[tf.key];
       if(r.status==="na"){ el.appendChild(chipEl(tf.label,"·","neutral")); return; }
@@ -2052,7 +2171,9 @@
       const badge = r.value>-20 ? "sobrecompra" : (r.value<-80 ? "sobreventa" : (r.rising?"subiendo":"bajando"));
       sum += (r.value+50)/50;
       el.appendChild(chipEl(tf.label, r.value.toFixed(0), cls, badge, r.value>-20||r.value<-80));
+      if(r.histAlert) alerts.push(r.histAlert.message);
     });
+    setModuleAlert("alert-williams", alerts);
     return valid ? sum/valid : 0;
   }
 
