@@ -628,6 +628,18 @@
   </div>
   </div>
 
+  <!-- 18. Soportes/Resistencias -->
+  <div class="module" id="mod-sr">
+    <div class="module-head"><span class="idx">18</span><h3>Soportes/Resistencias</h3><span class="catg">Estructura</span><button class="info-btn" data-explain="sr">ℹ️ Cómo leerlo</button></div>
+    <div class="module-desc">Niveles automáticos por marco temporal: combina pivotes de precio, Fibonacci y pivote trimestral.</div>
+    <div class="module-explainer" id="explain-sr">Detecta soportes y resistencias como lo harías a mano: junta los máximos/mínimos donde el precio giró, los niveles de Fibonacci del rango reciente y el pivote trimestral, agrupando los que caen muy cerca entre sí en "zonas de confluencia" (más confiables cuantas más fuentes coincidan). Muestra el soporte y la resistencia más cercanos al precio actual en cada marco temporal. ▲ = más cerca del soporte (zona de compra); ▼ = más cerca de la resistencia (zona de venta).</div>
+    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-body-wrap">
+    <div class="chiprow" id="chip-sr"></div>
+    <div class="module-score" id="score-sr"></div>
+  </div>
+  </div>
+
   <!-- Final verdict -->
   <div class="verdict" id="verdict">
     <div class="eyebrow">Veredicto general</div>
@@ -810,7 +822,7 @@
   // ladder/chip across all 10 timeframes, so enabling ANY of those pulls in
   // everything. A handful of modules only look at one or a few timeframes —
   // if ONLY those are enabled, we can skip fetching the rest entirely. ----
-  const FULL_LADDER_MODULES = ["sma","ema","emacloud","bb","rsi","stoch","ichi","vwap","ad","patterns","williams","emacloud2050","emacloud50100"];
+  const FULL_LADDER_MODULES = ["sma","ema","emacloud","bb","rsi","stoch","ichi","vwap","ad","patterns","williams","emacloud2050","emacloud50100","sr"];
   const LIMITED_TF_NEEDS = { heikin:["1week"], setup:["1week","1day","4h"], rel:["1day"] };
 
   function computeNeededTimeframeKeys(enabled, movementTf){
@@ -1476,7 +1488,7 @@
     }
     setProgress(92);
 
-    const out = { currentPrice, seriesByTf, neededTfKeys, sma:{}, ema:{}, bb:{}, rsi:{}, stoch:{}, ichi:{}, ad:{}, patterns:{}, williams:{}, emacloud2050:{}, emacloud50100:{}, benchmark:{ series:benchmarkSeries, symbol:benchmarkSymbol, error:benchmarkError }, marketSeries, marketErrors };
+    const out = { currentPrice, seriesByTf, neededTfKeys, sma:{}, ema:{}, bb:{}, rsi:{}, stoch:{}, ichi:{}, ad:{}, patterns:{}, williams:{}, emacloud2050:{}, emacloud50100:{}, sr:{}, benchmark:{ series:benchmarkSeries, symbol:benchmarkSymbol, error:benchmarkError }, marketSeries, marketErrors };
     TIMEFRAMES.forEach(tf => {
       const candles = seriesByTf[tf.key];
       if(!candles){
@@ -1485,7 +1497,7 @@
         out.sma[tf.key] = {}; out.ema[tf.key] = {};
         PERIODS.forEach(p => { out.sma[tf.key][p] = {status:"na"}; out.ema[tf.key][p] = {status:"na"}; });
         out.bb[tf.key] = {status:"na"}; out.rsi[tf.key] = {status:"na"}; out.stoch[tf.key] = {status:"na"};
-        out.ichi[tf.key] = {status:"na"}; out.ad[tf.key] = {status:"na"}; out.patterns[tf.key] = []; out.williams[tf.key] = {status:"na"}; out.emacloud2050[tf.key] = {status:"na"}; out.emacloud50100[tf.key] = {status:"na"};
+        out.ichi[tf.key] = {status:"na"}; out.ad[tf.key] = {status:"na"}; out.patterns[tf.key] = []; out.williams[tf.key] = {status:"na"}; out.emacloud2050[tf.key] = {status:"na"}; out.emacloud50100[tf.key] = {status:"na"}; out.sr[tf.key] = {status:"na"};
         return;
       }
       const closes = candles.map(c=>c.close);
@@ -1529,6 +1541,25 @@
 
       const cloudB = emaCloud(closes, 50, 100);
       out.emacloud50100[tf.key] = cloudB ? { bullish: cloudB.bullish } : { status:"na" };
+
+      const srRes = computeSupportResistanceLevels(candles, currentPrice);
+      let srOut = { status:"na" };
+      if(srRes){
+        const s1 = srRes.supports[0], r1 = srRes.resistances[0];
+        if(s1 || r1){
+          let score = 0;
+          if(s1 && r1){
+            const pos = (currentPrice - s1.price) / (r1.price - s1.price);
+            score = Math.max(-1, Math.min(1, 1 - 2*pos));
+          } else if(s1){ score = 0.3; } else if(r1){ score = -0.3; }
+          const distS = s1 ? Math.abs(currentPrice - s1.price)/currentPrice : Infinity;
+          const distR = r1 ? Math.abs(currentPrice - r1.price)/currentPrice : Infinity;
+          const nearer = distS <= distR ? "support" : "resistance";
+          const label = (s1 ? ("S"+s1.n+" "+s1.price.toFixed(2)) : "") + (s1&&r1 ? " / " : "") + (r1 ? ("R"+r1.n+" "+r1.price.toFixed(2)) : "");
+          srOut = { score, nearer, label };
+        }
+      }
+      out.sr[tf.key] = srOut;
 
       out.patterns[tf.key] = detectPatterns(candles);
     });
@@ -1954,6 +1985,21 @@
     return valid ? sum/valid : 0;
   }
 
+  function renderSR(data){
+    const el = $("chip-sr"); el.innerHTML = "";
+    let sum=0, valid=0;
+    TIMEFRAMES.forEach(tf => {
+      const r = data[tf.key];
+      if(!r || r.status==="na"){ el.appendChild(chipEl(tf.label,"·","neutral")); return; }
+      valid++;
+      const val = r.nearer==="support" ? "▲" : "▼";
+      const cls = r.score>0.15 ? "up" : (r.score<-0.15 ? "down" : "neutral");
+      sum += r.score;
+      el.appendChild(chipEl(tf.label, val, cls, r.label, Math.abs(r.score)>0.6));
+    });
+    return valid ? sum/valid : 0;
+  }
+
   function renderIchi(data){
     const el = $("chip-ichi"); el.innerHTML = "";
     let sum=0, valid=0;
@@ -2155,7 +2201,7 @@
   }
 
   function renderVerdict(scores){
-    const weights = { marketctx:1.3, sma:1, ema:1, emacloud:1, bb:0.8, rsi:0.8, stoch:0.7, ichi:1, vwap:0.8, ad:0.7, heikin:0.6, patterns:0.6, rel:0.6, setup:1.2, williams:0.7, emacloud2050:1, emacloud50100:1 };
+    const weights = { marketctx:1.3, sma:1, ema:1, emacloud:1, bb:0.8, rsi:0.8, stoch:0.7, ichi:1, vwap:0.8, ad:0.7, heikin:0.6, patterns:0.6, rel:0.6, setup:1.2, williams:0.7, emacloud2050:1, emacloud50100:1, sr:0.9 };
     let wsum=0, wtotal=0;
     Object.entries(scores).forEach(([k,v])=>{ wsum += v*weights[k]; wtotal += weights[k]; });
     const overall = wtotal ? wsum/wtotal : 0;
@@ -2171,7 +2217,7 @@
     $("vTitle").textContent = titles[s.cls];
     const chip = $("vChip"); chip.className = "chip " + s.cls; chip.textContent = s.txt;
 
-    const labels = { marketctx:"Contexto de Mercado", sma:"Medias Móviles (SMA)", ema:"EMA", emacloud:"EMA Cloud", bb:"Bollinger", rsi:"RSI", stoch:"Estocástico", ichi:"Ichimoku", vwap:"VWAP Anclado", ad:"Acum/Distrib.", heikin:"Heikin Ashi Semanal", patterns:"Patrones de velas", rel:"Fuerza relativa", setup:"Setup Beardo", williams:"Williams %R", emacloud2050:"EMA Cloud 20/50", emacloud50100:"EMA Cloud 50/100" };
+    const labels = { marketctx:"Contexto de Mercado", sma:"Medias Móviles (SMA)", ema:"EMA", emacloud:"EMA Cloud", bb:"Bollinger", rsi:"RSI", stoch:"Estocástico", ichi:"Ichimoku", vwap:"VWAP Anclado", ad:"Acum/Distrib.", heikin:"Heikin Ashi Semanal", patterns:"Patrones de velas", rel:"Fuerza relativa", setup:"Setup Beardo", williams:"Williams %R", emacloud2050:"EMA Cloud 20/50", emacloud50100:"EMA Cloud 50/100", sr:"Soportes/Resistencias" };
     const agree = Object.values(scores).filter(v => Math.sign(v)===Math.sign(overall) && v!==0).length;
     const totalModules = Object.keys(scores).length;
     let text = `${agree} de ${totalModules} indicadores apuntan en la misma dirección que el veredicto general. `;
@@ -2704,6 +2750,7 @@
     { key:"williams", title:"Williams %R (14)" },
     { key:"emacloud2050", title:"EMA Cloud 20/50" },
     { key:"emacloud50100", title:"EMA Cloud 50/100" },
+    { key:"sr", title:"Soportes/Resistencias" },
   ];
   const TOGGLE_STORAGE_KEY = "ta_scanner_module_toggles";
   const INSTRUMENT_PRESETS_KEY = "ta_scanner_instrument_presets";
@@ -2885,6 +2932,7 @@
     scores.williams = renderWilliams(r.williams);
     scores.emacloud2050 = renderEmaCloudVariant(r.emacloud2050, "chip-emacloud2050");
     scores.emacloud50100 = renderEmaCloudVariant(r.emacloud50100, "chip-emacloud50100");
+    scores.sr = renderSR(r.sr);
     return scores;
   }
 
