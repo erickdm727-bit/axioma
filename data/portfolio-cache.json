@@ -1,8 +1,8 @@
 {
-  "generatedAt": 1786721909117,
+  "generatedAt": 1786732583897,
   "tickers": {
     "SOFI": {
-      "price": 18.365,
+      "price": 18.35,
       "sr": {
         "support": 18.1245,
         "resistance": 18.43,
@@ -53,7 +53,7 @@
         "icon": "⚠",
         "cls": "mixed",
         "title": "Cerca de un soporte — zona de riesgo",
-        "text": "Estás a 1.3% de tocar el Soporte 1 (18.12 USD). Si se rompe, el siguiente soporte está en 17.93 USD."
+        "text": "Estás a 1.2% de tocar el Soporte 1 (18.12 USD). Si se rompe, el siguiente soporte está en 17.93 USD."
       },
       "daily": [
         {
@@ -773,15 +773,15 @@
           "open": 18.46,
           "high": 18.575,
           "low": 18.285,
-          "close": 18.365,
-          "volume": 469023
+          "close": 18.35,
+          "volume": 879547
         }
       ],
-      "updatedAt": 1786721868094,
+      "updatedAt": 1786732543225,
       "error": null
     },
     "SLV": {
-      "price": 58.77,
+      "price": 58.5,
       "sr": {
         "support": 57.3,
         "resistance": 61.54708333333333,
@@ -830,7 +830,7 @@
       "alert": {
         "urgent": false,
         "icon": "◇",
-        "text": "Precio a 2.5% arriba del Soporte 1 (57.30 USD) y 4.7% debajo de la Resistencia 1 (61.55 USD) — sin niveles clave inmediatos que vigilar."
+        "text": "Precio a 2.1% arriba del Soporte 1 (57.30 USD) y 5.2% debajo de la Resistencia 1 (61.55 USD) — sin niveles clave inmediatos que vigilar."
       },
       "daily": [
         {
@@ -1549,16 +1549,16 @@
           "datetime": "2026-08-14",
           "open": 58.84,
           "high": 59.35,
-          "low": 58.715,
-          "close": 58.77,
-          "volume": 249364
+          "low": 58.47,
+          "close": 58.5,
+          "volume": 502893
         }
       ],
-      "updatedAt": 1786721876438,
+      "updatedAt": 1786732551361,
       "error": null
     },
     "TSLA": {
-      "price": 337.07,
+      "price": 341.695,
       "sr": {
         "support": 330.76827786,
         "resistance": 354.0933366666667,
@@ -1600,11 +1600,9 @@
         }
       },
       "alert": {
-        "urgent": true,
-        "icon": "⚠",
-        "cls": "mixed",
-        "title": "Cerca de un soporte — zona de riesgo",
-        "text": "Estás a 1.9% de tocar el Soporte 1 (330.77 USD). Si se rompe, el siguiente soporte está en 297.38 USD."
+        "urgent": false,
+        "icon": "◇",
+        "text": "Precio a 3.2% arriba del Soporte 1 (330.77 USD) y 3.6% debajo de la Resistencia 1 (354.09 USD) — sin niveles clave inmediatos que vigilar."
       },
       "daily": [
         {
@@ -2324,15 +2322,15 @@
           "open": 342.3,
           "high": 351.26,
           "low": 335.39,
-          "close": 337.07,
-          "volume": 578141
+          "close": 341.695,
+          "volume": 884292
         }
       ],
-      "updatedAt": 1786721884685,
+      "updatedAt": 1786732559485,
       "error": null
     },
     "XYZ": {
-      "price": 82.75,
+      "price": 82.875,
       "sr": {
         "support": 81.040001,
         "resistance": 84.17444455555555,
@@ -2378,7 +2376,7 @@
         "icon": "◆",
         "cls": "mixed",
         "title": "Cerca de una resistencia",
-        "text": "Estás a 1.7% de la Resistencia 1 (84.17 USD). Si la rompe, la siguiente resistencia está en 86.75 USD."
+        "text": "Estás a 1.6% de la Resistencia 1 (84.17 USD). Si la rompe, la siguiente resistencia está en 86.75 USD."
       },
       "daily": [
         {
@@ -3098,40 +3096,23 @@
           "open": 82.98,
           "high": 83.41,
           "low": 82.4,
-          "close": 82.75,
-          "volume": 77532
+          "close": 82.875,
+          "volume": 151381
         }
       ],
-      "updatedAt": 1786721892880,
+      "updatedAt": 1786732567763,
       "error": null
     },
     "RIOT": {
-      "price": 18.52,
+      "price": 19.16,
       "sr": {
-        "support": 18.131,
-        "resistance": 18.52214,
+        "support": 19.07,
+        "resistance": 21.04382,
         "supports": [
           {
-            "price": 18.131,
+            "price": 19.07,
             "n": 1,
             "type": "pivot"
-          },
-          {
-            "price": 17.44,
-            "n": 2,
-            "type": "pivot"
-          },
-          {
-            "price": 15.980000000000004,
-            "n": 3,
-            "type": "qpivot"
-          }
-        ],
-        "resistances": [
-          {
-            "price": 18.52214,
-            "n": 1,
-            "type": "fib"
           },
           {
             "price": 18.91,
@@ -3139,9 +3120,26 @@
             "type": "pivot"
           },
           {
-            "price": 19.07,
+            "price": 18.52214,
             "n": 3,
+            "type": "fib"
+          }
+        ],
+        "resistances": [
+          {
+            "price": 21.04382,
+            "n": 1,
+            "type": "fib"
+          },
+          {
+            "price": 21.73,
+            "n": 2,
             "type": "pivot"
+          },
+          {
+            "price": 22.815,
+            "n": 3,
+            "type": "fib"
           }
         ],
         "quarterlyPivot": {
@@ -3154,10 +3152,10 @@
       },
       "alert": {
         "urgent": true,
-        "icon": "◆",
+        "icon": "⚠",
         "cls": "mixed",
-        "title": "Cerca de una resistencia",
-        "text": "Estás a 0.0% de la Resistencia 1 (18.52 USD). Si la rompe, la siguiente resistencia está en 18.91 USD."
+        "title": "Cerca de un soporte — zona de riesgo",
+        "text": "Estás a 0.5% de tocar el Soporte 1 (19.07 USD). Si se rompe, el siguiente soporte está en 18.91 USD."
       },
       "daily": [
         {
@@ -3877,11 +3875,11 @@
           "open": 18.81,
           "high": 19.55,
           "low": 18.46,
-          "close": 18.52,
-          "volume": 335645
+          "close": 19.16,
+          "volume": 710190
         }
       ],
-      "updatedAt": 1786721901112,
+      "updatedAt": 1786732575892,
       "error": null
     }
   }
