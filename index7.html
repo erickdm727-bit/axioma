@@ -423,14 +423,7 @@
     <div class="asof" id="pcAsof"></div>
   </div>
 
-    <div class="backtest-card" id="chartCard" style="display:none;">
-    <div class="bt-head"><h3>📈 Gráfico</h3></div>
-    <div class="tf-selector" id="chartTfSelector"></div>
-    <div id="chartSvgWrap"></div>
-    <div class="mov-legend" id="chartLegend"></div>
-  </div>
-
-  <!-- 1. Market context -->
+    <!-- 1. Market context -->
   <div class="module" id="mod-marketctx">
     <div class="module-head"><span class="idx">01</span><h3>Contexto de Mercado (SPY / QQQ)</h3><span class="catg">Régimen</span><button class="info-btn" data-explain="marketctx">ℹ️ Cómo leerlo</button></div>
     <div class="module-desc">El mercado general marca el viento a favor o en contra de todo lo demás. Se calcula con la "nube EMA" (EMA8 vs EMA21) diaria de SPY y QQQ — si ambas están alcistas, es más fácil que las acciones individuales suban también.</div>
@@ -613,6 +606,10 @@
     <div class="chiprow" id="chip-williams"></div>
     <div class="module-score" id="score-williams"></div>
     <div class="module-alert" id="alert-williams"></div>
+    <div class="tf-selector" id="chartTf-williams"></div>
+    <div id="chartSvg-williams"></div>
+    <div id="oscSvg-williams" style="margin-top:6px;"></div>
+    <div class="mov-legend" id="chartLegend-williams"></div>
   </div>
   </div>
 
@@ -2897,6 +2894,146 @@
     $("chartLegend").innerHTML = legendParts.map(p => '<span><i style="background:'+p.color+'"></i> '+p.label+'</span>').join("") || '<span class="hint">Activa SMA, EMA o Bollinger para ver overlays sobre las velas.</span>';
   }
 
+    // ---- Per-indicator embedded charts (candle pane + optional oscillator
+  // sub-pane), built from the same seriesByTf data already fetched — no
+  // extra requests. Started with Williams %R; other indicators get the
+  // same treatment next. ----
+  let moduleChartTf = { williams: "4h" };
+
+  function buildModuleChartTfSelector(key, availableKeys, onSelect){
+    const el = $("chartTf-" + key); if(!el) return;
+    el.innerHTML = "";
+    TIMEFRAMES.forEach(tf => {
+      const available = availableKeys.has(tf.key);
+      const btn = document.createElement("button");
+      btn.className = "tf-chip" + (tf.key===moduleChartTf[key] ? " active" : "") + (available ? "" : " tf-chip-disabled");
+      btn.textContent = tf.label;
+      if(!available) btn.title = "No se descargó este marco temporal con los módulos activos actuales — actívalos y vuelve a analizar.";
+      btn.addEventListener("click", ()=>{
+        if(!available){ setStatus("Ese marco temporal no se descargó esta vez — activa un módulo que lo use y vuelve a Analizar.", true); return; }
+        moduleChartTf[key] = tf.key;
+        onSelect();
+      });
+      el.appendChild(btn);
+    });
+  }
+
+  function buildCandleSvg(hist, opts){
+    opts = opts || {};
+    const W = 900, H = opts.height || 260, padL = 8, padR = 66, padT = 10, padB = 22, volH = 36;
+    const priceBot = H - padB - volH - 6;
+    const plotH = priceBot - padT;
+    const plotW = W - padL - padR;
+    const cw = Math.max(1.5, Math.min(7, (plotW/hist.length) * 0.6));
+    const vals = hist.flatMap(c=>[c.high,c.low]);
+    const minV = Math.min(...vals) * 0.985, maxV = Math.max(...vals) * 1.015;
+    const logMin = Math.log(minV), logMax = Math.log(maxV);
+    const xOf = i => padL + (i/(hist.length-1)) * plotW;
+    const yOf = v => padT + (1 - (Math.log(v)-logMin)/(logMax-logMin)) * plotH;
+    let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">`;
+    for(let t=0;t<=3;t++){
+      const v = Math.exp(logMin + (1-t/3)*(logMax-logMin));
+      const y = yOf(v);
+      svg += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#232D39" stroke-width="1"/>`;
+      svg += `<text x="${W-padR+8}" y="${y+4}" fill="#8FA0AE" font-size="11">${v.toFixed(v<10?2:1)}</text>`;
+    }
+    const tickCount = Math.min(5, hist.length);
+    for(let t=0;t<tickCount;t++){
+      const i = Math.round(t/((tickCount-1)||1) * (hist.length-1));
+      const dd = new Date(hist[i].datetime.replace(" ","T"));
+      const label = dd.getDate() + " " + MONTHS_ES[dd.getMonth()];
+      svg += `<text x="${xOf(i)}" y="${H-padB+16}" fill="#8FA0AE" font-size="10" text-anchor="middle">${label}</text>`;
+    }
+    return { svg, xOf, yOf, W, H, padL, padR, padB, volH, cw };
+  }
+
+  function finishCandleSvg(ctx, hist, price){
+    let svg = ctx.svg;
+    const { xOf, yOf, W, H, padL, padR, padB, volH, cw } = ctx;
+    svg += svgCandles(hist, xOf, yOf, cw);
+    const maxVol = Math.max(...hist.map(c=>c.volume||0), 1);
+    hist.forEach((c,i) => {
+      const x = xOf(i);
+      const up = c.close >= c.open;
+      const vh = ((c.volume||0)/maxVol) * volH;
+      svg += `<rect x="${x-cw/2}" y="${H-padB-vh}" width="${cw}" height="${vh}" fill="${up?'#3ECF8E':'#FF5C5C'}" opacity="0.35"/>`;
+    });
+    svg += `<line x1="${padL}" y1="${H-padB-volH}" x2="${W-padR}" y2="${H-padB-volH}" stroke="#232D39" stroke-width="1"/>`;
+    svg += `<line x1="${padL}" y1="${yOf(price)}" x2="${W-padR}" y2="${yOf(price)}" stroke="#F2B84B" stroke-width="1" stroke-dasharray="3 3"/>`;
+    svg += `<text x="${W-padR+8}" y="${yOf(price)+4}" fill="#F2B84B" font-size="11">${price.toFixed(2)}</text>`;
+    svg += `</svg>`;
+    return svg;
+  }
+
+  function buildOscillatorSvg(hist, seriesValues, opts){
+    opts = opts || {};
+    const W = 900, H = opts.height || 120, padL = 8, padR = 66, padT = 10, padB = 20;
+    const plotH = H - padT - padB;
+    const plotW = W - padL - padR;
+    const offset = hist.length - seriesValues.length;
+    const lo = opts.min !== undefined ? opts.min : Math.min(...seriesValues);
+    const hi = opts.max !== undefined ? opts.max : Math.max(...seriesValues);
+    const range = (hi - lo) || 1;
+    const xOf = i => padL + ((i+offset)/(hist.length-1)) * plotW;
+    const yOf = v => padT + (1 - (v-lo)/range) * plotH;
+    let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">`;
+    (opts.refLines||[]).forEach(rl => {
+      const y = yOf(rl.value);
+      svg += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="${rl.color||'#232D39'}" stroke-width="1" stroke-dasharray="3 3" opacity="0.6"/>`;
+      svg += `<text x="${W-padR+8}" y="${y+4}" fill="${rl.color||'#8FA0AE'}" font-size="10">${rl.label!==undefined?rl.label:rl.value}</text>`;
+    });
+    let path = "";
+    seriesValues.forEach((v,i) => {
+      const x = xOf(i), y = yOf(v);
+      path += (path ? "L" : "M") + x.toFixed(2) + "," + y.toFixed(2) + " ";
+    });
+    svg += `<path d="${path}" fill="none" stroke="${opts.color||'#5B8DEF'}" stroke-width="1.6"/>`;
+    const lastV = seriesValues[seriesValues.length-1];
+    svg += `<text x="${W-padR+8}" y="${yOf(lastV)+4}" fill="${opts.color||'#5B8DEF'}" font-size="11">${lastV.toFixed(1)}</text>`;
+    svg += `</svg>`;
+    return svg;
+  }
+
+  let lastChartResult = null;
+
+  function renderWilliamsChart(result){
+    lastChartResult = result;
+    const availableKeys = new Set(Object.keys(result.seriesByTf).filter(k => result.seriesByTf[k] && result.seriesByTf[k].length));
+    if(!availableKeys.size) return;
+    if(!availableKeys.has(moduleChartTf.williams)) moduleChartTf.williams = availableKeys.has("4h") ? "4h" : Array.from(availableKeys)[0];
+    buildModuleChartTfSelector("williams", availableKeys, () => drawWilliamsChart(lastChartResult));
+    drawWilliamsChart(result);
+  }
+
+  function drawWilliamsChart(result){
+    const tfKey = moduleChartTf.williams;
+    const full = result.seriesByTf[tfKey];
+    const svgWrapEl = $("chartSvg-williams"), oscWrapEl = $("oscSvg-williams"), legendEl = $("chartLegend-williams");
+    if(!svgWrapEl || !oscWrapEl) return;
+    if(!full || full.length < 20){
+      svgWrapEl.innerHTML = '<div class="hint">No hay suficientes velas descargadas en este marco temporal.</div>';
+      oscWrapEl.innerHTML = ""; if(legendEl) legendEl.innerHTML = "";
+      return;
+    }
+    const histCount = Math.min(180, full.length);
+    const hist = full.slice(-histCount);
+    const price = result.currentPrice;
+
+    const candleCtx = buildCandleSvg(hist, { height: 260 });
+    svgWrapEl.innerHTML = finishCandleSvg(candleCtx, hist, price);
+
+    const series = williamsRSeries(hist, 14);
+    if(series.length){
+      oscWrapEl.innerHTML = buildOscillatorSvg(hist, series, {
+        height: 120, min: -100, max: 0, color: "#5B8DEF",
+        refLines: [ {value:-20, color:"#FF5C5C", label:"-20"}, {value:-50, color:"#8FA0AE", label:"-50"}, {value:-80, color:"#3ECF8E", label:"-80"} ]
+      });
+    } else {
+      oscWrapEl.innerHTML = '<div class="hint">No hay suficientes datos para calcular Williams %R en este marco.</div>';
+    }
+    if(legendEl) legendEl.innerHTML = '<span><i style="background:#5B8DEF"></i> Williams %R (14)</span><span><i style="background:#FF5C5C"></i> -20 sobrecompra</span><span><i style="background:#3ECF8E"></i> -80 sobreventa</span>';
+  }
+
   function renderPriceChart(result){
     const card = $("chartCard");
     if(!card) return;
@@ -3361,7 +3498,7 @@
     Object.keys(allScores).forEach(k => { if(moduleEnabled[k]) activeScores[k] = allScores[k]; });
     const overall = renderVerdict(activeScores);
     renderMovement(r.seriesByTf, r.currentPrice, overall);
-    renderPriceChart(r);
+    renderWilliamsChart(r);
     applyAllToggleUI();
     return overall;
   }
