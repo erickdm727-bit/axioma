@@ -1,11 +1,11 @@
 {
-  "generatedAt": 1786659900426,
+  "generatedAt": 1786684711768,
   "tickers": {
     "SOFI": {
-      "price": 18.415,
+      "price": 18.43,
       "sr": {
         "support": 18.1245,
-        "resistance": 18.43,
+        "resistance": 18.747500000000002,
         "supports": [
           {
             "price": 18.1245,
@@ -25,19 +25,19 @@
         ],
         "resistances": [
           {
-            "price": 18.43,
+            "price": 18.747500000000002,
             "n": 1,
             "type": "pivot"
           },
           {
-            "price": 18.747500000000002,
+            "price": 18.8755,
             "n": 2,
-            "type": "pivot"
+            "type": "confluencia"
           },
           {
-            "price": 18.8755,
+            "price": 19.19,
             "n": 3,
-            "type": "confluencia"
+            "type": "pivot"
           }
         ],
         "quarterlyPivot": {
@@ -53,7 +53,7 @@
         "icon": "⚠",
         "cls": "mixed",
         "title": "Cerca de un soporte — zona de riesgo",
-        "text": "Estás a 1.6% de tocar el Soporte 1 (18.12 USD). Si se rompe, el siguiente soporte está en 17.93 USD."
+        "text": "Estás a 1.7% de tocar el Soporte 1 (18.12 USD). Si se rompe, el siguiente soporte está en 17.93 USD."
       },
       "daily": [
         {
@@ -762,22 +762,22 @@
         },
         {
           "datetime": "2026-08-12",
-          "open": 18.355,
+          "open": 18.37,
           "high": 18.4,
           "low": 17.65,
           "close": 17.94,
-          "volume": 35730075
+          "volume": 37161800
         },
         {
           "datetime": "2026-08-13",
           "open": 18.08,
           "high": 18.65,
           "low": 17.88,
-          "close": 18.415,
-          "volume": 51023085
+          "close": 18.43,
+          "volume": 61643357
         }
       ],
-      "updatedAt": 1786659860094,
+      "updatedAt": 1786684670984,
       "error": null
     },
     "SLV": {
@@ -1556,11 +1556,11 @@
           "volume": 11160696
         }
       ],
-      "updatedAt": 1786659868185,
+      "updatedAt": 1786684679201,
       "error": null
     },
     "TSLA": {
-      "price": 340.070007,
+      "price": 339.95999,
       "sr": {
         "support": 330.76827786,
         "resistance": 354.0933366666667,
@@ -1604,7 +1604,7 @@
       "alert": {
         "urgent": false,
         "icon": "◇",
-        "text": "Precio a 2.7% arriba del Soporte 1 (330.77 USD) y 4.1% debajo de la Resistencia 1 (354.09 USD) — sin niveles clave inmediatos que vigilar."
+        "text": "Precio a 2.7% arriba del Soporte 1 (330.77 USD) y 4.2% debajo de la Resistencia 1 (354.09 USD) — sin niveles clave inmediatos que vigilar."
       },
       "daily": [
         {
@@ -2317,18 +2317,18 @@
           "high": 335.5,
           "low": 323.64001,
           "close": 327.51001,
-          "volume": 27695899
+          "volume": 28698900
         },
         {
           "datetime": "2026-08-13",
           "open": 327.32999,
           "high": 341.64001,
           "low": 325.23999,
-          "close": 340.070007,
-          "volume": 30694958
+          "close": 339.95999,
+          "volume": 33336616
         }
       ],
-      "updatedAt": 1786659876269,
+      "updatedAt": 1786684687395,
       "error": null
     },
     "XYZ": {
@@ -3102,11 +3102,11 @@
           "volume": 4281393
         }
       ],
-      "updatedAt": 1786659884345,
+      "updatedAt": 1786684695579,
       "error": null
     },
     "RIOT": {
-      "price": 19.22,
+      "price": 19.21,
       "sr": {
         "support": 19.07,
         "resistance": 19.764560000000003,
@@ -3157,7 +3157,7 @@
         "icon": "⚠",
         "cls": "mixed",
         "title": "Cerca de un soporte — zona de riesgo",
-        "text": "Estás a 0.8% de tocar el Soporte 1 (19.07 USD). Si se rompe, el siguiente soporte está en 18.91 USD."
+        "text": "Estás a 0.7% de tocar el Soporte 1 (19.07 USD). Si se rompe, el siguiente soporte está en 18.91 USD."
       },
       "daily": [
         {
@@ -3866,22 +3866,22 @@
         },
         {
           "datetime": "2026-08-12",
-          "open": 21.575,
+          "open": 21.58,
           "high": 22.21,
-          "low": 20.1936,
+          "low": 20.194,
           "close": 20.32,
-          "volume": 33148691
+          "volume": 34470900
         },
         {
           "datetime": "2026-08-13",
           "open": 19.9801,
           "high": 20.86,
-          "low": 19.04,
-          "close": 19.22,
-          "volume": 21966332
+          "low": 19.0408,
+          "close": 19.21,
+          "volume": 24313799
         }
       ],
-      "updatedAt": 1786659892422,
+      "updatedAt": 1786684703763,
       "error": null
     }
   }
