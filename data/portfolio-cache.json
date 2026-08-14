@@ -1,5 +1,5 @@
 {
-  "generatedAt": 1786744378627,
+  "generatedAt": 1786748016846,
   "tickers": {
     "SOFI": {
       "price": 18.29,
@@ -762,11 +762,11 @@
         },
         {
           "datetime": "2026-08-13",
-          "open": 18.08,
+          "open": 18.1,
           "high": 18.65,
           "low": 17.88,
           "close": 18.43,
-          "volume": 61643357
+          "volume": 61870100
         },
         {
           "datetime": "2026-08-14",
@@ -774,14 +774,14 @@
           "high": 18.58,
           "low": 18.28,
           "close": 18.29,
-          "volume": 27126151
+          "volume": 34201994
         }
       ],
-      "updatedAt": 1786744338283,
+      "updatedAt": 1786747976652,
       "error": null
     },
     "SLV": {
-      "price": 58.47,
+      "price": 58.48,
       "sr": {
         "support": 57.3,
         "resistance": 61.54708333333333,
@@ -830,7 +830,7 @@
       "alert": {
         "urgent": false,
         "icon": "◇",
-        "text": "Precio a 2.0% arriba del Soporte 1 (57.30 USD) y 5.3% debajo de la Resistencia 1 (61.55 USD) — sin niveles clave inmediatos que vigilar."
+        "text": "Precio a 2.0% arriba del Soporte 1 (57.30 USD) y 5.2% debajo de la Resistencia 1 (61.55 USD) — sin niveles clave inmediatos que vigilar."
       },
       "daily": [
         {
@@ -1540,25 +1540,25 @@
         {
           "datetime": "2026-08-13",
           "open": 58.81,
-          "high": 58.8812,
+          "high": 58.88,
           "low": 58.0099983,
           "close": 58.16,
-          "volume": 11160696
+          "volume": 11575600
         },
         {
           "datetime": "2026-08-14",
           "open": 58.83,
-          "high": 59.365,
+          "high": 59.3601,
           "low": 58.42,
-          "close": 58.47,
-          "volume": 9979627
+          "close": 58.48,
+          "volume": 10206386
         }
       ],
-      "updatedAt": 1786744346374,
+      "updatedAt": 1786747984692,
       "error": null
     },
     "TSLA": {
-      "price": 342.32001,
+      "price": 342.26999,
       "sr": {
         "support": 330.76827786,
         "resistance": 354.0933366666667,
@@ -1602,7 +1602,7 @@
       "alert": {
         "urgent": false,
         "icon": "◇",
-        "text": "Precio a 3.4% arriba del Soporte 1 (330.77 USD) y 3.4% debajo de la Resistencia 1 (354.09 USD) — sin niveles clave inmediatos que vigilar."
+        "text": "Precio a 3.4% arriba del Soporte 1 (330.77 USD) y 3.5% debajo de la Resistencia 1 (354.09 USD) — sin niveles clave inmediatos que vigilar."
       },
       "daily": [
         {
@@ -2311,26 +2311,26 @@
         },
         {
           "datetime": "2026-08-13",
-          "open": 327.32999,
+          "open": 327.20001,
           "high": 341.64001,
           "low": 325.23999,
           "close": 339.95999,
-          "volume": 33336616
+          "volume": 34708300
         },
         {
           "datetime": "2026-08-14",
           "open": 342.32999,
           "high": 351.26001,
           "low": 335.3306,
-          "close": 342.32001,
-          "volume": 43004139
+          "close": 342.26999,
+          "volume": 44776096
         }
       ],
-      "updatedAt": 1786744354459,
+      "updatedAt": 1786747992767,
       "error": null
     },
     "XYZ": {
-      "price": 82.87,
+      "price": 82.88,
       "sr": {
         "support": 81.040001,
         "resistance": 84.17444455555555,
@@ -3089,22 +3089,22 @@
           "high": 83.72,
           "low": 78.92,
           "close": 83.089996,
-          "volume": 4281393
+          "volume": 5225500
         },
         {
           "datetime": "2026-08-14",
           "open": 82.87,
           "high": 83.41,
-          "low": 82.39,
-          "close": 82.87,
-          "volume": 4746144
+          "low": 82.4,
+          "close": 82.88,
+          "volume": 3516730
         }
       ],
-      "updatedAt": 1786744362540,
+      "updatedAt": 1786748000804,
       "error": null
     },
     "RIOT": {
-      "price": 19.02,
+      "price": 19.014999,
       "sr": {
         "support": 18.91,
         "resistance": 19.07,
@@ -3864,22 +3864,22 @@
         },
         {
           "datetime": "2026-08-13",
-          "open": 19.9801,
+          "open": 19.98,
           "high": 20.86,
-          "low": 19.0408,
+          "low": 19.041,
           "close": 19.21,
-          "volume": 24313799
+          "volume": 24361100
         },
         {
           "datetime": "2026-08-14",
           "open": 18.765,
-          "high": 19.55,
+          "high": 19.54,
           "low": 18.455,
-          "close": 19.02,
-          "volume": 16011646
+          "close": 19.014999,
+          "volume": 16966554
         }
       ],
-      "updatedAt": 1786744370623,
+      "updatedAt": 1786748008842,
       "error": null
     }
   }
