@@ -207,7 +207,6 @@
   .bt-startdate-row label{font-size:12.5px; color:var(--text-dim); white-space:nowrap;}
   .bt-startdate-row input[type="date"]{background:var(--panel-3); border:1px solid var(--line); color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:6px 10px; border-radius:7px; outline:none;}
   .bt-startdate-row input[type="date"]:focus{border-color:var(--accent);}
-  .bt-startdate-row input[type="number"]{background:var(--panel-3); border:1px solid var(--line); color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:6px 10px; border-radius:7px; outline:none; width:80px;}
   .bt-startdate-hint{font-size:11px; color:var(--text-dim2); flex:1; min-width:200px;}
   .bt-caveats{font-size:11.5px; color:var(--mixed); background:var(--mixed-dim); border:1px solid rgba(242,184,75,0.35); border-radius:8px; padding:10px 12px; line-height:1.55; margin-bottom:12px;}
   .bt-status{font-size:12.5px; color:var(--text-dim); min-height:18px; margin-bottom:6px;}
@@ -611,29 +610,6 @@
     <div id="chartSvg-williams"></div>
     <div id="oscSvg-williams" style="margin-top:6px;"></div>
     <div class="mov-legend" id="chartLegend-williams"></div>
-  </div>
-
-  <div class="backtest-card" id="wBacktestCard" style="margin-top:14px;">
-    <div class="bt-head">
-      <h3>🎯 Backtest personalizado — Williams %R</h3>
-      <button class="btn-bt" id="wBacktestBtn" type="button">▶ Correr backtest</button>
-    </div>
-    <div class="bt-desc">Define tus propias reglas de entrada/salida y pruébalas contra el historial real de este ticker, en el marco temporal que elijas — en vez de la fórmula compuesta del backtest general de abajo.</div>
-    <div class="bt-startdate-row">
-      <label>Comprar cuando cruce por encima de <input id="wbtBuyThresh" type="number" step="1" value="-95"></label>
-      <label>Vender cuando cruce por encima de <input id="wbtSellThresh" type="number" step="1" value="-20"></label>
-    </div>
-    <div class="bt-startdate-row">
-      <label>Marco temporal</label>
-      <span class="tf-selector" id="wbtTfSelector"></span>
-    </div>
-    <div class="bt-startdate-row">
-      <label>Riesgo por operación (%) <input id="wbtRiskPct" type="number" step="0.5" min="0.1" value="2"></label>
-      <label><input id="wbtUseSl" type="checkbox" checked> Stop loss (%) <input id="wbtSlPct" type="number" step="0.5" min="0.1" value="5"></label>
-      <label><input id="wbtUseTp" type="checkbox" checked> Take profit (%) <input id="wbtTpPct" type="number" step="0.5" min="0.1" value="10"></label>
-    </div>
-    <div class="bt-caveats">⚠ Entra/sale por <strong>cruce</strong> del umbral (no con solo tocarlo), usa cierres de vela (sin comisiones ni slippage), el tamaño de posición se calcula para arriesgar el % que pusiste según la distancia al stop loss (si no hay stop loss, el % se usa directo como tamaño de posición) y nunca pasa del 100% del capital (sin apalancamiento). Solo mantiene una posición a la vez.</div>
-    <div id="wbtResults"></div>
   </div>
 
   <!-- 16. EMA Cloud 20/50 -->
@@ -3025,7 +3001,6 @@
     if(!availableKeys.size) return;
     if(!availableKeys.has(moduleChartTf.williams)) moduleChartTf.williams = availableKeys.has("4h") ? "4h" : Array.from(availableKeys)[0];
     buildModuleChartTfSelector("williams", availableKeys, () => drawWilliamsChart(lastChartResult));
-    buildWbtTfSelector(availableKeys);
     drawWilliamsChart(result);
   }
 
@@ -3057,137 +3032,6 @@
     }
     if(legendEl) legendEl.innerHTML = '<span><i style="background:#5B8DEF"></i> Williams %R (14)</span><span><i style="background:#FF5C5C"></i> -20 sobrecompra</span><span><i style="background:#3ECF8E"></i> -80 sobreventa</span>';
   }
-
-    // ---- Custom per-indicator backtest (Williams %R template): user-defined
-  // entry/exit thresholds, timeframe, risk %, SL/TP — walk-forward safe,
-  // no lookahead (williamsRSeries at each bar only uses trailing candles). ----
-  const WBT_CONFIG_KEY = "ta_scanner_wbt_config";
-  function loadWbtConfig(){
-    const def = { buyThresh:-95, sellThresh:-20, tf:"1week", riskPct:2, useSl:true, slPct:5, useTp:true, tpPct:10 };
-    try { return Object.assign({}, def, JSON.parse(localStorage.getItem(WBT_CONFIG_KEY) || "{}")); } catch(e){ return def; }
-  }
-  function saveWbtConfig(cfg){ safeLocalStorageSet(WBT_CONFIG_KEY, JSON.stringify(cfg)); }
-  let wbtTfKey = loadWbtConfig().tf;
-
-  function buildWbtTfSelector(availableKeys){
-    const el = $("wbtTfSelector"); if(!el) return;
-    if(!availableKeys.has(wbtTfKey)) wbtTfKey = availableKeys.has("1week") ? "1week" : Array.from(availableKeys)[0];
-    el.innerHTML = "";
-    TIMEFRAMES.forEach(tf => {
-      const available = availableKeys.has(tf.key);
-      const btn = document.createElement("button");
-      btn.className = "tf-chip" + (tf.key===wbtTfKey ? " active" : "") + (available ? "" : " tf-chip-disabled");
-      btn.textContent = tf.label;
-      if(!available) btn.title = "No se descargó este marco temporal — actívalo y vuelve a analizar.";
-      btn.addEventListener("click", ()=>{
-        if(!available){ setStatus("Ese marco temporal no se descargó esta vez.", true); return; }
-        wbtTfKey = tf.key;
-        buildWbtTfSelector(availableKeys);
-      });
-      el.appendChild(btn);
-    });
-  }
-
-  function runWilliamsCustomBacktest(seriesByTf, cfg){
-    const full = seriesByTf[cfg.tf];
-    if(!full || full.length < 40) return null;
-    const period = 14;
-    const series = williamsRSeries(full, period);
-    if(series.length < 20) return null;
-    const offset = full.length - series.length;
-
-    let equity = 1, bhEquity = 1;
-    const bhStartClose = full[offset].close;
-    let inPosition = false, entryPrice = 0, entryIdx = -1, positionFrac = 0;
-    const trades = [];
-
-    for(let i = 1; i < series.length; i++){
-      const barIdx = i + offset;
-      const bar = full[barIdx];
-      const prevV = series[i-1], curV = series[i];
-
-      if(!inPosition){
-        const crossedUpBuy = prevV < cfg.buyThresh && curV >= cfg.buyThresh;
-        if(crossedUpBuy){
-          inPosition = true;
-          entryPrice = bar.close;
-          entryIdx = barIdx;
-          const riskFrac = cfg.riskPct/100;
-          positionFrac = cfg.useSl ? Math.min(1, riskFrac / Math.max(0.001, cfg.slPct/100)) : Math.min(1, riskFrac);
-        }
-      } else {
-        let exitPrice = null, reason = null;
-        const slPrice = cfg.useSl ? entryPrice * (1 - cfg.slPct/100) : null;
-        const tpPrice = cfg.useTp ? entryPrice * (1 + cfg.tpPct/100) : null;
-        if(slPrice !== null && bar.low <= slPrice){ exitPrice = slPrice; reason = "Stop loss"; }
-        else if(tpPrice !== null && bar.high >= tpPrice){ exitPrice = tpPrice; reason = "Take profit"; }
-        else if(prevV < cfg.sellThresh && curV >= cfg.sellThresh){ exitPrice = bar.close; reason = "Señal de venta"; }
-        if(exitPrice !== null){
-          const tradeReturn = (exitPrice - entryPrice) / entryPrice;
-          equity *= (1 + tradeReturn * positionFrac);
-          trades.push({ entryDate: full[entryIdx].datetime, exitDate: bar.datetime, entryPrice, exitPrice, returnPct: tradeReturn*100, reason });
-          inPosition = false;
-        }
-      }
-      bhEquity = bar.close / bhStartClose;
-    }
-    if(inPosition){
-      const lastBar = full[full.length-1];
-      const tradeReturn = (lastBar.close - entryPrice) / entryPrice;
-      equity *= (1 + tradeReturn * positionFrac);
-      trades.push({ entryDate: full[entryIdx].datetime, exitDate: lastBar.datetime, entryPrice, exitPrice:lastBar.close, returnPct: tradeReturn*100, reason:"Posición abierta (fin de datos)" });
-    }
-
-    const wins = trades.filter(t => t.returnPct > 0).length;
-    return {
-      totalReturn: (equity-1)*100,
-      bhReturn: (bhEquity-1)*100,
-      trades,
-      winRate: trades.length ? (wins/trades.length)*100 : 0,
-      barsUsed: series.length,
-      tfLabel: (TIMEFRAMES.find(t=>t.key===cfg.tf)||{}).label || cfg.tf
-    };
-  }
-
-  function renderWbtResults(bt){
-    const el = $("wbtResults"); if(!el) return;
-    if(!bt){
-      el.innerHTML = '<div class="hint">No hay suficiente historial en ese marco temporal para correr el backtest (hacen falta al menos ~40 velas con Williams %R calculable).</div>';
-      return;
-    }
-    const stratColor = bt.totalReturn >= 0 ? "var(--up)" : "var(--down)";
-    const bhColor = bt.bhReturn >= 0 ? "var(--up)" : "var(--down)";
-    let html = '<div class="bt-daterange">📊 ' + bt.tfLabel + " · " + bt.barsUsed + " velas · " + bt.trades.length + " operaciones · " + bt.winRate.toFixed(0) + '% ganadoras</div>';
-    html += '<div class="bt-daterange">Tu estrategia: <strong style="color:' + stratColor + '">' + (bt.totalReturn>=0?"+":"") + bt.totalReturn.toFixed(1) + '%</strong> · Comprar y mantener: <strong style="color:' + bhColor + '">' + (bt.bhReturn>=0?"+":"") + bt.bhReturn.toFixed(1) + '%</strong></div>';
-    if(bt.trades.length){
-      html += '<div class="mov-legend" style="margin-top:8px; flex-direction:column; align-items:flex-start; gap:4px;">';
-      bt.trades.slice(-8).reverse().forEach(t => {
-        const c = t.returnPct >= 0 ? "#3ECF8E" : "#FF5C5C";
-        html += '<span style="color:' + c + ';">' + fmtDateShort(t.entryDate) + " → " + fmtDateShort(t.exitDate) + " · " + (t.returnPct>=0?"+":"") + t.returnPct.toFixed(1) + "% · " + t.reason + '</span>';
-      });
-      html += '</div>';
-    }
-    el.innerHTML = html;
-  }
-
-  $("wBacktestBtn") && $("wBacktestBtn").addEventListener("click", () => {
-    if(!lastChartResult){ setStatus("Corre un análisis primero.", true); return; }
-    const cfg = {
-      buyThresh: parseFloat($("wbtBuyThresh").value),
-      sellThresh: parseFloat($("wbtSellThresh").value),
-      tf: wbtTfKey,
-      riskPct: Math.max(0.1, parseFloat($("wbtRiskPct").value) || 2),
-      useSl: $("wbtUseSl").checked,
-      slPct: Math.max(0.1, parseFloat($("wbtSlPct").value) || 5),
-      useTp: $("wbtUseTp").checked,
-      tpPct: Math.max(0.1, parseFloat($("wbtTpPct").value) || 10)
-    };
-    if(Number.isNaN(cfg.buyThresh)) cfg.buyThresh = -95;
-    if(Number.isNaN(cfg.sellThresh)) cfg.sellThresh = -20;
-    saveWbtConfig(cfg);
-    const bt = runWilliamsCustomBacktest(lastChartResult.seriesByTf, cfg);
-    renderWbtResults(bt);
-  });
 
   function renderPriceChart(result){
     const card = $("chartCard");
