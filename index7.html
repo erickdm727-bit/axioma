@@ -208,6 +208,8 @@
   .bt-startdate-row input[type="date"]{background:var(--panel-3); border:1px solid var(--line); color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:6px 10px; border-radius:7px; outline:none;}
   .bt-startdate-row input[type="date"]:focus{border-color:var(--accent);}
   .bt-startdate-row input[type="number"]{background:var(--panel-3); border:1px solid var(--line); color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:6px 10px; border-radius:7px; outline:none; width:80px;}
+  .bt-startdate-row select{background:var(--panel-3); border:1px solid var(--line); color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:6px 10px; border-radius:7px; outline:none;}
+  .bt-startdate-row label.bt-checklabel{display:flex; align-items:center; gap:6px; font-weight:normal;}
   .bt-startdate-hint{font-size:11px; color:var(--text-dim2); flex:1; min-width:200px;}
   .bt-caveats{font-size:11.5px; color:var(--mixed); background:var(--mixed-dim); border:1px solid rgba(242,184,75,0.35); border-radius:8px; padding:10px 12px; line-height:1.55; margin-bottom:12px;}
   .bt-status{font-size:12.5px; color:var(--text-dim); min-height:18px; margin-bottom:6px;}
@@ -695,6 +697,20 @@
       <input type="number" id="btWilliamsBuy" step="1" min="-100" max="0" value="-95">
       <label for="btWilliamsSell" style="margin-left:12px;">vende al cruzar sobre</label>
       <input type="number" id="btWilliamsSell" step="1" min="-100" max="0" value="-2">
+    </div>
+    <div class="bt-startdate-row">
+      <label class="bt-checklabel"><input type="checkbox" id="btUseSl"> Usar Stop Loss</label>
+      <input type="number" id="btSlPct" step="0.5" min="0.5" max="50" value="5" style="width:60px;">%
+      <label class="bt-checklabel" style="margin-left:16px;"><input type="checkbox" id="btUseTp"> Usar Take Profit</label>
+      <input type="number" id="btTpPct" step="0.5" min="0.5" max="100" value="10" style="width:60px;">%
+    </div>
+    <div class="bt-startdate-row">
+      <label for="btTfRestrict">Operar solo en marco temporal</label>
+      <select id="btTfRestrict">
+        <option value="daily" selected>Diario (como ahora — decide cada día)</option>
+        <option value="weekly">Semanal (solo decide en cierres semanales)</option>
+        <option value="4h" disabled>4 horas (no disponible — poco historial)</option>
+      </select>
     </div>
     <div class="bt-startdate-row">
       <label for="btStartDate">Empezar a operar desde</label>
@@ -1782,6 +1798,34 @@
   }
   let BT_INDICATOR_CONFIG = loadBtIndicatorConfig();
 
+  const BT_RISK_CONFIG_KEY = "axioma_bt_risk_config_v1";
+  function loadBtRiskConfig(){
+    const defaults = { useSl:false, slPct:5, useTp:false, tpPct:10 };
+    try {
+      const raw = localStorage.getItem(BT_RISK_CONFIG_KEY);
+      if(!raw) return defaults;
+      return Object.assign({}, defaults, JSON.parse(raw));
+    } catch(e){ return defaults; }
+  }
+  function saveBtRiskConfig(cfg){
+    try { localStorage.setItem(BT_RISK_CONFIG_KEY, JSON.stringify(cfg)); } catch(e){}
+  }
+  let BT_RISK_CONFIG = loadBtRiskConfig();
+
+  const BT_TF_RESTRICT_KEY = "axioma_bt_tf_restrict_v1";
+  function loadBtTfRestrict(){
+    const defaults = { mode: "daily" };
+    try {
+      const raw = localStorage.getItem(BT_TF_RESTRICT_KEY);
+      if(!raw) return defaults;
+      return Object.assign({}, defaults, JSON.parse(raw));
+    } catch(e){ return defaults; }
+  }
+  function saveBtTfRestrict(cfg){
+    try { localStorage.setItem(BT_TF_RESTRICT_KEY, JSON.stringify(cfg)); } catch(e){}
+  }
+  let BT_TF_RESTRICT = loadBtTfRestrict();
+
   function btFindIndexOnOrBefore(datesMs, ts){
     let lo=0, hi=datesMs.length-1, idx=-1;
     while(lo<=hi){ const mid=(lo+hi)>>1; if(datesMs[mid]<=ts){ idx=mid; lo=mid+1; } else hi=mid-1; }
@@ -1804,6 +1848,7 @@
     const equityStrategy = [1], equityBH = [1], dates = [];
     let inPosition = false, entryIdx = null, entryEquityMult = 1;
     const trades = [];
+    const weeklyCloseDates = (BT_TF_RESTRICT.mode === "weekly" && weekly) ? new Set(weekly.map(w=>w.datetime.slice(0,10))) : null;
 
     for(let i=segStartIdx; i<segEndIdxExclusive; i++){
       const win = daily.slice(Math.max(0,i-260), i+1);
@@ -1916,11 +1961,22 @@
       const composite = wtotal ? wsum/wtotal : 0;
 
       const wasIn = inPosition;
-      if(!inPosition && composite > 0.15){ inPosition = true; entryIdx = i; entryEquityMult = equityStrategy[equityStrategy.length-1]; }
-      else if(inPosition && composite <= 0){ inPosition = false; }
+      let exitReason = null, forcedRet = null, forcedExitPrice = null;
+      if(wasIn && (BT_RISK_CONFIG.useSl || BT_RISK_CONFIG.useTp)){
+        const entryPrice = daily[entryIdx].close;
+        const bar = daily[i+1];
+        const slPrice = BT_RISK_CONFIG.useSl ? entryPrice * (1 - BT_RISK_CONFIG.slPct/100) : null;
+        const tpPrice = BT_RISK_CONFIG.useTp ? entryPrice * (1 + BT_RISK_CONFIG.tpPct/100) : null;
+        if(slPrice !== null && bar.low <= slPrice){ forcedExitPrice = slPrice; forcedRet = slPrice/daily[i].close - 1; exitReason = "sl"; }
+        else if(tpPrice !== null && bar.high >= tpPrice){ forcedExitPrice = tpPrice; forcedRet = tpPrice/daily[i].close - 1; exitReason = "tp"; }
+      }
+      const isDecisionDay = !weeklyCloseDates || weeklyCloseDates.has(daily[i+1].datetime.slice(0,10));
+      if(exitReason){ inPosition = false; }
+      else if(isDecisionDay && !inPosition && composite > 0.15){ inPosition = true; entryIdx = i; entryEquityMult = equityStrategy[equityStrategy.length-1]; }
+      else if(isDecisionDay && inPosition && composite <= 0){ inPosition = false; exitReason = "signal"; }
 
       const nextRet = daily[i+1].close/daily[i].close - 1;
-      const stratRet = wasIn ? nextRet : 0;
+      const stratRet = (exitReason && forcedRet !== null) ? forcedRet : (wasIn ? nextRet : 0);
       equityStrategy.push(equityStrategy[equityStrategy.length-1] * (1+stratRet));
       equityBH.push(equityBH[equityBH.length-1] * (1+nextRet));
       dates.push(daily[i+1].datetime);
@@ -1933,9 +1989,10 @@
         trades.push({
           entryIdx, exitIdx: i+1,
           entryDate: daily[entryIdx].datetime, exitDate: daily[i+1].datetime,
-          entryPrice: daily[entryIdx].close, exitPrice: daily[i+1].close,
+          entryPrice: daily[entryIdx].close, exitPrice: forcedExitPrice !== null ? forcedExitPrice : daily[i+1].close,
           entryEquityMult, exitEquityMult,
           ret: exitEquityMult/entryEquityMult - 1,
+          exitReason: exitReason || "signal",
         });
       }
     }
@@ -3860,6 +3917,12 @@
     const buyEl = $("btWilliamsBuy"), sellEl = $("btWilliamsSell");
     if(buyEl) buyEl.value = BT_INDICATOR_CONFIG.williams.buyThresh;
     if(sellEl) sellEl.value = BT_INDICATOR_CONFIG.williams.sellThresh;
+    const useSlEl = $("btUseSl"), slPctEl = $("btSlPct"), useTpEl = $("btUseTp"), tpPctEl = $("btTpPct"), tfEl = $("btTfRestrict");
+    if(useSlEl) useSlEl.checked = BT_RISK_CONFIG.useSl;
+    if(slPctEl) slPctEl.value = BT_RISK_CONFIG.slPct;
+    if(useTpEl) useTpEl.checked = BT_RISK_CONFIG.useTp;
+    if(tpPctEl) tpPctEl.value = BT_RISK_CONFIG.tpPct;
+    if(tfEl) tfEl.value = BT_TF_RESTRICT.mode;
   })();
 
   $("runBacktestBtn").addEventListener("click", async ()=>{
@@ -3869,6 +3932,19 @@
       if(!isNaN(buyVal)) BT_INDICATOR_CONFIG.williams.buyThresh = buyVal;
       if(!isNaN(sellVal)) BT_INDICATOR_CONFIG.williams.sellThresh = sellVal;
       saveBtIndicatorConfig(BT_INDICATOR_CONFIG);
+    }
+    const useSlEl = $("btUseSl"), slPctEl = $("btSlPct"), useTpEl = $("btUseTp"), tpPctEl = $("btTpPct"), tfEl = $("btTfRestrict");
+    if(useSlEl){
+      BT_RISK_CONFIG.useSl = useSlEl.checked;
+      BT_RISK_CONFIG.useTp = useTpEl.checked;
+      const slV = parseFloat(slPctEl.value), tpV = parseFloat(tpPctEl.value);
+      if(!isNaN(slV)) BT_RISK_CONFIG.slPct = slV;
+      if(!isNaN(tpV)) BT_RISK_CONFIG.tpPct = tpV;
+      saveBtRiskConfig(BT_RISK_CONFIG);
+    }
+    if(tfEl){
+      BT_TF_RESTRICT.mode = tfEl.value;
+      saveBtTfRestrict(BT_TF_RESTRICT);
     }
     const symbol = tickerInput.value.trim().toUpperCase();
     const bench = benchInput.value.trim().toUpperCase() || "SPY";
