@@ -1019,9 +1019,82 @@
 
   // ticker analyzed twice, toggles that re-trigger the same series, etc.)
   // don't spend API credits at all. ----
-  const RESPONSE_CACHE = new Map(); // cacheKey -> { data, ts }
+  // Hydrated from localStorage on load so cached candle series survive page
+  // reloads and closed-tab "dead time" (evenings, weekends) instead of only
+  // living for the current tab session.
+  const RESPONSE_CACHE_LS_KEY = "axioma_response_cache_v1";
+  function loadResponseCache(){
+    try {
+      const raw = localStorage.getItem(RESPONSE_CACHE_LS_KEY);
+      if(!raw) return new Map();
+      return new Map(Object.entries(JSON.parse(raw)));
+    } catch(e){ return new Map(); }
+  }
+  let persistResponseCacheTimer = null;
+  function persistResponseCache(){
+    // Debounced — a single analysis run can trigger many API responses in a
+    // burst (several timeframes, backtest series, etc.) and we don't want a
+    // localStorage write per response.
+    if(persistResponseCacheTimer) return;
+    persistResponseCacheTimer = setTimeout(() => {
+      persistResponseCacheTimer = null;
+      const dump = () => {
+        const obj = {};
+        RESPONSE_CACHE.forEach((v,k) => { if(!k.startsWith("/price")) obj[k] = v; });
+        localStorage.setItem(RESPONSE_CACHE_LS_KEY, JSON.stringify(obj));
+      };
+      try { dump(); }
+      catch(e){
+        // Likely quota exceeded — drop the oldest half of entries (by
+        // fetch time) and try once more; give up silently if it still
+        // fails, the in-memory cache still works for this tab session.
+        try {
+          const entries = Array.from(RESPONSE_CACHE.entries()).sort((a,b) => a[1].ts - b[1].ts);
+          const dropCount = Math.ceil(entries.length/2);
+          for(let i=0;i<dropCount;i++) RESPONSE_CACHE.delete(entries[i][0]);
+          dump();
+        } catch(e2){}
+      }
+    }, 800);
+  }
+  const RESPONSE_CACHE = loadResponseCache(); // cacheKey -> { data, ts }
+
+  // ---- Market-hours awareness for cache TTLs ----
+  // No new candle can print while the market's closed, so treat cached
+  // series as fresh until the next session instead of re-spending API
+  // credits every few minutes during "dead time". US market holidays
+  // aren't accounted for (only the Mon-Fri 9:30-16:00 ET window) — on a
+  // holiday this just means one extra refetch when the app next expects
+  // the market to be open.
+  function getNyParts(date){
+    const fmt = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/New_York", hour12: false,
+      weekday: "short", hour: "2-digit", minute: "2-digit"
+    });
+    const parts = {};
+    fmt.formatToParts(date).forEach(p => { parts[p.type] = p.value; });
+    return { weekday: parts.weekday, hour: parseInt(parts.hour,10), minute: parseInt(parts.minute,10) };
+  }
+  function isMarketOpenNow(date){
+    date = date || new Date();
+    const { weekday, hour, minute } = getNyParts(date);
+    if(weekday === "Sat" || weekday === "Sun") return false;
+    const mins = hour*60 + minute;
+    return mins >= (9*60+30) && mins < (16*60);
+  }
+  function msUntilNextMarketOpen(date){
+    date = date || new Date();
+    if(isMarketOpenNow(date)) return 0;
+    let t = date.getTime();
+    for(let i=0; i<400; i++){ // 15-min steps, ~100h ceiling — comfortably covers any long weekend
+      t += 15*60*1000;
+      if(isMarketOpenNow(new Date(t))) return t - date.getTime();
+    }
+    return 6*60*60*1000; // fallback, shouldn't happen
+  }
   function cacheTtlFor(path, params){
     if(path === "/price") return 20000; // quotes go stale fast
+    if(!isMarketOpenNow()) return msUntilNextMarketOpen() + 5*60*1000; // hold until next open + small buffer
     const intraday = new Set(["5min","10min","30min","1h","2h","3h","4h"]);
     return intraday.has(params.interval) ? 45000 : 300000; // 45s intraday, 5min daily+
   }
@@ -1078,6 +1151,7 @@
       if(data && data.status === "error") throw new Error(data.message || "Error consultando datos de mercado.");
       if(res.status === 429 && rateAttempt < MAX_RATE_RETRIES){ rateAttempt++; await sleep(4000); continue; }
       RESPONSE_CACHE.set(cacheKey, { data, ts: Date.now() });
+      persistResponseCache();
       return data;
     }
   }
