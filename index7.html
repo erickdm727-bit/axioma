@@ -699,6 +699,11 @@
       <input type="number" id="btWilliamsSell" step="1" min="-100" max="0" value="-2">
     </div>
     <div class="bt-startdate-row">
+      <button class="btn-bt" id="wOptimizeBtn" type="button" style="font-size:12px; padding:6px 12px;">🔍 Optimizar parámetros para este ticker</button>
+      <span class="bt-startdate-hint" id="wOptStatus"></span>
+    </div>
+    <div id="wOptResults"></div>
+    <div class="bt-startdate-row">
       <label class="bt-checklabel"><input type="checkbox" id="btUseSl"> Usar Stop Loss</label>
       <input type="number" id="btSlPct" step="0.5" min="0.5" max="50" value="5" style="width:60px;">%
       <label class="bt-checklabel" style="margin-left:16px;"><input type="checkbox" id="btUseTp"> Usar Take Profit</label>
@@ -1899,6 +1904,27 @@
     try { localStorage.setItem(BT_TF_RESTRICT_KEY, JSON.stringify(cfg)); } catch(e){}
   }
   let BT_TF_RESTRICT = loadBtTfRestrict();
+
+  // ---- Per-ticker optimized Williams %R thresholds ----
+  const WILLIAMS_OPT_KEY = "axioma_williams_opt_v1";
+  function loadWilliamsOpt(){
+    try { return JSON.parse(localStorage.getItem(WILLIAMS_OPT_KEY)) || {}; } catch(e){ return {}; }
+  }
+  function saveWilliamsOpt(map){
+    try { localStorage.setItem(WILLIAMS_OPT_KEY, JSON.stringify(map)); } catch(e){}
+  }
+  function applyWilliamsOptIfAvailable(symbol){
+    if(!symbol) return;
+    const map = loadWilliamsOpt();
+    const opt = map[symbol];
+    const buyEl = $("btWilliamsBuy"), sellEl = $("btWilliamsSell"), statusEl = $("wOptStatus");
+    if(!opt){ if(statusEl) statusEl.textContent = ""; return; }
+    if(buyEl) buyEl.value = opt.buyThresh;
+    if(sellEl) sellEl.value = opt.sellThresh;
+    BT_INDICATOR_CONFIG.williams = { buyThresh: opt.buyThresh, sellThresh: opt.sellThresh };
+    saveBtIndicatorConfig(BT_INDICATOR_CONFIG);
+    if(statusEl) statusEl.textContent = `✓ Usando parámetros optimizados para ${symbol} (compra ${opt.buyThresh} / vende ${opt.sellThresh}, +${opt.totalReturn.toFixed(0)}% en el backtest, ${opt.tradeCount} operaciones).`;
+  }
 
   function btFindIndexOnOrBefore(datesMs, ts){
     let lo=0, hi=datesMs.length-1, idx=-1;
@@ -4053,6 +4079,87 @@
     if(tpPctEl) tpPctEl.value = BT_RISK_CONFIG.tpPct;
     if(tfEl) tfEl.value = BT_TF_RESTRICT.mode;
   })();
+
+  applyWilliamsOptIfAvailable(tickerInput.value.trim().toUpperCase());
+  tickerInput.addEventListener("change", () => {
+    applyWilliamsOptIfAvailable(tickerInput.value.trim().toUpperCase());
+  });
+
+  function renderWilliamsOptResults(results, symbol){
+    const el = $("wOptResults");
+    if(!results.length){ el.innerHTML = '<div class="hint">Ninguna combinación produjo suficientes operaciones (mínimo 3) para evaluarla con confianza.</div>'; return; }
+    let html = '<div class="bt-caveats">Mejores combinaciones encontradas (de mayor a menor retorno total), requiriendo al menos 3 operaciones para contar:</div>';
+    results.forEach((r,i) => {
+      html += `<div class="bt-trade">
+        <div class="btt-dates">#${i+1} — compra ${r.buy} / vende ${r.sell}${i===0?' <span class="btt-open">(aplicado)</span>':''}</div>
+        <div class="btt-prices">${r.tradeCount} operaciones · ${(r.winRate*100).toFixed(0)}% ganadoras · drawdown máx ${(r.maxDD*100).toFixed(0)}%</div>
+        <div class="btt-ret" style="color:${r.totalReturn>=0?'var(--up)':'var(--down)'}">${r.totalReturn>=0?'+':''}${r.totalReturn.toFixed(0)}%</div>
+      </div>`;
+    });
+    el.innerHTML = html;
+  }
+
+  $("wOptimizeBtn").addEventListener("click", async () => {
+    const symbol = tickerInput.value.trim().toUpperCase();
+    const statusEl = $("wOptStatus"), btn = $("wOptimizeBtn");
+    if(!symbol){ statusEl.textContent = "Escribe un ticker arriba primero."; return; }
+    btn.disabled = true;
+    $("wOptResults").innerHTML = "";
+    const savedCfg = { buyThresh: BT_INDICATOR_CONFIG.williams.buyThresh, sellThresh: BT_INDICATOR_CONFIG.williams.sellThresh };
+    try {
+      statusEl.textContent = "Descargando historial…";
+      const daily = await fetchSeries(symbol, "1day", 5000);
+      const [weekly, spyDaily, qqqDaily] = await Promise.all([
+        fetchSeries(symbol, "1week", 1000),
+        fetchSeries("SPY", "1day", 5000),
+        fetchSeries("QQQ", "1day", 5000),
+      ]);
+      // Coarse grid over the oversold/overbought thresholds — fine enough to
+      // land within a couple of points of a "real" turning zone like the
+      // one found by hand (e.g. around -98), coarse enough to finish in a
+      // reasonable time since each combination re-runs the full backtest.
+      const buyCandidates = [-99,-97,-95,-93,-91,-89,-87,-85,-83,-81];
+      const sellCandidates = [-1,-3,-5,-7,-9,-11,-13,-16,-20,-25];
+      const total = buyCandidates.length * sellCandidates.length;
+      const results = [];
+      let done = 0;
+      for(const buy of buyCandidates){
+        for(const sell of sellCandidates){
+          BT_INDICATOR_CONFIG.williams = { buyThresh: buy, sellThresh: sell };
+          const bt = runBacktest(daily, weekly, spyDaily, qqqDaily, spyDaily, null);
+          if(bt && bt.tradeCount >= 3){
+            results.push({ buy, sell, totalReturn: bt.totalReturn*100, tradeCount: bt.tradeCount, winRate: bt.winRate, maxDD: bt.maxDD });
+          }
+          done++;
+          if(done % 4 === 0){
+            statusEl.textContent = `Probando combinaciones… ${done}/${total}`;
+            await new Promise(r => setTimeout(r, 0));
+          }
+        }
+      }
+      results.sort((a,b) => b.totalReturn - a.totalReturn);
+      renderWilliamsOptResults(results.slice(0,5), symbol);
+      if(results.length){
+        const best = results[0];
+        const map = loadWilliamsOpt();
+        map[symbol] = { buyThresh: best.buy, sellThresh: best.sell, totalReturn: best.totalReturn, tradeCount: best.tradeCount, winRate: best.winRate, optimizedAt: Date.now() };
+        saveWilliamsOpt(map);
+        $("btWilliamsBuy").value = best.buy;
+        $("btWilliamsSell").value = best.sell;
+        BT_INDICATOR_CONFIG.williams = { buyThresh: best.buy, sellThresh: best.sell };
+        saveBtIndicatorConfig(BT_INDICATOR_CONFIG);
+        statusEl.textContent = `Listo — mejor combinación aplicada y guardada para ${symbol}.`;
+      } else {
+        BT_INDICATOR_CONFIG.williams = savedCfg;
+        statusEl.textContent = "No se encontró ninguna combinación con suficientes operaciones — se mantienen los parámetros anteriores.";
+      }
+    } catch(e){
+      BT_INDICATOR_CONFIG.williams = savedCfg;
+      statusEl.textContent = "Error: " + (e.message || e);
+    } finally {
+      btn.disabled = false;
+    }
+  });
 
   $("runBacktestBtn").addEventListener("click", async ()=>{
     const wBuyEl = $("btWilliamsBuy"), wSellEl = $("btWilliamsSell");
