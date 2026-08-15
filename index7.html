@@ -207,6 +207,7 @@
   .bt-startdate-row label{font-size:12.5px; color:var(--text-dim); white-space:nowrap;}
   .bt-startdate-row input[type="date"]{background:var(--panel-3); border:1px solid var(--line); color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:6px 10px; border-radius:7px; outline:none;}
   .bt-startdate-row input[type="date"]:focus{border-color:var(--accent);}
+  .bt-startdate-row input[type="number"]{background:var(--panel-3); border:1px solid var(--line); color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:6px 10px; border-radius:7px; outline:none; width:80px;}
   .bt-startdate-hint{font-size:11px; color:var(--text-dim2); flex:1; min-width:200px;}
   .bt-caveats{font-size:11.5px; color:var(--mixed); background:var(--mixed-dim); border:1px solid rgba(242,184,75,0.35); border-radius:8px; padding:10px 12px; line-height:1.55; margin-bottom:12px;}
   .bt-status{font-size:12.5px; color:var(--text-dim); min-height:18px; margin-bottom:6px;}
@@ -688,6 +689,13 @@
       <button class="btn-bt" id="runBacktestBtn" type="button">▶ Correr backtest</button>
     </div>
     <div class="bt-desc">Simula día por día, con datos diarios, qué habría dicho el veredicto general de esta app en el pasado — usando <strong>solo información disponible hasta ese día</strong>, sin ver el futuro — y qué le habría pasado a tu dinero siguiéndolo (solo largos: comprado cuando el veredicto es alcista, en efectivo cuando deja de serlo). Usa exactamente los indicadores que tengas prendidos ahora mismo (los del método/pestaña activa) — apaga o cambia de método antes de correrlo para probar esa combinación específica. Solo cuentan los calculables desde velas diarias; corre sobre todo el historial que Twelve Data tenga disponible para el ticker.</div>
+    <div class="bt-desc" style="margin-top:0;">⚙ Configuración de indicadores (opcional) — ajusta los umbrales que usa el backtest para calcular la señal de cada indicador. Por defecto Williams %R compra cuando cruza por encima de -95 y vende cuando cruza por encima de -2; cambia los valores si prefieres otra interpretación.</div>
+    <div class="bt-startdate-row">
+      <label for="btWilliamsBuy">Williams %R — compra al cruzar sobre</label>
+      <input type="number" id="btWilliamsBuy" step="1" min="-100" max="0" value="-95">
+      <label for="btWilliamsSell" style="margin-left:12px;">vende al cruzar sobre</label>
+      <input type="number" id="btWilliamsSell" step="1" min="-100" max="0" value="-2">
+    </div>
     <div class="bt-startdate-row">
       <label for="btStartDate">Empezar a operar desde</label>
       <input type="date" id="btStartDate">
@@ -1759,6 +1767,21 @@
   const BT_WEIGHTS = { marketctx:1.3, sma:1, ema:1, emacloud:1, bb:0.8, rsi:0.8, stoch:0.7, ichi:1, vwap:0.8, ad:0.7, heikin:0.6, patterns:0.6, rel:0.6, setup:1.2, williams:0.7, emacloud2050:1, emacloud50100:1, sr:0.9 };
   const BT_WARMUP = 210;
 
+  const BT_INDICATOR_CONFIG_KEY = "axioma_bt_indicator_config_v1";
+  function loadBtIndicatorConfig(){
+    const defaults = { williams: { buyThresh: -95, sellThresh: -2 } };
+    try {
+      const raw = localStorage.getItem(BT_INDICATOR_CONFIG_KEY);
+      if(!raw) return defaults;
+      const saved = JSON.parse(raw);
+      return { williams: Object.assign({}, defaults.williams, saved.williams||{}) };
+    } catch(e){ return defaults; }
+  }
+  function saveBtIndicatorConfig(cfg){
+    try { localStorage.setItem(BT_INDICATOR_CONFIG_KEY, JSON.stringify(cfg)); } catch(e){}
+  }
+  let BT_INDICATOR_CONFIG = loadBtIndicatorConfig();
+
   function btFindIndexOnOrBefore(datesMs, ts){
     let lo=0, hi=datesMs.length-1, idx=-1;
     while(lo<=hi){ const mid=(lo+hi)>>1; if(datesMs[mid]<=ts){ idx=mid; lo=mid+1; } else hi=mid-1; }
@@ -1851,7 +1874,15 @@
       scores.setup = setupTotal ? (setupPass/setupTotal)*2-1 : null;
 
       const wrRes = williamsR(win);
-      scores.williams = wrRes ? (wrRes.value+50)/50 : null;
+      if(wrRes){
+        const wCfg = BT_INDICATOR_CONFIG.williams;
+        const buy = wCfg.buyThresh, sell = wCfg.sellThresh;
+        const span = (sell - buy) || 1;
+        let wScore = 1 - 2*(wrRes.value - buy)/span;
+        scores.williams = Math.max(-1, Math.min(1, wScore));
+      } else {
+        scores.williams = null;
+      }
 
       const cloudA2050 = emaCloud(closes, 20, 50);
       scores.emacloud2050 = cloudA2050 ? (cloudA2050.bullish?1:-1) : null;
@@ -3824,7 +3855,21 @@
     }
   });
 
+  // Reflect saved indicator-config values in the UI (Williams %R thresholds)
+  (function initBtIndicatorConfigUI(){
+    const buyEl = $("btWilliamsBuy"), sellEl = $("btWilliamsSell");
+    if(buyEl) buyEl.value = BT_INDICATOR_CONFIG.williams.buyThresh;
+    if(sellEl) sellEl.value = BT_INDICATOR_CONFIG.williams.sellThresh;
+  })();
+
   $("runBacktestBtn").addEventListener("click", async ()=>{
+    const wBuyEl = $("btWilliamsBuy"), wSellEl = $("btWilliamsSell");
+    if(wBuyEl && wSellEl){
+      const buyVal = parseFloat(wBuyEl.value), sellVal = parseFloat(wSellEl.value);
+      if(!isNaN(buyVal)) BT_INDICATOR_CONFIG.williams.buyThresh = buyVal;
+      if(!isNaN(sellVal)) BT_INDICATOR_CONFIG.williams.sellThresh = sellVal;
+      saveBtIndicatorConfig(BT_INDICATOR_CONFIG);
+    }
     const symbol = tickerInput.value.trim().toUpperCase();
     const bench = benchInput.value.trim().toUpperCase() || "SPY";
     if(!symbol){ $("btStatus").textContent = "Escribe un ticker arriba primero."; return; }
