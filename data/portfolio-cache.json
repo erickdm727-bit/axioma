@@ -1,5 +1,5 @@
 {
-  "generatedAt": 1786770080529,
+  "generatedAt": 1786778368292,
   "tickers": {
     "SOFI": {
       "price": 18.29,
@@ -777,7 +777,7 @@
           "volume": 34243800
         }
       ],
-      "updatedAt": 1786770039036,
+      "updatedAt": 1786778327641,
       "error": null
     },
     "SLV": {
@@ -1554,7 +1554,7 @@
           "volume": 10255500
         }
       ],
-      "updatedAt": 1786770047242,
+      "updatedAt": 1786778335802,
       "error": null
     },
     "TSLA": {
@@ -2326,7 +2326,7 @@
           "volume": 45375100
         }
       ],
-      "updatedAt": 1786770055463,
+      "updatedAt": 1786778343948,
       "error": null
     },
     "XYZ": {
@@ -3100,11 +3100,11 @@
           "volume": 3043044
         }
       ],
-      "updatedAt": 1786770064273,
+      "updatedAt": 1786778352123,
       "error": null
     },
     "RIOT": {
-      "price": 19.014999,
+      "price": 19.02,
       "sr": {
         "support": 18.91,
         "resistance": 19.07,
@@ -3872,14 +3872,14 @@
         },
         {
           "datetime": "2026-08-14",
-          "open": 18.82,
+          "open": 18.765,
           "high": 19.55,
           "low": 18.455,
-          "close": 19.014999,
+          "close": 19.02,
           "volume": 17008500
         }
       ],
-      "updatedAt": 1786770072524,
+      "updatedAt": 1786778360288,
       "error": null
     }
   }
