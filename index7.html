@@ -3121,6 +3121,54 @@
     if(legendEl) legendEl.innerHTML = '<span><i style="background:#5B8DEF"></i> Williams %R (14)</span><span><i style="background:#FF5C5C"></i> -20 sobrecompra</span><span><i style="background:#3ECF8E"></i> -80 sobreventa</span>';
   }
 
+  // Backtest results chart — same daily series the backtest itself traded on,
+  // with entry/exit markers from bt.trades. Independent of the per-indicator
+  // Williams chart above (different container, different data window).
+  function renderBacktestChart(bt, daily){
+    const svgWrapEl = $("btChartSvg"), oscWrapEl = $("btChartOsc"), legendEl = $("btChartLegend");
+    if(!svgWrapEl || !oscWrapEl) return;
+    if(!daily || daily.length < 20){
+      svgWrapEl.innerHTML = '<div class="hint">No hay suficientes velas para mostrar el gráfico.</div>';
+      oscWrapEl.innerHTML = ""; if(legendEl) legendEl.innerHTML = "";
+      return;
+    }
+    const histCount = Math.min(400, daily.length);
+    const hist = daily.slice(-histCount);
+    const price = daily[daily.length-1].close;
+
+    const candleCtx = buildCandleSvg(hist, { height: 260 });
+    let svgStr = finishCandleSvg(candleCtx, hist, price);
+
+    const dateIndex = {};
+    hist.forEach((c,i)=>{ dateIndex[c.datetime] = i; });
+    let markers = "";
+    (bt.trades||[]).forEach(t=>{
+      const ei = dateIndex[t.entryDate];
+      if(ei !== undefined){
+        const x = candleCtx.xOf(ei), y = candleCtx.yOf(t.entryPrice);
+        markers += `<circle cx="${x}" cy="${y}" r="4" fill="#3ECF8E" stroke="#0B0F14" stroke-width="1"/><text x="${x}" y="${y-8}" fill="#3ECF8E" font-size="9" text-anchor="middle" font-weight="bold">BUY</text>`;
+      }
+      const xi = dateIndex[t.exitDate];
+      if(xi !== undefined){
+        const x = candleCtx.xOf(xi), y = candleCtx.yOf(t.exitPrice);
+        markers += `<circle cx="${x}" cy="${y}" r="4" fill="#FF5C5C" stroke="#0B0F14" stroke-width="1"/><text x="${x}" y="${y-8}" fill="#FF5C5C" font-size="9" text-anchor="middle" font-weight="bold">SELL</text>`;
+      }
+    });
+    svgStr = svgStr.replace("</svg>", markers + "</svg>");
+    svgWrapEl.innerHTML = svgStr;
+
+    const series = williamsRSeries(hist, 14);
+    if(series.length){
+      oscWrapEl.innerHTML = buildOscillatorSvg(hist, series, {
+        height: 120, min: -100, max: 0,
+        refLines: [ {value:-20, color:"#FF5C5C", label:"-20"}, {value:-50, color:"#8FA0AE", label:"-50"}, {value:-80, color:"#3ECF8E", label:"-80"} ]
+      });
+    } else {
+      oscWrapEl.innerHTML = '<div class="hint">No hay suficientes datos para calcular Williams %R.</div>';
+    }
+    if(legendEl) legendEl.innerHTML = '<span><i style="background:#3ECF8E"></i> Compra</span><span><i style="background:#FF5C5C"></i> Venta</span><span><i style="background:#5B8DEF"></i> Williams %R (14)</span>';
+  }
+
   function renderPriceChart(result){
     const card = $("chartCard");
     if(!card) return;
@@ -3681,7 +3729,7 @@
       text:`Terminaste en positivo, pero simplemente comprar y mantener habría dado más rendimiento (${fmtPct(bt.bhCagr)} vs ${fmtPct(bt.cagr)} CAGR) y con menos caídas. La complejidad de seguir la estrategia no se pagó sola aquí.` };
   }
 
-  function renderBacktestResults(bt, symbol){
+  function renderBacktestResults(bt, symbol, daily){
     const el = $("btResults");
     if(!bt){
       el.innerHTML = `<div class="rel-excess">No hay suficiente historial diario para correr el backtest (hacen falta al menos ~240 días de datos).</div>`;
@@ -3764,8 +3812,15 @@
       html += `</div>`;
     }
 
+    html += `<div class="module-body-wrap" style="margin-top:14px;">
+    <div class="mov-legend" id="btChartLegend"></div>
+    <div id="btChartSvg"></div>
+    <div id="btChartOsc" style="margin-top:6px;"></div>
+    </div>`;
+
     el.innerHTML = html;
     el.classList.add("show");
+    renderBacktestChart(bt, daily);
   }
   function fmtDateShort(dt){
     const d = new Date(dt.replace(" ","T"));
@@ -3967,7 +4022,7 @@
       await sleep(30); // let the status paint before the (synchronous) crunch
       const startDateStr = $("btStartDate").value || null;
       const bt = runBacktest(daily, weekly, spyDaily, qqqDaily, benchDaily || spyDaily, startDateStr);
-      renderBacktestResults(bt, symbol);
+      renderBacktestResults(bt, symbol, daily);
 
       // Reuses the exact same already-downloaded series — no extra Twelve
       // Data calls — to also run the 5-block walk-forward robustness check.
