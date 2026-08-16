@@ -4417,6 +4417,27 @@
     applyWilliamsOptIfAvailable(tickerInput.value.trim().toUpperCase());
   });
 
+  // Remember whatever buy/sell thresholds are typed in, per ticker -- so
+  // switching tickers doesn't lose a hand-tuned value, and coming back to
+  // one you already tuned restores it automatically (same storage the
+  // optimizer uses, so either one keeps the other up to date).
+  ["btWilliamsBuy","btWilliamsSell"].forEach(id => {
+    const inputEl = $(id);
+    if(!inputEl) return;
+    inputEl.addEventListener("change", () => {
+      const symbol = tickerInput.value.trim().toUpperCase();
+      if(!symbol) return;
+      const buyEl = $("btWilliamsBuy"), sellEl = $("btWilliamsSell");
+      const buy = parseFloat(buyEl.value), sell = parseFloat(sellEl.value);
+      if(isNaN(buy) || isNaN(sell)) return;
+      const map = loadWilliamsOpt();
+      map[symbol] = Object.assign({}, map[symbol] || {}, { buyThresh: buy, sellThresh: sell });
+      saveWilliamsOpt(map);
+      BT_INDICATOR_CONFIG.williams = { buyThresh: buy, sellThresh: sell };
+      saveBtIndicatorConfig(BT_INDICATOR_CONFIG);
+    });
+  });
+
   function renderWilliamsOptResults(buyList, sellList, symbol, validation){
     const el = $("wOptResults");
     if(!buyList.length || !sellList.length){ el.innerHTML = '<div class="hint">No se encontraron niveles de reversión con suficiente evidencia histórica para este ticker.</div>'; return; }
