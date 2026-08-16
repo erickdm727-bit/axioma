@@ -3314,6 +3314,84 @@
   }
   const CHART_CROSSHAIR = {};
   const CHART_ZOOM = {};
+  // Zoom-only binder for single-pane charts with no paired oscillator (e.g.
+  // the movement map) -- pinch/wheel zoom and pan, no crosshair readout.
+  function bindZoomOnlyPane(key, elId, H){
+    const el = document.getElementById(elId);
+    if(!el || el.dataset.zoomBound) return;
+    el.dataset.zoomBound = "1";
+    function zoomOf(){ return CHART_ZOOM[key] || (CHART_ZOOM[key] = { xStart: 0, xEnd: 900 }); }
+    function applyZoom(){
+      const z = zoomOf();
+      const svg = el.querySelector("svg");
+      if(!svg) return;
+      svg.setAttribute("viewBox", `${z.xStart} 0 ${z.xEnd - z.xStart} ${H}`);
+    }
+    el.addEventListener("wheel", (e) => {
+      const svg = el.querySelector("svg");
+      if(!svg) return;
+      const rect = svg.getBoundingClientRect();
+      if(!rect.width) return;
+      e.preventDefault();
+      const z = zoomOf();
+      const span0 = z.xEnd - z.xStart;
+      const anchor = z.xStart + ((e.clientX - rect.left) / rect.width) * span0;
+      let span = span0 * (e.deltaY < 0 ? 0.85 : 1/0.85);
+      span = Math.max(50, Math.min(900, span));
+      const frac = (anchor - z.xStart) / span0;
+      let xStart = anchor - frac*span, xEnd = xStart + span;
+      if(xStart < 0){ xEnd -= xStart; xStart = 0; }
+      if(xEnd > 900){ xStart -= (xEnd-900); xEnd = 900; }
+      CHART_ZOOM[key] = { xStart: Math.max(0,xStart), xEnd: Math.min(900,xEnd) };
+      applyZoom();
+    }, { passive: false });
+
+    let touchState = null, lastTapTime = 0;
+    el.addEventListener("touchstart", (e) => {
+      const svg = el.querySelector("svg");
+      if(!svg || e.touches.length < 2){ touchState = null; return; }
+      const rect = svg.getBoundingClientRect();
+      if(!rect.width) return;
+      const [t1,t2] = e.touches;
+      const dist = Math.hypot(t2.clientX-t1.clientX, t2.clientY-t1.clientY) || 1;
+      const midClientX = (t1.clientX + t2.clientX) / 2;
+      const z = zoomOf();
+      const span = z.xEnd - z.xStart;
+      const anchorDataX = z.xStart + ((midClientX - rect.left) / rect.width) * span;
+      touchState = { startDist: dist, startSpan: span, anchorDataX };
+    }, { passive: true });
+
+    el.addEventListener("touchmove", (e) => {
+      if(!touchState || e.touches.length < 2) return;
+      const svg = el.querySelector("svg");
+      if(!svg) return;
+      const rect = svg.getBoundingClientRect();
+      if(!rect.width) return;
+      e.preventDefault();
+      const [t1,t2] = e.touches;
+      const dist = Math.hypot(t2.clientX-t1.clientX, t2.clientY-t1.clientY) || 1;
+      const midClientX = (t1.clientX + t2.clientX) / 2;
+      let span = touchState.startSpan * (touchState.startDist / dist);
+      span = Math.max(50, Math.min(900, span));
+      const frac = (midClientX - rect.left) / rect.width;
+      let xStart = touchState.anchorDataX - frac*span, xEnd = xStart + span;
+      if(xStart < 0){ xEnd -= xStart; xStart = 0; }
+      if(xEnd > 900){ xStart -= (xEnd-900); xEnd = 900; }
+      CHART_ZOOM[key] = { xStart: Math.max(0,xStart), xEnd: Math.min(900,xEnd) };
+      applyZoom();
+    }, { passive: false });
+
+    el.addEventListener("touchend", (e) => {
+      if(e.touches.length > 0) return;
+      touchState = null;
+      const now = Date.now();
+      if(now - lastTapTime < 300){
+        CHART_ZOOM[key] = { xStart: 0, xEnd: 900 };
+        applyZoom();
+      }
+      lastTapTime = now;
+    }, { passive: true });
+  }
   function paneX(hist, idx){
     const W = 900, padL = 8, padR = 66, plotW = W - padL - padR;
     return padL + (idx/(hist.length-1)) * plotW;
@@ -3774,6 +3852,8 @@
 
     svg += `</svg>`;
     $("movementSvg").innerHTML = svg;
+    CHART_ZOOM["movement"] = { xStart: 0, xEnd: 900 };
+    bindZoomOnlyPane("movement", "movementSvg", 380);
 
     // Evidence box — this IS the backtesting summary (idea #3), surfaced
     // directly from the same historical-analog search that drives the line.
