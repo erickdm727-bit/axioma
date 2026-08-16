@@ -213,8 +213,9 @@
   .chart-fs-wrap{ position:relative; }
   .chart-fs-btn{ position:absolute; top:2px; right:2px; z-index:5; background:var(--panel-3); border:1px solid var(--line); color:var(--text); border-radius:6px; width:26px; height:26px; cursor:pointer; font-size:14px; line-height:1; padding:0; display:flex; align-items:center; justify-content:center; }
   .chart-fs-btn:hover{ background:var(--panel-2); }
-  .chart-fs-wrap:fullscreen{ background:var(--panel); padding:28px 16px; display:flex; flex-direction:column; justify-content:center; gap:10px; }
-  .chart-fs-wrap:fullscreen svg{ width:100%; height:auto; max-height:46vh; }
+  .chart-fs-wrap:fullscreen{ background:var(--panel); padding:28px 16px; display:flex; flex-direction:column; justify-content:flex-start; gap:10px; overflow-y:auto; }
+  .chart-fs-wrap:fullscreen svg{ width:100%; height:auto; display:block; }
+  .chart-fs-wrap > div{ touch-action:none; }
   .bt-startdate-hint{font-size:11px; color:var(--text-dim2); flex:1; min-width:200px;}
   .bt-caveats{font-size:11.5px; color:var(--mixed); background:var(--mixed-dim); border:1px solid rgba(242,184,75,0.35); border-radius:8px; padding:10px 12px; line-height:1.55; margin-bottom:12px;}
   .bt-status{font-size:12.5px; color:var(--text-dim); min-height:18px; margin-bottom:6px;}
@@ -3215,7 +3216,7 @@
     const logMin = Math.log(minV), logMax = Math.log(maxV);
     const xOf = i => padL + (i/(hist.length-1)) * plotW;
     const yOf = v => padT + (1 - (Math.log(v)-logMin)/(logMax-logMin)) * plotH;
-    let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">`;
+    let svg = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">`;
     for(let t=0;t<=3;t++){
       const v = Math.exp(logMin + (1-t/3)*(logMax-logMin));
       const y = yOf(v);
@@ -3261,7 +3262,7 @@
     const range = (hi - lo) || 1;
     const xOf = i => padL + ((i+offset)/(hist.length-1)) * plotW;
     const yOf = v => padT + (1 - (v-lo)/range) * plotH;
-    let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">`;
+    let svg = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">`;
     (opts.refLines||[]).forEach(rl => {
       const y = yOf(rl.value);
       svg += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="${rl.color||'#232D39'}" stroke-width="1" stroke-dasharray="3 3" opacity="0.6"/>`;
@@ -3312,9 +3313,27 @@
       + '</g>';
   }
   const CHART_CROSSHAIR = {};
+  const CHART_ZOOM = {};
   function paneX(hist, idx){
     const W = 900, padL = 8, padR = 66, plotW = W - padL - padR;
     return padL + (idx/(hist.length-1)) * plotW;
+  }
+  function applyChartZoom(key){
+    const state = CHART_CROSSHAIR[key];
+    const z = CHART_ZOOM[key];
+    if(!state || !z) return;
+    [state.price, state.osc].forEach(paneCfg => {
+      if(!paneCfg) return;
+      const paneEl = document.getElementById(paneCfg.elId);
+      const svg = paneEl && paneEl.querySelector("svg");
+      if(!svg) return;
+      const H = paneCfg.ctx ? paneCfg.ctx.H : paneCfg.H;
+      svg.setAttribute("viewBox", `${z.xStart} 0 ${z.xEnd - z.xStart} ${H}`);
+    });
+  }
+  function resetChartZoom(key){
+    CHART_ZOOM[key] = { xStart: 0, xEnd: 900 };
+    applyChartZoom(key);
   }
   function bindCrosshairPane(key, pane){
     const cfg = CHART_CROSSHAIR[key][pane];
@@ -3322,6 +3341,16 @@
     if(!el || el.dataset.xhBound) return;
     el.dataset.xhBound = "1";
     const W = 900, padL = 8, padR = 66, plotW = W - padL - padR;
+
+    function zoomOf(){ return CHART_ZOOM[key] || (CHART_ZOOM[key] = { xStart: 0, xEnd: 900 }); }
+    function clientXToIdx(clientX, rect){
+      const z = zoomOf();
+      const svgX = z.xStart + ((clientX - rect.left) / rect.width) * (z.xEnd - z.xStart);
+      const state = CHART_CROSSHAIR[key];
+      let idx = Math.round(((svgX - padL) / plotW) * (state.hist.length - 1));
+      return Math.max(0, Math.min(state.hist.length - 1, idx));
+    }
+
     el.addEventListener("mousemove", (e) => {
       const state = CHART_CROSSHAIR[key];
       if(!state) return;
@@ -3329,15 +3358,94 @@
       if(!svg) return;
       const rect = svg.getBoundingClientRect();
       if(!rect.width) return;
-      const svgX = ((e.clientX - rect.left) / rect.width) * W;
-      let idx = Math.round(((svgX - padL) / plotW) * (state.hist.length - 1));
-      idx = Math.max(0, Math.min(state.hist.length - 1, idx));
-      updateCrosshair(key, idx);
+      updateCrosshair(key, clientXToIdx(e.clientX, rect));
     });
     el.addEventListener("mouseleave", () => hideCrosshair(key));
+
+    // Mouse wheel = zoom, centered on the cursor (desktop equivalent of pinch).
+    el.addEventListener("wheel", (e) => {
+      const svg = el.querySelector("svg");
+      if(!svg) return;
+      const rect = svg.getBoundingClientRect();
+      if(!rect.width) return;
+      e.preventDefault();
+      const z = zoomOf();
+      const span0 = z.xEnd - z.xStart;
+      const anchor = z.xStart + ((e.clientX - rect.left) / rect.width) * span0;
+      let span = span0 * (e.deltaY < 0 ? 0.85 : 1/0.85);
+      span = Math.max(50, Math.min(900, span));
+      const frac = (anchor - z.xStart) / span0;
+      let xStart = anchor - frac*span, xEnd = xStart + span;
+      if(xStart < 0){ xEnd -= xStart; xStart = 0; }
+      if(xEnd > 900){ xStart -= (xEnd-900); xEnd = 900; }
+      CHART_ZOOM[key] = { xStart: Math.max(0,xStart), xEnd: Math.min(900,xEnd) };
+      applyChartZoom(key);
+    }, { passive: false });
+
+    // Touch: one finger drags the crosshair; two fingers pinch to zoom and
+    // pan together (like TradingView). Double-tap resets the zoom.
+    let touchState = null, lastTapTime = 0;
+    el.addEventListener("touchstart", (e) => {
+      const svg = el.querySelector("svg");
+      if(!svg) return;
+      const rect = svg.getBoundingClientRect();
+      if(!rect.width) return;
+      if(e.touches.length === 1){
+        touchState = { mode: "crosshair" };
+        updateCrosshair(key, clientXToIdx(e.touches[0].clientX, rect));
+      } else if(e.touches.length >= 2){
+        const [t1,t2] = e.touches;
+        const dist = Math.hypot(t2.clientX-t1.clientX, t2.clientY-t1.clientY) || 1;
+        const midClientX = (t1.clientX + t2.clientX) / 2;
+        const z = zoomOf();
+        const span = z.xEnd - z.xStart;
+        const anchorDataX = z.xStart + ((midClientX - rect.left) / rect.width) * span;
+        touchState = { mode: "pinch", startDist: dist, startSpan: span, anchorDataX };
+      }
+    }, { passive: true });
+
+    el.addEventListener("touchmove", (e) => {
+      if(!touchState) return;
+      const svg = el.querySelector("svg");
+      if(!svg) return;
+      const rect = svg.getBoundingClientRect();
+      if(!rect.width) return;
+      if(touchState.mode === "crosshair" && e.touches.length === 1){
+        e.preventDefault();
+        updateCrosshair(key, clientXToIdx(e.touches[0].clientX, rect));
+      } else if(touchState.mode === "pinch" && e.touches.length >= 2){
+        e.preventDefault();
+        const [t1,t2] = e.touches;
+        const dist = Math.hypot(t2.clientX-t1.clientX, t2.clientY-t1.clientY) || 1;
+        const midClientX = (t1.clientX + t2.clientX) / 2;
+        let span = touchState.startSpan * (touchState.startDist / dist);
+        span = Math.max(50, Math.min(900, span));
+        const frac = (midClientX - rect.left) / rect.width;
+        let xStart = touchState.anchorDataX - frac*span, xEnd = xStart + span;
+        if(xStart < 0){ xEnd -= xStart; xStart = 0; }
+        if(xEnd > 900){ xStart -= (xEnd-900); xEnd = 900; }
+        CHART_ZOOM[key] = { xStart: Math.max(0,xStart), xEnd: Math.min(900,xEnd) };
+        applyChartZoom(key);
+      }
+    }, { passive: false });
+
+    el.addEventListener("touchend", (e) => {
+      if(e.touches.length >= 2) return;
+      if(e.touches.length === 1 && touchState && touchState.mode === "pinch"){
+        touchState = { mode: "crosshair" };
+        return;
+      }
+      if(e.touches.length === 0){
+        touchState = null;
+        const now = Date.now();
+        if(now - lastTapTime < 300) resetChartZoom(key);
+        lastTapTime = now;
+      }
+    }, { passive: true });
   }
   function registerChartCrosshair(key, cfg){
     CHART_CROSSHAIR[key] = cfg;
+    CHART_ZOOM[key] = { xStart: 0, xEnd: 900 };
     bindCrosshairPane(key, "price");
     if(cfg.osc) bindCrosshairPane(key, "osc");
   }
