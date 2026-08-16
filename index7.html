@@ -3350,6 +3350,7 @@
     el.addEventListener("touchstart", (e) => {
       const svg = el.querySelector("svg");
       if(!svg || e.touches.length < 2){ touchState = null; return; }
+      e.preventDefault();
       const rect = svg.getBoundingClientRect();
       if(!rect.width) return;
       const [t1,t2] = e.touches;
@@ -3359,7 +3360,7 @@
       const span = z.xEnd - z.xStart;
       const anchorDataX = z.xStart + ((midClientX - rect.left) / rect.width) * span;
       touchState = { startDist: dist, startSpan: span, anchorDataX };
-    }, { passive: true });
+    }, { passive: false });
 
     el.addEventListener("touchmove", (e) => {
       if(!touchState || e.touches.length < 2) return;
@@ -3472,6 +3473,7 @@
         touchState = { mode: "crosshair" };
         updateCrosshair(key, clientXToIdx(e.touches[0].clientX, rect));
       } else if(e.touches.length >= 2){
+        e.preventDefault();
         const [t1,t2] = e.touches;
         const dist = Math.hypot(t2.clientX-t1.clientX, t2.clientY-t1.clientY) || 1;
         const midClientX = (t1.clientX + t2.clientX) / 2;
@@ -3480,7 +3482,7 @@
         const anchorDataX = z.xStart + ((midClientX - rect.left) / rect.width) * span;
         touchState = { mode: "pinch", startDist: dist, startSpan: span, anchorDataX };
       }
-    }, { passive: true });
+    }, { passive: false });
 
     el.addEventListener("touchmove", (e) => {
       if(!touchState) return;
@@ -3597,8 +3599,7 @@
       oscWrapEl.innerHTML = ""; if(legendEl) legendEl.innerHTML = "";
       return;
     }
-    const histCount = Math.min(180, full.length);
-    const hist = full.slice(-histCount);
+    const hist = full;
     const price = result.currentPrice;
 
     const candleCtx = buildCandleSvg(hist, { height: 260 });
@@ -3625,7 +3626,7 @@
   // Backtest results chart — same daily series the backtest itself traded on,
   // with entry/exit markers from bt.trades. Independent of the per-indicator
   // Williams chart above (different container, different data window).
-  function renderBacktestChart(bt, daily){
+  function renderBacktestChart(bt, daily, startDateStr){
     const svgWrapEl = $("btChartSvg"), oscWrapEl = $("btChartOsc"), legendEl = $("btChartLegend");
     if(!svgWrapEl || !oscWrapEl) return;
     if(!daily || daily.length < 20){
@@ -3633,8 +3634,22 @@
       oscWrapEl.innerHTML = ""; if(legendEl) legendEl.innerHTML = "";
       return;
     }
-    const histCount = Math.min(400, daily.length);
-    const hist = daily.slice(-histCount);
+    // Show the exact same window the backtest itself simulated -- not an
+    // arbitrary last-N-bars slice -- so zooming/panning can reach every
+    // trade and every year requested, not just the most recent ~1.6 years.
+    let startIdx = 0;
+    if(startDateStr){
+      const startTs = new Date(startDateStr + "T00:00:00").getTime();
+      const dailyDates = daily.map(c => new Date(c.datetime.replace(" ","T")).getTime());
+      const idx = btFindIndexOnOrBefore(dailyDates, startTs);
+      let firstOnOrAfter = idx;
+      if(idx < 0 || dailyDates[idx] < startTs){
+        firstOnOrAfter = dailyDates.findIndex(t => t >= startTs);
+        if(firstOnOrAfter === -1) firstOnOrAfter = daily.length-1;
+      }
+      startIdx = Math.max(0, firstOnOrAfter);
+    }
+    const hist = daily.slice(startIdx);
     const price = daily[daily.length-1].close;
 
     const candleCtx = buildCandleSvg(hist, { height: 260 });
@@ -4238,7 +4253,7 @@
       text:`Terminaste en positivo, pero simplemente comprar y mantener habría dado más rendimiento (${fmtPct(bt.bhCagr)} vs ${fmtPct(bt.cagr)} CAGR) y con menos caídas. La complejidad de seguir la estrategia no se pagó sola aquí.` };
   }
 
-  function renderBacktestResults(bt, symbol, daily){
+  function renderBacktestResults(bt, symbol, daily, startDateStr){
     const el = $("btResults");
     if(!bt){
       el.innerHTML = `<div class="rel-excess">No hay suficiente historial diario para correr el backtest (hacen falta al menos ~240 días de datos).</div>`;
@@ -4332,7 +4347,7 @@
 
     el.innerHTML = html;
     el.classList.add("show");
-    renderBacktestChart(bt, daily);
+    renderBacktestChart(bt, daily, startDateStr);
   }
   function fmtDateShort(dt){
     const d = new Date(dt.replace(" ","T"));
@@ -4649,7 +4664,7 @@
       await sleep(30); // let the status paint before the (synchronous) crunch
       const startDateStr = $("btStartDate").value || null;
       const bt = runBacktest(daily, weekly, spyDaily, qqqDaily, benchDaily || spyDaily, startDateStr);
-      renderBacktestResults(bt, symbol, daily);
+      renderBacktestResults(bt, symbol, daily, startDateStr);
 
       // Reuses the exact same already-downloaded series — no extra Twelve
       // Data calls — to also run the 5-block walk-forward robustness check.
