@@ -210,6 +210,11 @@
   .bt-startdate-row input[type="number"]{background:var(--panel-3); border:1px solid var(--line); color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:6px 10px; border-radius:7px; outline:none; width:80px;}
   .bt-startdate-row select{background:var(--panel-3); border:1px solid var(--line); color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:6px 10px; border-radius:7px; outline:none;}
   .bt-startdate-row label.bt-checklabel{display:flex; align-items:center; gap:6px; font-weight:normal;}
+  .chart-fs-wrap{ position:relative; }
+  .chart-fs-btn{ position:absolute; top:2px; right:2px; z-index:5; background:var(--panel-3); border:1px solid var(--line); color:var(--text); border-radius:6px; width:26px; height:26px; cursor:pointer; font-size:14px; line-height:1; padding:0; display:flex; align-items:center; justify-content:center; }
+  .chart-fs-btn:hover{ background:var(--panel-2); }
+  .chart-fs-wrap:fullscreen{ background:var(--panel); padding:28px 16px; display:flex; flex-direction:column; justify-content:center; gap:10px; }
+  .chart-fs-wrap:fullscreen svg{ width:100%; height:auto; max-height:46vh; }
   .bt-startdate-hint{font-size:11px; color:var(--text-dim2); flex:1; min-width:200px;}
   .bt-caveats{font-size:11.5px; color:var(--mixed); background:var(--mixed-dim); border:1px solid rgba(242,184,75,0.35); border-radius:8px; padding:10px 12px; line-height:1.55; margin-bottom:12px;}
   .bt-status{font-size:12.5px; color:var(--text-dim); min-height:18px; margin-bottom:6px;}
@@ -610,8 +615,11 @@
     <div class="module-score" id="score-williams"></div>
     <div class="module-alert" id="alert-williams"></div>
     <div class="tf-selector" id="chartTf-williams"></div>
+    <div class="chart-fs-wrap" id="chartFsWrap-williams">
+    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-williams" title="Pantalla completa">⛶</button>
     <div id="chartSvg-williams"></div>
     <div id="oscSvg-williams" style="margin-top:6px;"></div>
+    </div>
     <div class="mov-legend" id="chartLegend-williams"></div>
   </div>
 
@@ -668,7 +676,10 @@
     <div class="alert-status" id="alertStatus"></div>
     <div class="movdesc">Un único escenario, calculado directamente de tu análisis: la línea central extrapola la <strong>tendencia real reciente</strong> (regresión de precios) ajustada por el veredicto general de los 8 módulos. La banda sombreada es la <strong>volatilidad histórica real</strong> del ticker, no una suposición — se ensancha con el tiempo porque cuanto más lejos miras, menos certeza hay. Mismo ticker y mismos datos → mismo resultado siempre.</div>
     <div class="tf-selector" id="movTfSelector"></div>
+    <div class="chart-fs-wrap" id="chartFsWrap-movement">
+    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-movement" title="Pantalla completa">⛶</button>
     <div id="movementSvg"></div>
+    </div>
     <div class="mov-evidence" id="movEvidence"></div>
     <div class="mov-legend">
       <span><i style="background:#3ECF8E"></i> Vela alcista</span>
@@ -3192,6 +3203,117 @@
     drawWilliamsChart(result);
   }
 
+  // ---- Generic chart fullscreen (any .chart-fs-wrap with a matching .chart-fs-btn) ----
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".chart-fs-btn");
+    if(!btn) return;
+    const target = document.getElementById(btn.dataset.fsTarget);
+    if(!target) return;
+    if(document.fullscreenElement === target) document.exitFullscreen();
+    else target.requestFullscreen().catch(()=>{});
+  });
+
+  // ---- Generic chart crosshair (TradingView-style cross + dot), synced
+  // across a price pane and its paired oscillator pane so a candle lines up
+  // exactly with the indicator value below it. ----
+  function crosshairOverlaySvg(){
+    return '<g class="xh-group" opacity="0" pointer-events="none">'
+      + '<line class="xh-vline" x1="0" y1="0" x2="0" y2="0" stroke="#8FA0AE" stroke-width="1" stroke-dasharray="3 3"/>'
+      + '<line class="xh-hline" x1="0" y1="0" x2="0" y2="0" stroke="#8FA0AE" stroke-width="1" stroke-dasharray="3 3"/>'
+      + '<circle class="xh-dot" cx="0" cy="0" r="3.5" fill="#0B0F14" stroke="#5B8DEF" stroke-width="1.5"/>'
+      + '<text class="xh-label" x="0" y="0" fill="#E8EEF5" font-size="10" font-family="IBM Plex Mono, monospace"></text>'
+      + '</g>';
+  }
+  const CHART_CROSSHAIR = {};
+  function paneX(hist, idx){
+    const W = 900, padL = 8, padR = 66, plotW = W - padL - padR;
+    return padL + (idx/(hist.length-1)) * plotW;
+  }
+  function bindCrosshairPane(key, pane){
+    const cfg = CHART_CROSSHAIR[key][pane];
+    const el = document.getElementById(cfg.elId);
+    if(!el || el.dataset.xhBound) return;
+    el.dataset.xhBound = "1";
+    const W = 900, padL = 8, padR = 66, plotW = W - padL - padR;
+    el.addEventListener("mousemove", (e) => {
+      const state = CHART_CROSSHAIR[key];
+      if(!state) return;
+      const svg = el.querySelector("svg");
+      if(!svg) return;
+      const rect = svg.getBoundingClientRect();
+      if(!rect.width) return;
+      const svgX = ((e.clientX - rect.left) / rect.width) * W;
+      let idx = Math.round(((svgX - padL) / plotW) * (state.hist.length - 1));
+      idx = Math.max(0, Math.min(state.hist.length - 1, idx));
+      updateCrosshair(key, idx);
+    });
+    el.addEventListener("mouseleave", () => hideCrosshair(key));
+  }
+  function registerChartCrosshair(key, cfg){
+    CHART_CROSSHAIR[key] = cfg;
+    bindCrosshairPane(key, "price");
+    if(cfg.osc) bindCrosshairPane(key, "osc");
+  }
+  function updateCrosshair(key, idx){
+    const state = CHART_CROSSHAIR[key];
+    if(!state) return;
+    const x = paneX(state.hist, idx);
+    const bar = state.hist[idx];
+
+    const priceEl = document.getElementById(state.price.elId);
+    const priceSvg = priceEl && priceEl.querySelector("svg");
+    if(priceSvg){
+      const ctx = state.price.ctx;
+      const y = ctx.yOf(bar.close);
+      const g = priceSvg.querySelector(".xh-group");
+      if(g){
+        g.setAttribute("opacity","1");
+        const vline = g.querySelector(".xh-vline"), hline = g.querySelector(".xh-hline"), dot = g.querySelector(".xh-dot"), label = g.querySelector(".xh-label");
+        vline.setAttribute("x1",x); vline.setAttribute("x2",x); vline.setAttribute("y1",10); vline.setAttribute("y2",ctx.H-ctx.padB);
+        hline.setAttribute("y1",y); hline.setAttribute("y2",y); hline.setAttribute("x1",ctx.padL); hline.setAttribute("x2",ctx.W-ctx.padR);
+        dot.setAttribute("cx",x); dot.setAttribute("cy",y);
+        label.setAttribute("x", Math.min(x+6, ctx.W-95)); label.setAttribute("y", 14);
+        label.textContent = fmtDateShort(bar.datetime) + "  $" + bar.close.toFixed(2);
+      }
+    }
+
+    if(state.osc){
+      const oscEl = document.getElementById(state.osc.elId);
+      const oscSvg = oscEl && oscEl.querySelector("svg");
+      const g = oscSvg && oscSvg.querySelector(".xh-group");
+      if(g){
+        const offset = state.hist.length - state.osc.series.length;
+        const si = idx - offset;
+        if(si >= 0 && si < state.osc.series.length){
+          const v = state.osc.series[si];
+          const plotH = state.osc.H - state.osc.padT - state.osc.padB;
+          const range = (state.osc.max - state.osc.min) || 1;
+          const y = state.osc.padT + (1 - (v-state.osc.min)/range) * plotH;
+          g.setAttribute("opacity","1");
+          const vline = g.querySelector(".xh-vline"), hline = g.querySelector(".xh-hline"), dot = g.querySelector(".xh-dot"), label = g.querySelector(".xh-label");
+          vline.setAttribute("x1",x); vline.setAttribute("x2",x); vline.setAttribute("y1",state.osc.padT); vline.setAttribute("y2",state.osc.H-state.osc.padB);
+          hline.setAttribute("y1",y); hline.setAttribute("y2",y); hline.setAttribute("x1",8); hline.setAttribute("x2",900-66);
+          dot.setAttribute("cx",x); dot.setAttribute("cy",y);
+          label.setAttribute("x", Math.min(x+6, 900-50)); label.setAttribute("y", 14);
+          label.textContent = v.toFixed(1);
+        } else {
+          g.setAttribute("opacity","0");
+        }
+      }
+    }
+  }
+  function hideCrosshair(key){
+    const state = CHART_CROSSHAIR[key];
+    if(!state) return;
+    [state.price, state.osc].forEach(paneCfg => {
+      if(!paneCfg) return;
+      const el = document.getElementById(paneCfg.elId);
+      const svg = el && el.querySelector("svg");
+      const g = svg && svg.querySelector(".xh-group");
+      if(g) g.setAttribute("opacity","0");
+    });
+  }
+
   function drawWilliamsChart(result){
     const tfKey = moduleChartTf.williams;
     const full = result.seriesByTf[tfKey];
@@ -3207,18 +3329,24 @@
     const price = result.currentPrice;
 
     const candleCtx = buildCandleSvg(hist, { height: 260 });
-    svgWrapEl.innerHTML = finishCandleSvg(candleCtx, hist, price);
+    svgWrapEl.innerHTML = finishCandleSvg(candleCtx, hist, price).replace("</svg>", crosshairOverlaySvg() + "</svg>");
 
     const series = williamsRSeries(hist, 14);
     if(series.length){
       oscWrapEl.innerHTML = buildOscillatorSvg(hist, series, {
         height: 120, min: -100, max: 0, color: "#5B8DEF",
         refLines: [ {value:-20, color:"#FF5C5C", label:"-20"}, {value:-50, color:"#8FA0AE", label:"-50"}, {value:-80, color:"#3ECF8E", label:"-80"} ]
-      });
+      }).replace("</svg>", crosshairOverlaySvg() + "</svg>");
     } else {
       oscWrapEl.innerHTML = '<div class="hint">No hay suficientes datos para calcular Williams %R en este marco.</div>';
     }
     if(legendEl) legendEl.innerHTML = '<span><i style="background:#5B8DEF"></i> Williams %R (14)</span><span><i style="background:#FF5C5C"></i> -20 sobrecompra</span><span><i style="background:#3ECF8E"></i> -80 sobreventa</span>';
+
+    registerChartCrosshair("williams", {
+      hist,
+      price: { elId: "chartSvg-williams", ctx: candleCtx },
+      osc: series.length ? { elId: "oscSvg-williams", series, min: -100, max: 0, H: 120, padT: 10, padB: 20 } : null
+    });
   }
 
   // Backtest results chart — same daily series the backtest itself traded on,
@@ -3254,7 +3382,7 @@
         markers += `<circle cx="${x}" cy="${y}" r="4" fill="#FF5C5C" stroke="#0B0F14" stroke-width="1"/><text x="${x}" y="${y-8}" fill="#FF5C5C" font-size="9" text-anchor="middle" font-weight="bold">SELL</text>`;
       }
     });
-    svgStr = svgStr.replace("</svg>", markers + "</svg>");
+    svgStr = svgStr.replace("</svg>", markers + crosshairOverlaySvg() + "</svg>");
     svgWrapEl.innerHTML = svgStr;
 
     const series = williamsRSeries(hist, 14);
@@ -3262,11 +3390,17 @@
       oscWrapEl.innerHTML = buildOscillatorSvg(hist, series, {
         height: 120, min: -100, max: 0,
         refLines: [ {value:-20, color:"#FF5C5C", label:"-20"}, {value:-50, color:"#8FA0AE", label:"-50"}, {value:-80, color:"#3ECF8E", label:"-80"} ]
-      });
+      }).replace("</svg>", crosshairOverlaySvg() + "</svg>");
     } else {
       oscWrapEl.innerHTML = '<div class="hint">No hay suficientes datos para calcular Williams %R.</div>';
     }
     if(legendEl) legendEl.innerHTML = '<span><i style="background:#3ECF8E"></i> Compra</span><span><i style="background:#FF5C5C"></i> Venta</span><span><i style="background:#5B8DEF"></i> Williams %R (14)</span>';
+
+    registerChartCrosshair("backtest", {
+      hist,
+      price: { elId: "btChartSvg", ctx: candleCtx },
+      osc: series.length ? { elId: "btChartOsc", series, min: -100, max: 0, H: 120, padT: 10, padB: 20 } : null
+    });
   }
 
   function renderPriceChart(result){
@@ -3914,8 +4048,11 @@
 
     html += `<div class="module-body-wrap" style="margin-top:14px;">
     <div class="mov-legend" id="btChartLegend"></div>
+    <div class="chart-fs-wrap" id="chartFsWrap-backtest">
+    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-backtest" title="Pantalla completa">⛶</button>
     <div id="btChartSvg"></div>
     <div id="btChartOsc" style="margin-top:6px;"></div>
+    </div>
     </div>`;
 
     el.innerHTML = html;
