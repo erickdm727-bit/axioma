@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Axioma — Análisis Técnico Multi-indicador</title>
 <meta name="description" content="Analiza un ticker con medias móviles, EMA, Bollinger, RSI, Estocástico, Ichimoku, A/D y patrones de velas en múltiples marcos temporales.">
 <link rel="manifest" href="manifest.json">
@@ -285,7 +285,7 @@
 
   /* Settings modal */
   .overlay{display:none; position:fixed; inset:0; background:rgba(3,6,10,0.7); align-items:center; justify-content:center; z-index:50; padding:20px;}
-  .modal{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:24px; max-width:420px; width:100%;}
+  .modal{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:24px; max-width:420px; width:100%; max-height:88vh; overflow-y:auto;}
   .modal h2{font-size:16px; margin:0 0 6px;}
   .modal p{color:var(--text-dim); font-size:13px; line-height:1.5; margin:0 0 14px;}
   .modal input{width:100%; background:var(--panel-2); border:1px solid var(--line); color:var(--text); font-family:'IBM Plex Mono', monospace; padding:12px 14px; border-radius:8px; outline:none; margin-bottom:14px;}
@@ -836,6 +836,30 @@
     <h2>Clave de API — Twelve Data</h2>
     <p>Regístrate gratis en <a href="https://twelvedata.com" target="_blank" rel="noopener" style="color:var(--accent)">twelvedata.com</a>, copia tu API key y pégala aquí. Se guarda solo en este navegador (localStorage).</p>
     <input id="apiKeyInput" type="text" placeholder="Pega tu API key aquí" autocomplete="off" spellcheck="false">
+
+    <div style="border-top:1px solid var(--line); margin:18px 0 14px; padding-top:14px;">
+      <h2 style="font-size:14px;">Respaldo de datos</h2>
+      <p>Tu portafolio, métodos y configuración se guardan solo en este navegador. Descarga un respaldo para no perderlos, o cárgalo en otro dispositivo.</p>
+      <div class="modal-actions" style="justify-content:flex-start; gap:8px; flex-wrap:wrap;">
+        <button class="btn-ghost" id="exportBackupBtn" type="button">Descargar respaldo</button>
+        <button class="btn-ghost" id="importBackupBtn" type="button">Cargar respaldo</button>
+        <input type="file" id="importBackupFile" accept="application/json" style="display:none">
+      </div>
+      <div class="port-form-status" id="backupStatus"></div>
+    </div>
+
+    <div style="border-top:1px solid var(--line); margin:14px 0 14px; padding-top:14px;">
+      <h2 style="font-size:14px;">Sincronizar en la nube (GitHub)</h2>
+      <p>Guarda tus datos en un repositorio <strong>privado</strong> de GitHub para abrirlos desde cualquier navegador. Crea un repositorio nuevo y privado (no el del código, que es público) y genera un token de acceso personal "fine-grained" con permiso de lectura/escritura de "Contents" limitado a ese repositorio. No compartas ese token; se guarda solo en este navegador.</p>
+      <input id="cloudRepoInput" type="text" placeholder="usuario/repositorio-privado" autocomplete="off" spellcheck="false">
+      <input id="cloudTokenInput" type="password" placeholder="Token de acceso personal (GitHub)" autocomplete="off" spellcheck="false" style="margin-top:8px;">
+      <div class="modal-actions" style="justify-content:flex-start; gap:8px; flex-wrap:wrap; margin-top:10px;">
+        <button class="btn-ghost" id="cloudSaveBtn" type="button">Guardar en la nube</button>
+        <button class="btn-ghost" id="cloudLoadBtn" type="button">Cargar desde la nube</button>
+      </div>
+      <div class="port-form-status" id="cloudStatus"></div>
+    </div>
+
     <div class="modal-actions">
       <button class="btn-ghost" id="closeSettings">Cancelar</button>
       <button class="btn" id="saveSettings">Guardar</button>
@@ -942,6 +966,122 @@
   $("closeSettings").addEventListener("click", ()=> overlay.style.display = "none");
   overlay.addEventListener("click", (e)=>{ if(e.target === overlay) overlay.style.display = "none"; });
   $("saveSettings").addEventListener("click", ()=>{ setApiKey(apiKeyInput.value.trim()); overlay.style.display = "none"; setStatus("Clave guardada."); });
+
+  // ==================== BACKUP / CLOUD SYNC ====================
+  const BACKUP_KEYS = [STORAGE_KEY, BT_INDICATOR_CONFIG_KEY, BT_RISK_CONFIG_KEY, BT_TF_RESTRICT_KEY, WILLIAMS_OPT_KEY, TOGGLE_STORAGE_KEY, INSTRUMENT_PRESETS_KEY, EXTENDED_HOURS_MODULES_KEY, PORT_LOTS_KEY, PORT_CCY_KEY, PORT_SALES_KEY, EXTENDED_HOURS_KEY, PORT_MOVEMENTS_KEY];
+  const CLOUD_REPO_KEY = "axioma_cloud_repo_v1";
+  const CLOUD_TOKEN_KEY = "axioma_cloud_token_v1";
+  const CLOUD_PATH = "axioma-backup.json";
+
+  function collectBackupData(){
+    const data = {};
+    BACKUP_KEYS.forEach(k => { const v = localStorage.getItem(k); if(v !== null) data[k] = v; });
+    return { version: 1, exportedAt: new Date().toISOString(), data: data };
+  }
+  function applyBackupData(payload){
+    if(!payload || typeof payload !== "object" || !payload.data) throw new Error("Archivo de respaldo inválido.");
+    Object.keys(payload.data).forEach(k => {
+      if(BACKUP_KEYS.indexOf(k) === -1) return;
+      localStorage.setItem(k, payload.data[k]);
+    });
+  }
+
+  const backupStatusEl = $("backupStatus");
+  function setBackupStatus(msg, isErr){ if(backupStatusEl){ backupStatusEl.textContent = msg || ""; backupStatusEl.className = isErr ? "err" : ""; } }
+
+  $("exportBackupBtn").addEventListener("click", () => {
+    try{
+      const payload = collectBackupData();
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const stamp = new Date().toISOString().slice(0,10);
+      a.href = url; a.download = "axioma-backup-" + stamp + ".json";
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      setBackupStatus("Respaldo descargado.");
+    }catch(e){ setBackupStatus("Error al exportar: " + e.message, true); }
+  });
+
+  $("importBackupBtn").addEventListener("click", () => { $("importBackupFile").click(); });
+  $("importBackupFile").addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const payload = JSON.parse(reader.result);
+        applyBackupData(payload);
+        setBackupStatus("Respaldo cargado. Recargando...");
+        setTimeout(() => location.reload(), 800);
+      }catch(err){ setBackupStatus("Error al cargar: " + err.message, true); }
+    };
+    reader.onerror = () => setBackupStatus("No se pudo leer el archivo.", true);
+    reader.readAsText(file);
+    e.target.value = "";
+  });
+
+  const cloudRepoInput = $("cloudRepoInput");
+  const cloudTokenInput = $("cloudTokenInput");
+  const cloudStatusEl = $("cloudStatus");
+  function setCloudStatus(msg, isErr){ if(cloudStatusEl){ cloudStatusEl.textContent = msg || ""; cloudStatusEl.className = isErr ? "err" : ""; } }
+  cloudRepoInput.value = localStorage.getItem(CLOUD_REPO_KEY) || "";
+  cloudTokenInput.value = localStorage.getItem(CLOUD_TOKEN_KEY) || "";
+  cloudRepoInput.addEventListener("change", () => localStorage.setItem(CLOUD_REPO_KEY, cloudRepoInput.value.trim()));
+  cloudTokenInput.addEventListener("change", () => localStorage.setItem(CLOUD_TOKEN_KEY, cloudTokenInput.value.trim()));
+
+  function cloudRepoParts(){
+    const raw = cloudRepoInput.value.trim();
+    const parts = raw.split("/").map(s => s.trim()).filter(Boolean);
+    if(parts.length !== 2) throw new Error("Repositorio inválido. Usa el formato usuario/repositorio.");
+    return { owner: parts[0], repo: parts[1] };
+  }
+
+  $("cloudSaveBtn").addEventListener("click", async () => {
+    try{
+      const token = cloudTokenInput.value.trim();
+      if(!token) throw new Error("Falta el token de GitHub.");
+      const repoParts = cloudRepoParts();
+      const owner = repoParts.owner, repo = repoParts.repo;
+      setCloudStatus("Guardando...");
+      const apiUrl = "https://api.github.com/repos/" + owner + "/" + repo + "/contents/" + CLOUD_PATH;
+      let sha = null;
+      const getRes = await fetch(apiUrl, { headers: { "Authorization": "Bearer " + token, "Accept": "application/vnd.github+json" } });
+      if(getRes.status === 200){ const j2 = await getRes.json(); sha = j2.sha; }
+      else if(getRes.status !== 404){ throw new Error("No se pudo verificar el archivo remoto (HTTP " + getRes.status + ")."); }
+      const payload = collectBackupData();
+      const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
+      const body = { message: "Actualizar respaldo de Axioma", content: content };
+      if(sha) body.sha = sha;
+      const putRes = await fetch(apiUrl, {
+        method: "PUT",
+        headers: { "Authorization": "Bearer " + token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      if(!putRes.ok){ const errBody = await putRes.text(); throw new Error("GitHub respondió HTTP " + putRes.status + ": " + errBody.slice(0,150)); }
+      setCloudStatus("Guardado en la nube.");
+    }catch(e){ setCloudStatus("Error: " + e.message, true); }
+  });
+
+  $("cloudLoadBtn").addEventListener("click", async () => {
+    try{
+      const token = cloudTokenInput.value.trim();
+      if(!token) throw new Error("Falta el token de GitHub.");
+      const repoParts = cloudRepoParts();
+      const owner = repoParts.owner, repo = repoParts.repo;
+      setCloudStatus("Cargando...");
+      const apiUrl = "https://api.github.com/repos/" + owner + "/" + repo + "/contents/" + CLOUD_PATH;
+      const res = await fetch(apiUrl, { headers: { "Authorization": "Bearer " + token, "Accept": "application/vnd.github+json" } });
+      if(res.status === 404) throw new Error("Aún no hay respaldo guardado en ese repositorio.");
+      if(!res.ok) throw new Error("GitHub respondió HTTP " + res.status + ".");
+      const j2 = await res.json();
+      const text = decodeURIComponent(escape(atob(j2.content.replace(/\n/g,""))));
+      const payload = JSON.parse(text);
+      applyBackupData(payload);
+      setCloudStatus("Datos cargados. Recargando...");
+      setTimeout(() => location.reload(), 800);
+    }catch(e){ setCloudStatus("Error: " + e.message, true); }
+  });
 
   function setStatus(msg, isErr){ statusLine.textContent = msg || ""; statusLine.className = isErr ? "err" : ""; }
   function setProgress(pct){
