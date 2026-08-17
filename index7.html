@@ -1208,7 +1208,7 @@
   $("saveSettings").addEventListener("click", ()=>{ setApiKey(apiKeyInput.value.trim()); overlay.style.display = "none"; setStatus("Clave guardada."); });
 
   // ==================== BACKUP / CLOUD SYNC ====================
-  const BACKUP_KEYS = [STORAGE_KEY, BT_INDICATOR_CONFIG_KEY, BT_RISK_CONFIG_KEY, BT_TF_RESTRICT_KEY, WILLIAMS_OPT_KEY, TOGGLE_STORAGE_KEY, INSTRUMENT_PRESETS_KEY, EXTENDED_HOURS_MODULES_KEY, PORT_LOTS_KEY, PORT_CCY_KEY, PORT_SALES_KEY, EXTENDED_HOURS_KEY, PORT_MOVEMENTS_KEY];
+  const BACKUP_KEYS = ["ma_scanner_td_apikey","axioma_bt_indicator_config_v1","axioma_bt_risk_config_v1","axioma_bt_tf_restrict_v1","axioma_williams_opt_v1","ta_scanner_module_toggles","ta_scanner_instrument_presets","ta_scanner_extended_hours_modules","ta_scanner_portfolio_lots","ta_scanner_portfolio_currency","ta_scanner_portfolio_sales","ta_scanner_extended_hours_tickers","ta_scanner_portfolio_movements"];
   const CLOUD_REPO_KEY = "axioma_cloud_repo_v1";
   const CLOUD_TOKEN_KEY = "axioma_cloud_token_v1";
   const CLOUD_PATH = "axioma-backup.json";
