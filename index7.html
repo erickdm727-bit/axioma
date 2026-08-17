@@ -5560,7 +5560,24 @@
   }
   function startPortfolioAutoRefresh(){
     clearInterval(portRefreshTimer);
-    portRefreshTimer = setInterval(refreshPortfolioAll, 30*60*1000);
+    portRefreshTimer = setInterval(refreshPortfolioFromSharedCacheOnly, 30*60*1000);
+  }
+
+  // Lightweight periodic refresh: re-reads the shared cache file (populated by the
+  // hourly GitHub Action) instead of calling the live Twelve Data API from this device.
+  async function refreshPortfolioFromSharedCacheOnly(){
+    const shared = await loadSharedPortfolioCache();
+    if(!shared || !shared.tickers) return;
+    Object.entries(shared.tickers).forEach(([t, entry]) => {
+      if(entry.error){
+        portPrices[t] = Object.assign({}, portPrices[t], { error: entry.error, ts: entry.updatedAt });
+        portSRData[t] = Object.assign({}, portSRData[t], { error: entry.error });
+      } else {
+        portPrices[t] = { price: entry.price, ts: entry.updatedAt, error: null };
+        portSRData[t] = { sr: entry.sr, alert: entry.alert, error: null, daily: entry.daily, price: entry.price };
+      }
+    });
+    renderPortfolioTable();
   }
 
   // ===== Scanner cache for portfolio tickers: auto-refresh every 2h so
@@ -5733,7 +5750,7 @@
       if(tickers.length){
         $("portNoPositionMsg").style.display = "none";
         $("portAnalysisPicker").style.display = "flex";
-        refreshPortfolioAll();
+        if(Object.keys(portPrices).length){ renderPortfolioTable(); } else { refreshPortfolioAll(); }
       } else {
         $("portAnalysisPicker").style.display = "none";
         $("portNoPositionMsg").style.display = "block";
