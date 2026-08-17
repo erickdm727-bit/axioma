@@ -1555,14 +1555,23 @@
     }
   }
 
+  
+  const __ax_seriesCache = new Map();
+  const __AX_SERIES_TTL_MS = 10 * 60 * 1000; // 10 min: avoid re-downloading the same history repeatedly (optimizer, backtests, etc.)
+
   async function fetchSeries(symbol, interval, outputsize, priority){
+    const __ck = symbol + "|" + interval + "|" + outputsize;
+    const __hit = __ax_seriesCache.get(__ck);
+    if(__hit && (Date.now() - __hit.t) < __AX_SERIES_TTL_MS) return __hit.v;
     const data = await tdFetch("/time_series", { symbol, interval, outputsize }, priority);
     if(!data.values || !Array.isArray(data.values)) throw new Error(`Sin datos para ${symbol} en ${interval}. Revisa el ticker.`);
-    return data.values.map(v => ({
+    const __out = data.values.map(v => ({
       datetime:v.datetime,
       open:parseFloat(v.open), high:parseFloat(v.high), low:parseFloat(v.low), close:parseFloat(v.close),
       volume: v.volume!=null ? parseFloat(v.volume)||0 : 0,
     })).reverse(); // ascending chronological
+    __ax_seriesCache.set(__ck, { t: Date.now(), v: __out });
+    return __out;
   }
 
   async function fetchCurrentPrice(symbol){
