@@ -1088,7 +1088,9 @@
 
   function ax_startLiveSync(user, ref){
     if(ax_unsubscribe) ax_unsubscribe();
+    let ax_firstSnap = true;
     ax_unsubscribe = ref.onSnapshot(snap => {
+      if(ax_firstSnap){ ax_firstSnap = false; return; }
       const data = snap.data();
       if(!data) return;
       if(data._updatedBy === AX_CLIENT_ID) return;
