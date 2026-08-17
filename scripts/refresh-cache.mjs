@@ -201,6 +201,14 @@ async function main(){
   }
 
   const cache = {};
+  let prevCache = {};
+  try {
+    const prevRaw = await fs.readFile(path.join(ROOT, "data", "portfolio-cache.json"), "utf8");
+    const prevParsed = JSON.parse(prevRaw);
+    if(prevParsed && prevParsed.tickers) prevCache = prevParsed.tickers;
+  } catch (e) {
+    // no previous cache yet (first-ever run) — that is fine, just start empty
+  }
   for(const t of tickers){
     try {
       const daily = await fetchSeries(t, "1day", 260);
@@ -210,8 +218,14 @@ async function main(){
       cache[t] = { price, sr, alert, daily: daily.slice(-90), updatedAt: Date.now(), error: null };
       console.log(`OK ${t}: price=${price}`);
     } catch (e) {
-      cache[t] = { error: e.message || "error", updatedAt: Date.now() };
-      console.error(`ERROR ${t}: ${e.message}`);
+      const prev = prevCache[t];
+      if(prev && prev.price != null){
+        cache[t] = { ...prev, error: e.message || "error", staleErrorAt: Date.now() };
+        console.error(`ERROR ${t}: ${e.message} (conservando ultimo precio bueno)`);
+      } else {
+        cache[t] = { error: e.message || "error", updatedAt: Date.now() };
+        console.error(`ERROR ${t}: ${e.message}`);
+      }
     }
     await sleep(SLEEP_BETWEEN_TICKERS_MS);
   }
