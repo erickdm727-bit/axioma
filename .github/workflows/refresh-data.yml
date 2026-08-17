@@ -2,7 +2,7 @@ name: Refresh portfolio cache
 
 on:
   schedule:
-      - cron: "0 * * * *"  # GitHub delays sub-hourly cron heavily; hourly is more realistic
+      - cron: "0 */2 * * *"  # every 2 hours; script itself skips runs when the US market is closed
   workflow_dispatch: {}
 
 permissions:
