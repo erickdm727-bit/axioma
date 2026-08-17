@@ -170,7 +170,28 @@ function buildPortfolioSRAlert(daily, currentPrice, sr){
 
 // ==================== main ====================
 
+function isMarketOpenNowET(){
+  const fmt = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    weekday: "short", hour: "2-digit", minute: "2-digit", hour12: false
+  });
+  const parts = fmt.formatToParts(new Date());
+  const get = (type) => parts.find(p => p.type === type).value;
+  const weekday = get("weekday");
+  const hour = parseInt(get("hour"), 10) % 24;
+  const minute = parseInt(get("minute"), 10);
+  if(weekday === "Sat" || weekday === "Sun") return false;
+  const minutesNow = hour * 60 + minute;
+  const marketOpen = 9 * 60 + 30;
+  const marketClose = 16 * 60;
+  return minutesNow >= marketOpen && minutesNow < marketClose;
+}
+
 async function main(){
+  if(!isMarketOpenNowET()){
+    console.log("Mercado cerrado (fuera de 9:30am-4:00pm hora de Nueva York, o fin de semana) — no se actualiza el cache.");
+    return;
+  }
   const watchlistPath = path.join(ROOT, "data", "watchlist.json");
   const raw = await fs.readFile(watchlistPath, "utf8");
   const tickers = JSON.parse(raw);
