@@ -5647,6 +5647,7 @@
     $("tabpanel-scanner").style.display = tab==="scanner" ? "" : "none";
     $("tabpanel-portfolio").style.display = tab==="portfolio" ? "" : "none";
     $("tabpanel-extended").style.display = tab==="extended" ? "" : "none";
+    try {
     if(tab === "scanner"){
       moveAnalysisSectionTo("scannerAnalysisHost");
       if(scannerLastTicker){
@@ -5668,6 +5669,7 @@
     } else if(tab === "extended"){
       renderExtendedHoursTab();
     }
+    } catch(e){ console.error("Axioma switchTab error:", tab, e); }
   }
   $("tabBtnScanner").addEventListener("click", ()=>switchTab("scanner"));
   $("tabBtnPortfolio").addEventListener("click", ()=>switchTab("portfolio"));
