@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Axioma — Análisis Técnico Multi-indicador</title>
-<meta name="description" content="Analiza un ticker con medias móviles, EMA, Bollinger, RSI, Estocástico, Ichimoku, A/D y patrones de velas en múltiples marcos temporales.">
+<title>Axioma â AnÃ¡lisis TÃ©cnico Multi-indicador</title>
+<meta name="description" content="Analiza un ticker con medias mÃ³viles, EMA, Bollinger, RSI, EstocÃ¡stico, Ichimoku, A/D y patrones de velas en mÃºltiples marcos temporales.">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0B0F14">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -131,7 +131,7 @@
   .module-score{display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--text-dim); margin-top:12px;}
   .module-score .chip{font-size:10.5px; padding:3px 9px; border-radius:999px; font-weight:700; letter-spacing:.03em;}
 
-  /* Ladder (3-period grid — used by MA & EMA) */
+  /* Ladder (3-period grid â used by MA & EMA) */
   .ladder{border:1px solid var(--line); border-radius:8px; overflow:hidden;}
   .rung{display:flex; align-items:center; padding:9px 12px; border-bottom:1px solid var(--line); background:var(--panel-2); gap:12px;}
   .rung:last-child{border-bottom:none;}
@@ -144,7 +144,7 @@
   .cell.below{background:var(--down-dim);} .cell.below .sig{color:var(--down);}
   .cell.na{opacity:.35;}
 
-  /* Chip row (compact, single value per timeframe — used by BB, RSI, Stoch, Ichimoku, A/D) */
+  /* Chip row (compact, single value per timeframe â used by BB, RSI, Stoch, Ichimoku, A/D) */
   .chiprow{display:flex; flex-wrap:wrap; gap:6px;}
   .chip-tf{display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 6px; border-radius:8px; background:var(--panel-2); flex:1; min-width:64px;}
   .chip-tf .lbl{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--text-dim2);}
@@ -377,9 +377,9 @@
   <div class="brand">
     <span class="mark"></span>
     <h1>Axioma</h1>
-    <span class="tag" id="openSettings">⚙ API key</span>
+    <span class="tag" id="openSettings">â API key</span>
   </div>
-  <div class="sub">Escribe un ticker (acciones US) y corre todo el análisis técnico — medias móviles, EMA, Bollinger, RSI, estocástico, Ichimoku, acumulación/distribución y patrones de velas — en 10 marcos temporales a la vez.</div>
+  <div class="sub">Escribe un ticker (acciones US) y corre todo el anÃ¡lisis tÃ©cnico â medias mÃ³viles, EMA, Bollinger, RSI, estocÃ¡stico, Ichimoku, acumulaciÃ³n/distribuciÃ³n y patrones de velas â en 10 marcos temporales a la vez.</div>
 </header>
 
 <main>
@@ -397,11 +397,11 @@
   <div class="bench-row">
     <label for="benchInput">Comparar contra</label>
     <input id="benchInput" type="text" value="SPY" autocomplete="off" spellcheck="false">
-    <span class="bench-hint">mercado general = SPY · o pon un ETF de sector, ej. XLK (tech), XLF (financiero), XLE (energía)</span>
+    <span class="bench-hint">mercado general = SPY Â· o pon un ETF de sector, ej. XLK (tech), XLF (financiero), XLE (energÃ­a)</span>
   </div>
 
   <div class="port-form-card" id="scannerPortfolioChips" style="display:none">
-    <div class="pslabel">Tu portafolio (caché automático cada 2h) — toca para ver al instante</div>
+    <div class="pslabel">Tu portafolio (cachÃ© automÃ¡tico cada 2h) â toca para ver al instante</div>
     <div class="scanner-chip-row" id="scannerChipRow"></div>
   </div>
 
@@ -409,17 +409,17 @@
   <div class="toggle-panel">
     <div class="preset-tabs-row" id="presetTabsRow"></div>
     <div class="toggle-panel-head">
-      <h4>⚙ Instrumentos activos</h4>
+      <h4>â Instrumentos activos</h4>
       <div class="toggle-quick">
         <button id="toggleAllOn" type="button">Todos</button>
         <button id="toggleAllOff" type="button">Ninguno</button>
       </div>
-      <span class="thint">solo se piden los datos de lo que dejes prendido — nunca más de 8/min</span>
+      <span class="thint">solo se piden los datos de lo que dejes prendido â nunca mÃ¡s de 8/min</span>
     </div>
     <div class="toggle-grid" id="toggleGrid"></div>
     <div class="data-missing-banner" id="dataMissingBanner"></div>
   </div>
-  <div class="hint">Datos vía <a href="https://twelvedata.com/pricing" target="_blank" rel="noopener">Twelve Data</a> (plan gratuito). No es asesoría financiera — herramienta educativa.</div>
+  <div class="hint">Datos vÃ­a <a href="https://twelvedata.com/pricing" target="_blank" rel="noopener">Twelve Data</a> (plan gratuito). No es asesorÃ­a financiera â herramienta educativa.</div>
   <div id="statusLine"></div>
   <div id="progressWrap">
     <div class="progress-track"><div id="progressBar"></div></div>
@@ -427,17 +427,17 @@
   </div>
 
   <div class="price-card" id="priceCard">
-    <div class="sym mono" id="pcSym">—</div>
-    <div class="px" id="pcPrice">—</div>
+    <div class="sym mono" id="pcSym">â</div>
+    <div class="px" id="pcPrice">â</div>
     <div class="asof" id="pcAsof"></div>
   </div>
 
     <!-- 1. Market context -->
   <div class="module" id="mod-marketctx">
-    <div class="module-head"><span class="idx">01</span><h3>Contexto de Mercado (SPY / QQQ)</h3><span class="catg">Régimen</span><button class="info-btn" data-explain="marketctx">ℹ️ Cómo leerlo</button></div>
-    <div class="module-desc">El mercado general marca el viento a favor o en contra de todo lo demás. Se calcula con la "nube EMA" (EMA8 vs EMA21) diaria de SPY y QQQ — si ambas están alcistas, es más fácil que las acciones individuales suban también.</div>
-    <div class="module-explainer" id="explain-marketctx">Idea de un trader real (@BeardoTrader): "el mercado amplio marca mi sesgo". Si SPY y QQQ están en nube EMA alcista (EMA rápida por encima de la lenta), es más fácil sostener posiciones largas y las probabilidades mejoran para todo lo demás. Si el mercado está débil, hasta las mejores acciones cuestan trabajo — por eso este módulo pesa más que los demás en el veredicto final.</div>
-    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-head"><span class="idx">01</span><h3>Contexto de Mercado (SPY / QQQ)</h3><span class="catg">RÃ©gimen</span><button class="info-btn" data-explain="marketctx">â¹ï¸ CÃ³mo leerlo</button></div>
+    <div class="module-desc">El mercado general marca el viento a favor o en contra de todo lo demÃ¡s. Se calcula con la "nube EMA" (EMA8 vs EMA21) diaria de SPY y QQQ â si ambas estÃ¡n alcistas, es mÃ¡s fÃ¡cil que las acciones individuales suban tambiÃ©n.</div>
+    <div class="module-explainer" id="explain-marketctx">Idea de un trader real (@BeardoTrader): "el mercado amplio marca mi sesgo". Si SPY y QQQ estÃ¡n en nube EMA alcista (EMA rÃ¡pida por encima de la lenta), es mÃ¡s fÃ¡cil sostener posiciones largas y las probabilidades mejoran para todo lo demÃ¡s. Si el mercado estÃ¡ dÃ©bil, hasta las mejores acciones cuestan trabajo â por eso este mÃ³dulo pesa mÃ¡s que los demÃ¡s en el veredicto final.</div>
+    <div class="module-off-banner">â¸ Este indicador estÃ¡ desactivado â no se incluye en el veredicto general.</div>
     <div class="module-body-wrap">
     <div id="marketctx-body"></div>
     <div class="module-score" id="score-marketctx"></div>
@@ -446,10 +446,10 @@
 
   <!-- 2. SMA -->
   <div class="module" id="mod-sma">
-    <div class="module-head"><span class="idx">02</span><h3>Medias Móviles Simples (SMA)</h3><span class="catg">Tendencia</span><button class="info-btn" data-explain="sma">ℹ️ Cómo leerlo</button></div>
+    <div class="module-head"><span class="idx">02</span><h3>Medias MÃ³viles Simples (SMA)</h3><span class="catg">Tendencia</span><button class="info-btn" data-explain="sma">â¹ï¸ CÃ³mo leerlo</button></div>
     <div class="module-desc">Precio actual vs SMA de 10, 100 y 200 periodos, calculado de forma independiente en cada marco temporal.</div>
-    <div class="module-explainer" id="explain-sma">La media móvil simple es el promedio del precio de los últimos N periodos. Precio por ENCIMA de la media = tendencia reciente alcista; por DEBAJO = bajista. La de 200 periodos es la que más siguen los traders institucionales — perderla o recuperarla suele ser noticia. Cuantos más marcos temporales coincidan en el mismo lado, más fuerte y confiable es la señal.</div>
-    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-explainer" id="explain-sma">La media mÃ³vil simple es el promedio del precio de los Ãºltimos N periodos. Precio por ENCIMA de la media = tendencia reciente alcista; por DEBAJO = bajista. La de 200 periodos es la que mÃ¡s siguen los traders institucionales â perderla o recuperarla suele ser noticia. Cuantos mÃ¡s marcos temporales coincidan en el mismo lado, mÃ¡s fuerte y confiable es la seÃ±al.</div>
+    <div class="module-off-banner">â¸ Este indicador estÃ¡ desactivado â no se incluye en el veredicto general.</div>
     <div class="module-body-wrap">
     <div class="ladder" id="ladder-sma"></div>
     <div class="legend"><span class="up"><i></i> Precio encima de la media</span><span class="down"><i></i> Precio debajo de la media</span></div>
@@ -459,10 +459,10 @@
 
   <!-- 2. EMA -->
   <div class="module" id="mod-ema">
-    <div class="module-head"><span class="idx">03</span><h3>Medias Móviles Exponenciales (EMA)</h3><span class="catg">Tendencia</span><button class="info-btn" data-explain="ema">ℹ️ Cómo leerlo</button></div>
-    <div class="module-desc">Igual que la SMA pero da más peso a los precios recientes — reacciona más rápido a cambios de tendencia.</div>
-    <div class="module-explainer" id="explain-ema">Igual que la SMA pero pondera más los precios recientes, así que reacciona más rápido a los cambios. Útil para detectar un giro de tendencia antes que la SMA — a cambio, en mercados sin tendencia clara ("choppy") puede dar más señales falsas por ser más sensible al ruido.</div>
-    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-head"><span class="idx">03</span><h3>Medias MÃ³viles Exponenciales (EMA)</h3><span class="catg">Tendencia</span><button class="info-btn" data-explain="ema">â¹ï¸ CÃ³mo leerlo</button></div>
+    <div class="module-desc">Igual que la SMA pero da mÃ¡s peso a los precios recientes â reacciona mÃ¡s rÃ¡pido a cambios de tendencia.</div>
+    <div class="module-explainer" id="explain-ema">Igual que la SMA pero pondera mÃ¡s los precios recientes, asÃ­ que reacciona mÃ¡s rÃ¡pido a los cambios. Ãtil para detectar un giro de tendencia antes que la SMA â a cambio, en mercados sin tendencia clara ("choppy") puede dar mÃ¡s seÃ±ales falsas por ser mÃ¡s sensible al ruido.</div>
+    <div class="module-off-banner">â¸ Este indicador estÃ¡ desactivado â no se incluye en el veredicto general.</div>
     <div class="module-body-wrap">
     <div class="ladder" id="ladder-ema"></div>
     <div class="legend"><span class="up"><i></i> Precio encima de la EMA</span><span class="down"><i></i> Precio debajo de la EMA</span></div>
@@ -472,10 +472,10 @@
 
   <!-- 4. EMA Cloud -->
   <div class="module" id="mod-emacloud">
-    <div class="module-head"><span class="idx">04</span><h3>EMA Cloud (8 / 21)</h3><span class="catg">Tendencia</span><button class="info-btn" data-explain="emacloud">ℹ️ Cómo leerlo</button></div>
-    <div class="module-desc">La "nube" entre la EMA8 y la EMA21: verde (EMA8 encima) = régimen alcista, roja (EMA8 debajo) = régimen bajista. Es la herramienta favorita de muchos swing traders para leer la tendencia de un vistazo.</div>
-    <div class="module-explainer" id="explain-emacloud">Cuando la EMA rápida (8) está por encima de la lenta (21), el "aire" entre ambas se pinta verde — el precio tiene viento a favor de corto plazo. Cuando la rápida cae por debajo de la lenta, la nube se pinta roja. Un cruce reciente (la nube cambiando de color) suele anticipar un cambio de tendencia antes de que sea obvio en el precio.</div>
-    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-head"><span class="idx">04</span><h3>EMA Cloud (8 / 21)</h3><span class="catg">Tendencia</span><button class="info-btn" data-explain="emacloud">â¹ï¸ CÃ³mo leerlo</button></div>
+    <div class="module-desc">La "nube" entre la EMA8 y la EMA21: verde (EMA8 encima) = rÃ©gimen alcista, roja (EMA8 debajo) = rÃ©gimen bajista. Es la herramienta favorita de muchos swing traders para leer la tendencia de un vistazo.</div>
+    <div class="module-explainer" id="explain-emacloud">Cuando la EMA rÃ¡pida (8) estÃ¡ por encima de la lenta (21), el "aire" entre ambas se pinta verde â el precio tiene viento a favor de corto plazo. Cuando la rÃ¡pida cae por debajo de la lenta, la nube se pinta roja. Un cruce reciente (la nube cambiando de color) suele anticipar un cambio de tendencia antes de que sea obvio en el precio.</div>
+    <div class="module-off-banner">â¸ Este indicador estÃ¡ desactivado â no se incluye en el veredicto general.</div>
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-emacloud"></div>
     <div class="module-score" id="score-emacloud"></div>
@@ -484,10 +484,10 @@
 
   <!-- 5. Bollinger -->
   <div class="module" id="mod-bb">
-    <div class="module-head"><span class="idx">05</span><h3>Bandas de Bollinger (20, 2σ)</h3><span class="catg">Volatilidad</span><button class="info-btn" data-explain="bb">ℹ️ Cómo leerlo</button></div>
-    <div class="module-desc">Posición del precio respecto a la banda media (SMA20). Se marca con ⚠ cuando el precio rompe la banda superior/inferior (posible sobrecompra/sobreventa).</div>
-    <div class="module-explainer" id="explain-bb">Tres líneas: la banda media (SMA20) y dos bandas a ±2 desviaciones estándar. El precio se mueve dentro de las bandas la mayor parte del tiempo. Tocar/romper la banda superior sugiere sobrecompra (posible pausa); tocar la inferior sugiere sobreventa. Cuando las bandas se juntan mucho ("squeeze"), suele anticipar un movimiento fuerte próximo — en cualquier dirección, eso no lo dice Bollinger por sí solo.</div>
-    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-head"><span class="idx">05</span><h3>Bandas de Bollinger (20, 2Ï)</h3><span class="catg">Volatilidad</span><button class="info-btn" data-explain="bb">â¹ï¸ CÃ³mo leerlo</button></div>
+    <div class="module-desc">PosiciÃ³n del precio respecto a la banda media (SMA20). Se marca con â  cuando el precio rompe la banda superior/inferior (posible sobrecompra/sobreventa).</div>
+    <div class="module-explainer" id="explain-bb">Tres lÃ­neas: la banda media (SMA20) y dos bandas a Â±2 desviaciones estÃ¡ndar. El precio se mueve dentro de las bandas la mayor parte del tiempo. Tocar/romper la banda superior sugiere sobrecompra (posible pausa); tocar la inferior sugiere sobreventa. Cuando las bandas se juntan mucho ("squeeze"), suele anticipar un movimiento fuerte prÃ³ximo â en cualquier direcciÃ³n, eso no lo dice Bollinger por sÃ­ solo.</div>
+    <div class="module-off-banner">â¸ Este indicador estÃ¡ desactivado â no se incluye en el veredicto general.</div>
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-bb"></div>
     <div class="module-score" id="score-bb"></div>
@@ -497,10 +497,10 @@
 
   <!-- 4. RSI -->
   <div class="module" id="mod-rsi">
-    <div class="module-head"><span class="idx">06</span><h3>RSI (14)</h3><span class="catg">Momentum</span><button class="info-btn" data-explain="rsi">ℹ️ Cómo leerlo</button></div>
-    <div class="module-desc">Índice de fuerza relativa. &gt;70 sobrecompra, &lt;30 sobreventa, 50 es el punto neutro.</div>
-    <div class="module-explainer" id="explain-rsi">Mide qué tan rápido y fuerte se ha movido el precio recientemente, en escala 0–100. Arriba de 70 = sobrecompra (podría venir una pausa o corrección); abajo de 30 = sobreventa (podría venir un rebote). Cerca de 50 = sin sesgo claro. Ojo: en tendencias muy fuertes el RSI puede quedarse "sobrecomprado" o "sobrevendido" durante mucho tiempo sin que eso signifique una reversión inmediata.</div>
-    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-head"><span class="idx">06</span><h3>RSI (14)</h3><span class="catg">Momentum</span><button class="info-btn" data-explain="rsi">â¹ï¸ CÃ³mo leerlo</button></div>
+    <div class="module-desc">Ãndice de fuerza relativa. &gt;70 sobrecompra, &lt;30 sobreventa, 50 es el punto neutro.</div>
+    <div class="module-explainer" id="explain-rsi">Mide quÃ© tan rÃ¡pido y fuerte se ha movido el precio recientemente, en escala 0â100. Arriba de 70 = sobrecompra (podrÃ­a venir una pausa o correcciÃ³n); abajo de 30 = sobreventa (podrÃ­a venir un rebote). Cerca de 50 = sin sesgo claro. Ojo: en tendencias muy fuertes el RSI puede quedarse "sobrecomprado" o "sobrevendido" durante mucho tiempo sin que eso signifique una reversiÃ³n inmediata.</div>
+    <div class="module-off-banner">â¸ Este indicador estÃ¡ desactivado â no se incluye en el veredicto general.</div>
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-rsi"></div>
     <div class="module-score" id="score-rsi"></div>
@@ -510,10 +510,10 @@
 
   <!-- 5. Stochastic -->
   <div class="module" id="mod-stoch">
-    <div class="module-head"><span class="idx">07</span><h3>Oscilador Estocástico (14,3,3)</h3><span class="catg">Momentum</span><button class="info-btn" data-explain="stoch">ℹ️ Cómo leerlo</button></div>
-    <div class="module-desc">%K vs %D. &gt;80 sobrecompra, &lt;20 sobreventa. Se marca ⚠ cuando %K cruza a %D en zona extrema.</div>
-    <div class="module-explainer" id="explain-stoch">Compara el cierre actual contra el rango de precios reciente, también en escala 0–100. %K es la línea rápida, %D es su promedio suavizado (más lento). Arriba de 80 = sobrecompra, abajo de 20 = sobreventa. Muchos traders de corto plazo usan el cruce de %K sobre/bajo %D en zona extrema como señal de entrada o salida.</div>
-    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-head"><span class="idx">07</span><h3>Oscilador EstocÃ¡stico (14,3,3)</h3><span class="catg">Momentum</span><button class="info-btn" data-explain="stoch">â¹ï¸ CÃ³mo leerlo</button></div>
+    <div class="module-desc">%K vs %D. &gt;80 sobrecompra, &lt;20 sobreventa. Se marca â  cuando %K cruza a %D en zona extrema.</div>
+    <div class="module-explainer" id="explain-stoch">Compara el cierre actual contra el rango de precios reciente, tambiÃ©n en escala 0â100. %K es la lÃ­nea rÃ¡pida, %D es su promedio suavizado (mÃ¡s lento). Arriba de 80 = sobrecompra, abajo de 20 = sobreventa. Muchos traders de corto plazo usan el cruce de %K sobre/bajo %D en zona extrema como seÃ±al de entrada o salida.</div>
+    <div class="module-off-banner">â¸ Este indicador estÃ¡ desactivado â no se incluye en el veredicto general.</div>
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-stoch"></div>
     <div class="module-score" id="score-stoch"></div>
@@ -523,10 +523,10 @@
 
   <!-- 6. Ichimoku -->
   <div class="module" id="mod-ichi">
-    <div class="module-head"><span class="idx">08</span><h3>Nube de Ichimoku</h3><span class="catg">Tendencia</span><button class="info-btn" data-explain="ichi">ℹ️ Cómo leerlo</button></div>
-    <div class="module-desc">Precio vs la nube (Senkou A/B) y cruce Tenkan/Kijun. Encima de la nube = alcista, debajo = bajista, dentro = indecisión.</div>
-    <div class="module-explainer" id="explain-ichi">Sistema con varias líneas a la vez; lo esencial para leerlo rápido: precio ENCIMA de la nube (zona sombreada) = sesgo alcista; DEBAJO = sesgo bajista; DENTRO de la nube = indecisión, sin tendencia clara. El cruce Tenkan/Kijun (marcado como TK▲/TK▼) es una señal de momentum de más corto plazo dentro de esa tendencia mayor.</div>
-    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-head"><span class="idx">08</span><h3>Nube de Ichimoku</h3><span class="catg">Tendencia</span><button class="info-btn" data-explain="ichi">â¹ï¸ CÃ³mo leerlo</button></div>
+    <div class="module-desc">Precio vs la nube (Senkou A/B) y cruce Tenkan/Kijun. Encima de la nube = alcista, debajo = bajista, dentro = indecisiÃ³n.</div>
+    <div class="module-explainer" id="explain-ichi">Sistema con varias lÃ­neas a la vez; lo esencial para leerlo rÃ¡pido: precio ENCIMA de la nube (zona sombreada) = sesgo alcista; DEBAJO = sesgo bajista; DENTRO de la nube = indecisiÃ³n, sin tendencia clara. El cruce Tenkan/Kijun (marcado como TKâ²/TKâ¼) es una seÃ±al de momentum de mÃ¡s corto plazo dentro de esa tendencia mayor.</div>
+    <div class="module-off-banner">â¸ Este indicador estÃ¡ desactivado â no se incluye en el veredicto general.</div>
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-ichi"></div>
     <div class="module-score" id="score-ichi"></div>
@@ -536,10 +536,10 @@
   <!-- 7. A/D -->
   <!-- 9. Anchored VWAP -->
   <div class="module" id="mod-vwap">
-    <div class="module-head"><span class="idx">09</span><h3>VWAP Anclado desde Mínimos</h3><span class="catg">Volumen</span><button class="info-btn" data-explain="vwap">ℹ️ Cómo leerlo</button></div>
-    <div class="module-desc">Precio promedio ponderado por volumen, calculado desde el mínimo más reciente de cada marco temporal. Sostenerse por encima sugiere que los compradores que entraron desde ese mínimo siguen en control.</div>
-    <div class="module-explainer" id="explain-vwap">A diferencia de una media móvil normal, el VWAP anclado empieza a contar exactamente desde un punto específico — aquí, el precio más bajo reciente. Mientras el precio se mantenga por encima, el "costo promedio" de quienes compraron desde ese mínimo sigue siendo ganador, lo cual actúa como soporte psicológico. Perderlo sugiere que esos compradores empiezan a rendirse.</div>
-    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-head"><span class="idx">09</span><h3>VWAP Anclado desde MÃ­nimos</h3><span class="catg">Volumen</span><button class="info-btn" data-explain="vwap">â¹ï¸ CÃ³mo leerlo</button></div>
+    <div class="module-desc">Precio promedio ponderado por volumen, calculado desde el mÃ­nimo mÃ¡s reciente de cada marco temporal. Sostenerse por encima sugiere que los compradores que entraron desde ese mÃ­nimo siguen en control.</div>
+    <div class="module-explainer" id="explain-vwap">A diferencia de una media mÃ³vil normal, el VWAP anclado empieza a contar exactamente desde un punto especÃ­fico â aquÃ­, el precio mÃ¡s bajo reciente. Mientras el precio se mantenga por encima, el "costo promedio" de quienes compraron desde ese mÃ­nimo sigue siendo ganador, lo cual actÃºa como soporte psicolÃ³gico. Perderlo sugiere que esos compradores empiezan a rendirse.</div>
+    <div class="module-off-banner">â¸ Este indicador estÃ¡ desactivado â no se incluye en el veredicto general.</div>
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-vwap"></div>
     <div class="module-score" id="score-vwap"></div>
@@ -547,10 +547,10 @@
   </div>
 
   <div class="module" id="mod-ad">
-    <div class="module-head"><span class="idx">10</span><h3>Acumulación / Distribución</h3><span class="catg">Volumen</span><button class="info-btn" data-explain="ad">ℹ️ Cómo leerlo</button></div>
-    <div class="module-desc">Tendencia de la línea A/D (precio ponderado por volumen). Subiendo = acumulación (compradores), bajando = distribución (vendedores).</div>
-    <div class="module-explainer" id="explain-ad">Combina precio y volumen para estimar si los grandes jugadores están comprando (acumulando) o vendiendo (distribuyendo), incluso si el precio todavía no lo refleja del todo. La señal de alerta más útil: si el precio SUBE pero la línea A/D BAJA, es una divergencia — la subida podría no tener compradores fuertes detrás y ser más frágil de lo que parece.</div>
-    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-head"><span class="idx">10</span><h3>AcumulaciÃ³n / DistribuciÃ³n</h3><span class="catg">Volumen</span><button class="info-btn" data-explain="ad">â¹ï¸ CÃ³mo leerlo</button></div>
+    <div class="module-desc">Tendencia de la lÃ­nea A/D (precio ponderado por volumen). Subiendo = acumulaciÃ³n (compradores), bajando = distribuciÃ³n (vendedores).</div>
+    <div class="module-explainer" id="explain-ad">Combina precio y volumen para estimar si los grandes jugadores estÃ¡n comprando (acumulando) o vendiendo (distribuyendo), incluso si el precio todavÃ­a no lo refleja del todo. La seÃ±al de alerta mÃ¡s Ãºtil: si el precio SUBE pero la lÃ­nea A/D BAJA, es una divergencia â la subida podrÃ­a no tener compradores fuertes detrÃ¡s y ser mÃ¡s frÃ¡gil de lo que parece.</div>
+    <div class="module-off-banner">â¸ Este indicador estÃ¡ desactivado â no se incluye en el veredicto general.</div>
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-ad"></div>
     <div class="module-score" id="score-ad"></div>
@@ -560,10 +560,10 @@
   <!-- 8. Candlestick patterns -->
   <!-- 11. Heikin Ashi -->
   <div class="module" id="mod-heikin">
-    <div class="module-head"><span class="idx">11</span><h3>Heikin Ashi Semanal</h3><span class="catg">Price Action</span><button class="info-btn" data-explain="heikin">ℹ️ Cómo leerlo</button></div>
-    <div class="module-desc">Las velas Heikin Ashi promedian el precio para filtrar ruido y mostrar la tendencia con menos zigzag que las velas normales. Una vela semanal verde sugiere que el promedio semana-a-semana ya está subiendo.</div>
-    <div class="module-explainer" id="explain-heikin">Heikin Ashi ("barra promedio" en japonés) recalcula cada vela usando el promedio de la anterior, así que suaviza el ruido de las velas normales. En marco semanal, una racha de velas verdes consecutivas es una de las señales más simples y confiables de que una tendencia alcista está en marcha; una vela roja después de varias verdes suele ser la primera señal de que el impulso se está enfriando.</div>
-    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-head"><span class="idx">11</span><h3>Heikin Ashi Semanal</h3><span class="catg">Price Action</span><button class="info-btn" data-explain="heikin">â¹ï¸ CÃ³mo leerlo</button></div>
+    <div class="module-desc">Las velas Heikin Ashi promedian el precio para filtrar ruido y mostrar la tendencia con menos zigzag que las velas normales. Una vela semanal verde sugiere que el promedio semana-a-semana ya estÃ¡ subiendo.</div>
+    <div class="module-explainer" id="explain-heikin">Heikin Ashi ("barra promedio" en japonÃ©s) recalcula cada vela usando el promedio de la anterior, asÃ­ que suaviza el ruido de las velas normales. En marco semanal, una racha de velas verdes consecutivas es una de las seÃ±ales mÃ¡s simples y confiables de que una tendencia alcista estÃ¡ en marcha; una vela roja despuÃ©s de varias verdes suele ser la primera seÃ±al de que el impulso se estÃ¡ enfriando.</div>
+    <div class="module-off-banner">â¸ Este indicador estÃ¡ desactivado â no se incluye en el veredicto general.</div>
     <div class="module-body-wrap">
     <div id="heikin-body"></div>
     <div class="module-score" id="score-heikin"></div>
@@ -571,10 +571,10 @@
   </div>
 
   <div class="module" id="mod-patterns">
-    <div class="module-head"><span class="idx">12</span><h3>Patrones de Velas</h3><span class="catg">Price Action</span><button class="info-btn" data-explain="patterns">ℹ️ Cómo leerlo</button></div>
-    <div class="module-desc">Doji, martillo, envolventes, estrella de la mañana/tarde, tres soldados/cuervos, y variantes — evaluados sobre las últimas velas de cada marco temporal.</div>
-    <div class="module-explainer" id="explain-patterns">Formaciones de una o varias velas que históricamente han anticipado giros o continuaciones del precio. Son más confiables cuando aparecen después de una tendencia clara (no en medio de precios laterales) y cuando se confirman con el periodo siguiente o con volumen alto — una sola vela aislada rara vez es suficiente para decidir por sí sola.</div>
-    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-head"><span class="idx">12</span><h3>Patrones de Velas</h3><span class="catg">Price Action</span><button class="info-btn" data-explain="patterns">â¹ï¸ CÃ³mo leerlo</button></div>
+    <div class="module-desc">Doji, martillo, envolventes, estrella de la maÃ±ana/tarde, tres soldados/cuervos, y variantes â evaluados sobre las Ãºltimas velas de cada marco temporal.</div>
+    <div class="module-explainer" id="explain-patterns">Formaciones de una o varias velas que histÃ³ricamente han anticipado giros o continuaciones del precio. Son mÃ¡s confiables cuando aparecen despuÃ©s de una tendencia clara (no en medio de precios laterales) y cuando se confirman con el periodo siguiente o con volumen alto â una sola vela aislada rara vez es suficiente para decidir por sÃ­ sola.</div>
+    <div class="module-off-banner">â¸ Este indicador estÃ¡ desactivado â no se incluye en el veredicto general.</div>
     <div class="module-body-wrap">
     <div id="patterns-list"></div>
     <div class="module-score" id="score-patterns"></div>
@@ -583,10 +583,10 @@
 
   <!-- 9. Relative strength -->
   <div class="module" id="mod-rel">
-    <div class="module-head"><span class="idx">13</span><h3>Fuerza Relativa vs Mercado</h3><span class="catg">Contexto</span><button class="info-btn" data-explain="rel">ℹ️ Cómo leerlo</button></div>
-    <div class="module-desc" id="rel-desc">Compara el rendimiento del ticker contra su benchmark en el mismo periodo (marco diario). Si el ticker sube pero rinde menos que el mercado, es una señal de debilidad relativa aunque el precio suba.</div>
-    <div class="module-explainer" id="explain-rel">Compara cuánto sube o baja el ticker contra un índice o ETF de referencia (mercado general o su sector) en el mismo periodo. Si el ticker sube pero rinde MENOS que el benchmark, es debilidad relativa — el dinero se está yendo a otro lado aunque el precio suba. Si rinde MÁS, hay fuerza real detrás del movimiento, no solo un mercado general al alza arrastrándolo.</div>
-    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-head"><span class="idx">13</span><h3>Fuerza Relativa vs Mercado</h3><span class="catg">Contexto</span><button class="info-btn" data-explain="rel">â¹ï¸ CÃ³mo leerlo</button></div>
+    <div class="module-desc" id="rel-desc">Compara el rendimiento del ticker contra su benchmark en el mismo periodo (marco diario). Si el ticker sube pero rinde menos que el mercado, es una seÃ±al de debilidad relativa aunque el precio suba.</div>
+    <div class="module-explainer" id="explain-rel">Compara cuÃ¡nto sube o baja el ticker contra un Ã­ndice o ETF de referencia (mercado general o su sector) en el mismo periodo. Si el ticker sube pero rinde MENOS que el benchmark, es debilidad relativa â el dinero se estÃ¡ yendo a otro lado aunque el precio suba. Si rinde MÃS, hay fuerza real detrÃ¡s del movimiento, no solo un mercado general al alza arrastrÃ¡ndolo.</div>
+    <div class="module-off-banner">â¸ Este indicador estÃ¡ desactivado â no se incluye en el veredicto general.</div>
     <div class="module-body-wrap">
     <div id="rel-body"></div>
     <div class="module-score" id="score-rel"></div>
@@ -595,10 +595,10 @@
 
   <!-- 14. Beardo setup checklist -->
   <div class="module" id="mod-setup">
-    <div class="module-head"><span class="idx">14</span><h3>Setup Beardo (5 condiciones)</h3><span class="catg">Composite</span><button class="info-btn" data-explain="setup">ℹ️ Cómo leerlo</button></div>
-    <div class="module-desc">Checklist de un trader real (@BeardoTrader) que combina varios de los módulos anteriores en un solo criterio de entrada: cuantas más condiciones se cumplan, mejor la relación riesgo/beneficio según su método.</div>
-    <div class="module-explainer" id="explain-setup">Sus 5 condiciones: (1) vela semanal Heikin Ashi verde, (2) precio sosteniéndose sobre el VWAP anclado desde mínimos, (3) precio sobre una media de 10 días que además esté subiendo, (4) precio sobre la nube EMA de 4 horas, (5) rompiendo una tendencia bajista definida (aquí aproximado con un cambio de pendiente de negativa a positiva). Es una combinación, no un indicador nuevo — por eso pesa más en el veredicto: resume todo lo demás en una sola pregunta de "¿esto ya se ve como una entrada?".</div>
-    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-head"><span class="idx">14</span><h3>Setup Beardo (5 condiciones)</h3><span class="catg">Composite</span><button class="info-btn" data-explain="setup">â¹ï¸ CÃ³mo leerlo</button></div>
+    <div class="module-desc">Checklist de un trader real (@BeardoTrader) que combina varios de los mÃ³dulos anteriores en un solo criterio de entrada: cuantas mÃ¡s condiciones se cumplan, mejor la relaciÃ³n riesgo/beneficio segÃºn su mÃ©todo.</div>
+    <div class="module-explainer" id="explain-setup">Sus 5 condiciones: (1) vela semanal Heikin Ashi verde, (2) precio sosteniÃ©ndose sobre el VWAP anclado desde mÃ­nimos, (3) precio sobre una media de 10 dÃ­as que ademÃ¡s estÃ© subiendo, (4) precio sobre la nube EMA de 4 horas, (5) rompiendo una tendencia bajista definida (aquÃ­ aproximado con un cambio de pendiente de negativa a positiva). Es una combinaciÃ³n, no un indicador nuevo â por eso pesa mÃ¡s en el veredicto: resume todo lo demÃ¡s en una sola pregunta de "Â¿esto ya se ve como una entrada?".</div>
+    <div class="module-off-banner">â¸ Este indicador estÃ¡ desactivado â no se incluye en el veredicto general.</div>
     <div class="module-body-wrap">
     <div id="setup-body"></div>
     <div class="module-score" id="score-setup"></div>
@@ -607,17 +607,17 @@
 
   <!-- 15. Williams %R -->
   <div class="module" id="mod-williams">
-    <div class="module-head"><span class="idx">15</span><h3>Williams %R (14)</h3><span class="catg">Momentum</span><button class="info-btn" data-explain="williams">ℹ️ Cómo leerlo</button></div>
+    <div class="module-head"><span class="idx">15</span><h3>Williams %R (14)</h3><span class="catg">Momentum</span><button class="info-btn" data-explain="williams">â¹ï¸ CÃ³mo leerlo</button></div>
     <div class="module-desc">Mide el cierre contra el rango reciente, escala -100 a 0. &gt;-20 sobrecompra, &lt;-80 sobreventa.</div>
-    <div class="module-explainer" id="explain-williams">Compara el cierre actual contra el máximo y mínimo de los últimos 14 periodos, en escala de -100 a 0. Cerca de 0 = el precio cerró cerca del máximo reciente (posible sobrecompra); cerca de -100 = cerró cerca del mínimo (posible sobreventa). Es prácticamente un estocástico invertido, pero reacciona un poco más rápido en los extremos.</div>
-    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-explainer" id="explain-williams">Compara el cierre actual contra el mÃ¡ximo y mÃ­nimo de los Ãºltimos 14 periodos, en escala de -100 a 0. Cerca de 0 = el precio cerrÃ³ cerca del mÃ¡ximo reciente (posible sobrecompra); cerca de -100 = cerrÃ³ cerca del mÃ­nimo (posible sobreventa). Es prÃ¡cticamente un estocÃ¡stico invertido, pero reacciona un poco mÃ¡s rÃ¡pido en los extremos.</div>
+    <div class="module-off-banner">â¸ Este indicador estÃ¡ desactivado â no se incluye en el veredicto general.</div>
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-williams"></div>
     <div class="module-score" id="score-williams"></div>
     <div class="module-alert" id="alert-williams"></div>
     <div class="tf-selector" id="chartTf-williams"></div>
     <div class="chart-fs-wrap" id="chartFsWrap-williams">
-    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-williams" title="Pantalla completa">⛶</button>
+    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-williams" title="Pantalla completa">â¶</button>
     <div id="chartSvg-williams"></div>
     <div id="oscSvg-williams" style="margin-top:6px;"></div>
     </div>
@@ -626,10 +626,10 @@
 
   <!-- 16. EMA Cloud 20/50 -->
   <div class="module" id="mod-emacloud2050">
-    <div class="module-head"><span class="idx">16</span><h3>EMA Cloud 20/50</h3><span class="catg">Tendencia</span><button class="info-btn" data-explain="emacloud2050">ℹ️ Cómo leerlo</button></div>
+    <div class="module-head"><span class="idx">16</span><h3>EMA Cloud 20/50</h3><span class="catg">Tendencia</span><button class="info-btn" data-explain="emacloud2050">â¹ï¸ CÃ³mo leerlo</button></div>
     <div class="module-desc">Nube entre la EMA 20 y la EMA 50. Precio/nube arriba = sesgo alcista; abajo = bajista.</div>
-    <div class="module-explainer" id="explain-emacloud2050">Una segunda nube EMA, pensada para setups que combinan varias nubes superpuestas (por ejemplo, nube 20/50 + nube 50/100). Cuando la EMA 20 está sobre la EMA 50 la nube se pinta alcista; cuando está debajo, bajista.</div>
-    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-explainer" id="explain-emacloud2050">Una segunda nube EMA, pensada para setups que combinan varias nubes superpuestas (por ejemplo, nube 20/50 + nube 50/100). Cuando la EMA 20 estÃ¡ sobre la EMA 50 la nube se pinta alcista; cuando estÃ¡ debajo, bajista.</div>
+    <div class="module-off-banner">â¸ Este indicador estÃ¡ desactivado â no se incluye en el veredicto general.</div>
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-emacloud2050"></div>
     <div class="module-score" id="score-emacloud2050"></div>
@@ -638,10 +638,10 @@
 
   <!-- 17. EMA Cloud 50/100 -->
   <div class="module" id="mod-emacloud50100">
-    <div class="module-head"><span class="idx">17</span><h3>EMA Cloud 50/100</h3><span class="catg">Tendencia</span><button class="info-btn" data-explain="emacloud50100">ℹ️ Cómo leerlo</button></div>
-    <div class="module-desc">Nube entre la EMA 50 y la EMA 100 — la más lenta del par, para confirmar la tendencia de fondo.</div>
-    <div class="module-explainer" id="explain-emacloud50100">La nube más lenta del par. Se superpone deliberadamente con la nube 20/50 en tramos laterales para evitar señales falsas de cambio de tendencia — cuando ambas nubes coinciden en dirección, la lectura de tendencia es más confiable.</div>
-    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-head"><span class="idx">17</span><h3>EMA Cloud 50/100</h3><span class="catg">Tendencia</span><button class="info-btn" data-explain="emacloud50100">â¹ï¸ CÃ³mo leerlo</button></div>
+    <div class="module-desc">Nube entre la EMA 50 y la EMA 100 â la mÃ¡s lenta del par, para confirmar la tendencia de fondo.</div>
+    <div class="module-explainer" id="explain-emacloud50100">La nube mÃ¡s lenta del par. Se superpone deliberadamente con la nube 20/50 en tramos laterales para evitar seÃ±ales falsas de cambio de tendencia â cuando ambas nubes coinciden en direcciÃ³n, la lectura de tendencia es mÃ¡s confiable.</div>
+    <div class="module-off-banner">â¸ Este indicador estÃ¡ desactivado â no se incluye en el veredicto general.</div>
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-emacloud50100"></div>
     <div class="module-score" id="score-emacloud50100"></div>
@@ -650,10 +650,10 @@
 
   <!-- 18. Soportes/Resistencias -->
   <div class="module" id="mod-sr">
-    <div class="module-head"><span class="idx">18</span><h3>Soportes/Resistencias</h3><span class="catg">Estructura</span><button class="info-btn" data-explain="sr">ℹ️ Cómo leerlo</button></div>
-    <div class="module-desc">Niveles automáticos por marco temporal: combina pivotes de precio, Fibonacci y pivote trimestral.</div>
-    <div class="module-explainer" id="explain-sr">Detecta soportes y resistencias como lo harías a mano: junta los máximos/mínimos donde el precio giró, los niveles de Fibonacci del rango reciente y el pivote trimestral, agrupando los que caen muy cerca entre sí en "zonas de confluencia" (más confiables cuantas más fuentes coincidan). Muestra el soporte y la resistencia más cercanos al precio actual en cada marco temporal. ▲ = más cerca del soporte (zona de compra); ▼ = más cerca de la resistencia (zona de venta).</div>
-    <div class="module-off-banner">⏸ Este indicador está desactivado — no se incluye en el veredicto general.</div>
+    <div class="module-head"><span class="idx">18</span><h3>Soportes/Resistencias</h3><span class="catg">Estructura</span><button class="info-btn" data-explain="sr">â¹ï¸ CÃ³mo leerlo</button></div>
+    <div class="module-desc">Niveles automÃ¡ticos por marco temporal: combina pivotes de precio, Fibonacci y pivote trimestral.</div>
+    <div class="module-explainer" id="explain-sr">Detecta soportes y resistencias como lo harÃ­as a mano: junta los mÃ¡ximos/mÃ­nimos donde el precio girÃ³, los niveles de Fibonacci del rango reciente y el pivote trimestral, agrupando los que caen muy cerca entre sÃ­ en "zonas de confluencia" (mÃ¡s confiables cuantas mÃ¡s fuentes coincidan). Muestra el soporte y la resistencia mÃ¡s cercanos al precio actual en cada marco temporal. â² = mÃ¡s cerca del soporte (zona de compra); â¼ = mÃ¡s cerca de la resistencia (zona de venta).</div>
+    <div class="module-off-banner">â¸ Este indicador estÃ¡ desactivado â no se incluye en el veredicto general.</div>
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-sr"></div>
     <div class="module-score" id="score-sr"></div>
@@ -663,7 +663,7 @@
   <!-- Final verdict -->
   <div class="verdict" id="verdict">
     <div class="eyebrow">Veredicto general</div>
-    <div class="headline"><span id="vIcon"></span><span id="vTitle">—</span><span class="chip" id="vChip"></span></div>
+    <div class="headline"><span id="vIcon"></span><span id="vTitle">â</span><span class="chip" id="vChip"></span></div>
     <p id="vText"></p>
     <div class="breakdown" id="breakdown"></div>
   </div>
@@ -672,13 +672,13 @@
   <div class="movement" id="movement">
     <div class="movement-top">
       <h3>Mapa de movimiento probable</h3>
-      <button class="btn-resim" id="alertToggle">🔔 Vigilar niveles</button>
+      <button class="btn-resim" id="alertToggle">ð Vigilar niveles</button>
     </div>
     <div class="alert-status" id="alertStatus"></div>
-    <div class="movdesc">Un único escenario, calculado directamente de tu análisis: la línea central extrapola la <strong>tendencia real reciente</strong> (regresión de precios) ajustada por el veredicto general de los 8 módulos. La banda sombreada es la <strong>volatilidad histórica real</strong> del ticker, no una suposición — se ensancha con el tiempo porque cuanto más lejos miras, menos certeza hay. Mismo ticker y mismos datos → mismo resultado siempre.</div>
+    <div class="movdesc">Un Ãºnico escenario, calculado directamente de tu anÃ¡lisis: la lÃ­nea central extrapola la <strong>tendencia real reciente</strong> (regresiÃ³n de precios) ajustada por el veredicto general de los 8 mÃ³dulos. La banda sombreada es la <strong>volatilidad histÃ³rica real</strong> del ticker, no una suposiciÃ³n â se ensancha con el tiempo porque cuanto mÃ¡s lejos miras, menos certeza hay. Mismo ticker y mismos datos â mismo resultado siempre.</div>
     <div class="tf-selector" id="movTfSelector"></div>
     <div class="chart-fs-wrap" id="chartFsWrap-movement">
-    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-movement" title="Pantalla completa">⛶</button>
+    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-movement" title="Pantalla completa">â¶</button>
     <div id="movementSvg"></div>
     </div>
     <div class="mov-evidence" id="movEvidence"></div>
@@ -689,29 +689,29 @@
       <span><i style="background:#34C6C6"></i> Media 50 (media)</span>
       <span><i style="background:#E8607A"></i> Media 20 (corta)</span>
       <span><i style="background:#5B8DEF"></i> Escenario central</span>
-      <span><i style="background:#5B8DEF; opacity:.25"></i> Banda de incertidumbre (±1σ, ±2σ)</span>
-      <span><i style="background:#F2B84B"></i> Nivel de invalidación</span>
+      <span><i style="background:#5B8DEF; opacity:.25"></i> Banda de incertidumbre (Â±1Ï, Â±2Ï)</span>
+      <span><i style="background:#F2B84B"></i> Nivel de invalidaciÃ³n</span>
     </div>
-    <div class="caveat">Esto NO es magia ni una predicción garantizada: es la continuación matemática de la tendencia y volatilidad que ya existían en los datos, ajustada por lo que marcan tus indicadores hoy. Un dato de noticias, resultados trimestrales o cualquier evento inesperado puede invalidarlo en cualquier momento — por eso existe la banda de incertidumbre, y por eso crece cuanto más al futuro miras. En marcos temporales intradía el eje de tiempo es aproximado (no reproduce el horario exacto de mercado).</div>
+    <div class="caveat">Esto NO es magia ni una predicciÃ³n garantizada: es la continuaciÃ³n matemÃ¡tica de la tendencia y volatilidad que ya existÃ­an en los datos, ajustada por lo que marcan tus indicadores hoy. Un dato de noticias, resultados trimestrales o cualquier evento inesperado puede invalidarlo en cualquier momento â por eso existe la banda de incertidumbre, y por eso crece cuanto mÃ¡s al futuro miras. En marcos temporales intradÃ­a el eje de tiempo es aproximado (no reproduce el horario exacto de mercado).</div>
   </div>
   </div></div>
 
   <!-- Walk-forward strategy backtest -->
   <div class="backtest-card" id="backtestCard">
     <div class="bt-head">
-      <h3>🤖 Backtest de Estrategia (Walk-Forward)</h3>
-      <button class="btn-bt" id="runBacktestBtn" type="button">▶ Correr backtest</button>
+      <h3>ð¤ Backtest de Estrategia (Walk-Forward)</h3>
+      <button class="btn-bt" id="runBacktestBtn" type="button">â¶ Correr backtest</button>
     </div>
-    <div class="bt-desc">Simula día por día, con datos diarios, qué habría dicho el veredicto general de esta app en el pasado — usando <strong>solo información disponible hasta ese día</strong>, sin ver el futuro — y qué le habría pasado a tu dinero siguiéndolo (solo largos: comprado cuando el veredicto es alcista, en efectivo cuando deja de serlo). Usa exactamente los indicadores que tengas prendidos ahora mismo (los del método/pestaña activa) — apaga o cambia de método antes de correrlo para probar esa combinación específica. Solo cuentan los calculables desde velas diarias; corre sobre todo el historial que Twelve Data tenga disponible para el ticker.</div>
-    <div class="bt-desc" style="margin-top:0;">⚙ Configuración de indicadores (opcional) — ajusta los umbrales que usa el backtest para calcular la señal de cada indicador. Por defecto Williams %R compra cuando cruza por encima de -95 y vende cuando cruza por encima de -2; cambia los valores si prefieres otra interpretación.</div>
+    <div class="bt-desc">Simula dÃ­a por dÃ­a, con datos diarios, quÃ© habrÃ­a dicho el veredicto general de esta app en el pasado â usando <strong>solo informaciÃ³n disponible hasta ese dÃ­a</strong>, sin ver el futuro â y quÃ© le habrÃ­a pasado a tu dinero siguiÃ©ndolo (solo largos: comprado cuando el veredicto es alcista, en efectivo cuando deja de serlo). Usa exactamente los indicadores que tengas prendidos ahora mismo (los del mÃ©todo/pestaÃ±a activa) â apaga o cambia de mÃ©todo antes de correrlo para probar esa combinaciÃ³n especÃ­fica. Solo cuentan los calculables desde velas diarias; corre sobre todo el historial que Twelve Data tenga disponible para el ticker.</div>
+    <div class="bt-desc" style="margin-top:0;">â ConfiguraciÃ³n de indicadores (opcional) â ajusta los umbrales que usa el backtest para calcular la seÃ±al de cada indicador. Por defecto Williams %R compra cuando cruza por encima de -95 y vende cuando cruza por encima de -2; cambia los valores si prefieres otra interpretaciÃ³n.</div>
     <div class="bt-startdate-row">
-      <label for="btWilliamsBuy">Williams %R — compra al cruzar sobre</label>
+      <label for="btWilliamsBuy">Williams %R â compra al cruzar sobre</label>
       <input type="number" id="btWilliamsBuy" step="0.1" min="-100" max="0" value="-95">
       <label for="btWilliamsSell" style="margin-left:12px;">vende al cruzar sobre</label>
       <input type="number" id="btWilliamsSell" step="0.1" min="-100" max="0" value="-2">
     </div>
     <div class="bt-startdate-row">
-      <button class="btn-bt" id="wOptimizeBtn" type="button" style="font-size:12px; padding:6px 12px;">🔍 Optimizar parámetros para este ticker</button>
+      <button class="btn-bt" id="wOptimizeBtn" type="button" style="font-size:12px; padding:6px 12px;">ð Optimizar parÃ¡metros para este ticker</button>
       <span class="bt-startdate-hint" id="wOptStatus"></span>
     </div>
     <div id="wOptResults"></div>
@@ -724,18 +724,18 @@
     <div class="bt-startdate-row">
       <label for="btTfRestrict">Operar solo en marco temporal</label>
       <select id="btTfRestrict">
-        <option value="daily" selected>Diario (como ahora — decide cada día)</option>
+        <option value="daily" selected>Diario (como ahora â decide cada dÃ­a)</option>
         <option value="weekly">Semanal (solo decide en cierres semanales)</option>
-        <option value="4h" disabled>4 horas (no disponible — poco historial)</option>
+        <option value="4h" disabled>4 horas (no disponible â poco historial)</option>
       </select>
     </div>
     <div class="bt-startdate-row">
       <label for="btStartDate">Empezar a operar desde</label>
       <input type="date" id="btStartDate">
-      <span class="bt-startdate-hint">opcional — vacío usa todo el historial disponible. Los indicadores igual usan datos de antes de esta fecha para "calentar" (medias de 200, etc.), pero las operaciones no empiezan hasta aquí.</span>
+      <span class="bt-startdate-hint">opcional â vacÃ­o usa todo el historial disponible. Los indicadores igual usan datos de antes de esta fecha para "calentar" (medias de 200, etc.), pero las operaciones no empiezan hasta aquÃ­.</span>
     </div>
     <div class="bt-caveats">
-      ⚠ Simplificación honesta: usa cierres diarios (no intradía), <strong>no incluye comisiones ni slippage</strong>, y la condición del "Setup Beardo" que originalmente mira la nube EMA de 4 horas aquí se aproxima con una nube EMA rápida en diario (no hay tantos años de historial en 4h como en diario). Esto es un ejercicio educativo sobre la lógica del analizador, no una simulación de ejecución real de bróker.
+      â  SimplificaciÃ³n honesta: usa cierres diarios (no intradÃ­a), <strong>no incluye comisiones ni slippage</strong>, y la condiciÃ³n del "Setup Beardo" que originalmente mira la nube EMA de 4 horas aquÃ­ se aproxima con una nube EMA rÃ¡pida en diario (no hay tantos aÃ±os de historial en 4h como en diario). Esto es un ejercicio educativo sobre la lÃ³gica del analizador, no una simulaciÃ³n de ejecuciÃ³n real de brÃ³ker.
     </div>
     <div id="btStatus" class="bt-status"></div>
     <div id="btResults" class="bt-results"></div>
@@ -745,14 +745,14 @@
   <!-- Movement guide calibration backtest -->
   <div class="backtest-card" id="movCalCard">
     <div class="bt-head">
-      <h3>📈 Calibración de la Guía de Movimiento</h3>
+      <h3>ð CalibraciÃ³n de la GuÃ­a de Movimiento</h3>
     </div>
-    <div class="bt-desc">Corre junto con el backtest de arriba (mismo botón, mismos datos ya descargados, sin gastar API extra). Prueba la guía de movimiento en muchos puntos del pasado, usando <strong>solo datos disponibles hasta cada fecha</strong> — sin ver el futuro — y compara la proyección contra lo que realmente pasó después. Es la forma honesta de saber si de verdad tiene puntería o solo se ve bien.</div>
+    <div class="bt-desc">Corre junto con el backtest de arriba (mismo botÃ³n, mismos datos ya descargados, sin gastar API extra). Prueba la guÃ­a de movimiento en muchos puntos del pasado, usando <strong>solo datos disponibles hasta cada fecha</strong> â sin ver el futuro â y compara la proyecciÃ³n contra lo que realmente pasÃ³ despuÃ©s. Es la forma honesta de saber si de verdad tiene punterÃ­a o solo se ve bien.</div>
     <div id="movCalResults" class="bt-results"></div>
   </div>
 
   <div class="disclaimer">
-    Todos los cálculos (SMA, EMA, Bollinger, RSI, Estocástico, Ichimoku, A/D, patrones de velas) se hacen en tu navegador a partir de datos históricos de mercado. Es un conjunto de indicadores técnicos y no considera fundamentales, noticias ni el libro de órdenes. Ninguna combinación de indicadores garantiza el movimiento futuro del precio. No constituye recomendación de inversión.
+    Todos los cÃ¡lculos (SMA, EMA, Bollinger, RSI, EstocÃ¡stico, Ichimoku, A/D, patrones de velas) se hacen en tu navegador a partir de datos histÃ³ricos de mercado. Es un conjunto de indicadores tÃ©cnicos y no considera fundamentales, noticias ni el libro de Ã³rdenes. Ninguna combinaciÃ³n de indicadores garantiza el movimiento futuro del precio. No constituye recomendaciÃ³n de inversiÃ³n.
   </div>
   </div>
 
@@ -766,7 +766,7 @@
         <button class="btn" id="portAddBtn" type="button">Agregar compra</button>
       </div>
       <div class="port-form-status" id="portFormStatus"></div>
-      <div class="port-form-hint" id="portFormHint">El precio se captura en la moneda que tengas seleccionada abajo (USD o MXN) y se convierte automáticamente a USD internamente (con el tipo de cambio del momento) para poder promediar compras hechas en distintas monedas. Puedes agregar varias compras del mismo ticker — se calcula el costo promedio ponderado automáticamente.</div>
+      <div class="port-form-hint" id="portFormHint">El precio se captura en la moneda que tengas seleccionada abajo (USD o MXN) y se convierte automÃ¡ticamente a USD internamente (con el tipo de cambio del momento) para poder promediar compras hechas en distintas monedas. Puedes agregar varias compras del mismo ticker â se calcula el costo promedio ponderado automÃ¡ticamente.</div>
     </div>
 
     <div class="port-form-card">
@@ -778,7 +778,7 @@
         <button class="btn" id="portSellBtn" type="button">Registrar venta</button>
       </div>
       <div class="port-form-status" id="portSellFormStatus"></div>
-      <div class="port-form-hint" id="portSellFormHint">Vende parte o toda tu posición en un ticker. La ganancia o pérdida realizada se calcula contra tu costo promedio ponderado y se acumula en el resumen del portafolio.</div>
+      <div class="port-form-hint" id="portSellFormHint">Vende parte o toda tu posiciÃ³n en un ticker. La ganancia o pÃ©rdida realizada se calcula contra tu costo promedio ponderado y se acumula en el resumen del portafolio.</div>
     </div>
 
     <div class="port-currency-row">
@@ -790,22 +790,22 @@
 
     <div class="port-form-card" id="portfolioSummary" style="display:none"></div>
 
-    <div class="port-empty" id="portfolioEmptyState">Aún no registras ninguna posición — agrega tu primera compra arriba.</div>
+    <div class="port-empty" id="portfolioEmptyState">AÃºn no registras ninguna posiciÃ³n â agrega tu primera compra arriba.</div>
     <div class="port-last-update-row">
       <div class="port-last-update" id="portLastUpdate"></div>
-      <button class="btn-resim" id="portRefreshBtn" type="button">🔄 Actualizar ahora</button>
+      <button class="btn-resim" id="portRefreshBtn" type="button">ð Actualizar ahora</button>
     </div>
     <div id="portfolioTable"></div>
 
     <div class="port-analysis-picker" id="portAnalysisPicker" style="display:none">
-      <label for="portTickerSelect">Análisis técnico completo (Scanner) de</label>
+      <label for="portTickerSelect">AnÃ¡lisis tÃ©cnico completo (Scanner) de</label>
       <select id="portTickerSelect"></select>
-      <button class="btn-ghost" id="portOpenScannerBtn" type="button">Abrir en Scanner →</button>
+      <button class="btn-ghost" id="portOpenScannerBtn" type="button">Abrir en Scanner â</button>
     </div>
-    <div class="port-no-position" id="portNoPositionMsg" style="display:none">Agrega una posición para ver sus niveles de soporte/resistencia.</div>
+    <div class="port-no-position" id="portNoPositionMsg" style="display:none">Agrega una posiciÃ³n para ver sus niveles de soporte/resistencia.</div>
     <div class="movements-card" id="movementsCard">
       <div class="movements-header">
-        <h3>📜 Historial de movimientos</h3>
+        <h3>ð Historial de movimientos</h3>
         <button class="btn-ghost" id="movementsToggleBtn" type="button">Ocultar</button>
       </div>
       <div id="portMovementsList" class="movements-list"></div>
@@ -814,12 +814,12 @@
 
   <div id="tabpanel-extended" class="tabpanel" style="display:none">
     <div class="port-form-card">
-      <h3>🌙 Horario extendido — archivo histórico</h3>
+      <h3>ð Horario extendido â archivo histÃ³rico</h3>
       <div class="ext-counter-row">
         <div class="ext-counter-bar"><div id="extCounterFill" class="ext-counter-fill"></div></div>
         <span id="extCounterText" class="ext-counter-text">0 de 70</span>
       </div>
-      <div class="port-form-hint">Se guarda 1 vez al día (pre-mercado, mercado y post-mercado) para cada ticker de esta lista, vía un job automático en GitHub — así el historial se acumula con el tiempo aunque el proveedor de datos solo retenga un mes. Los tickers de tu portafolio se agregan solos (mientras haya cupo); aquí puedes agregar otros manualmente.</div>
+      <div class="port-form-hint">Se guarda 1 vez al dÃ­a (pre-mercado, mercado y post-mercado) para cada ticker de esta lista, vÃ­a un job automÃ¡tico en GitHub â asÃ­ el historial se acumula con el tiempo aunque el proveedor de datos solo retenga un mes. Los tickers de tu portafolio se agregan solos (mientras haya cupo); aquÃ­ puedes agregar otros manualmente.</div>
       <div class="port-form-row">
         <input id="extTickerInput" type="text" placeholder="Ticker, ej. NVDA" autocomplete="off" spellcheck="false">
         <button class="btn" id="extAddBtn" type="button">Agregar a la lista</button>
@@ -833,13 +833,13 @@
 
 <div class="overlay" id="overlay">
   <div class="modal">
-    <h2>Clave de API — Twelve Data</h2>
-    <p>Regístrate gratis en <a href="https://twelvedata.com" target="_blank" rel="noopener" style="color:var(--accent)">twelvedata.com</a>, copia tu API key y pégala aquí. Se guarda solo en este navegador (localStorage).</p>
-    <input id="apiKeyInput" type="text" placeholder="Pega tu API key aquí" autocomplete="off" spellcheck="false">
+    <h2>Clave de API â Twelve Data</h2>
+    <p>RegÃ­strate gratis en <a href="https://twelvedata.com" target="_blank" rel="noopener" style="color:var(--accent)">twelvedata.com</a>, copia tu API key y pÃ©gala aquÃ­. Se guarda solo en este navegador (localStorage).</p>
+    <input id="apiKeyInput" type="text" placeholder="Pega tu API key aquÃ­" autocomplete="off" spellcheck="false">
 
     <div style="border-top:1px solid var(--line); margin:18px 0 14px; padding-top:14px;">
       <h2 style="font-size:14px;">Respaldo de datos</h2>
-      <p>Tu portafolio, métodos y configuración se guardan solo en este navegador. Descarga un respaldo para no perderlos, o cárgalo en otro dispositivo.</p>
+      <p>Tu portafolio, mÃ©todos y configuraciÃ³n se guardan solo en este navegador. Descarga un respaldo para no perderlos, o cÃ¡rgalo en otro dispositivo.</p>
       <div class="modal-actions" style="justify-content:flex-start; gap:8px; flex-wrap:wrap;">
         <button class="btn-ghost" id="exportBackupBtn" type="button">Descargar respaldo</button>
         <button class="btn-ghost" id="importBackupBtn" type="button">Cargar respaldo</button>
@@ -850,7 +850,7 @@
 
     <div style="border-top:1px solid var(--line); margin:14px 0 14px; padding-top:14px;">
       <h2 style="font-size:14px;">Sincronizar en la nube (GitHub)</h2>
-      <p>Guarda tus datos en un repositorio <strong>privado</strong> de GitHub para abrirlos desde cualquier navegador. Crea un repositorio nuevo y privado (no el del código, que es público) y genera un token de acceso personal "fine-grained" con permiso de lectura/escritura de "Contents" limitado a ese repositorio. No compartas ese token; se guarda solo en este navegador.</p>
+      <p>Guarda tus datos en un repositorio <strong>privado</strong> de GitHub para abrirlos desde cualquier navegador. Crea un repositorio nuevo y privado (no el del cÃ³digo, que es pÃºblico) y genera un token de acceso personal "fine-grained" con permiso de lectura/escritura de "Contents" limitado a ese repositorio. No compartas ese token; se guarda solo en este navegador.</p>
       <input id="cloudRepoInput" type="text" placeholder="usuario/repositorio-privado" autocomplete="off" spellcheck="false">
       <input id="cloudTokenInput" type="password" placeholder="Token de acceso personal (GitHub)" autocomplete="off" spellcheck="false" style="margin-top:8px;">
       <div class="modal-actions" style="justify-content:flex-start; gap:8px; flex-wrap:wrap; margin-top:10px;">
@@ -904,7 +904,7 @@
     "ta_scanner_extended_hours_tickers",
     "ta_scanner_portfolio_movements"
   ];
-  const AX_ACCESS_HASH = "5cf59e59810ac3473021c7aefe27c2e5da1fb6a466d6900ddd48111c259b4572";
+  const AX_ACCESS_HASH = "8f80ce2522b7ddadbc00d2ee13ea443fc6230f04d279f4a1b081c2ab6bf1672e";
   const AX_CLIENT_ID = Math.random().toString(36).slice(2) + Date.now().toString(36);
 
   async function ax_sha256hex(str){
@@ -1115,12 +1115,12 @@
   const API_BASE = "https://api.twelvedata.com";
   const STORAGE_KEY = "ma_scanner_td_apikey";
 
-  // Timeframes shown shortest → longest. Order encodes granularity, used everywhere.
+  // Timeframes shown shortest â longest. Order encodes granularity, used everywhere.
   const TIMEFRAMES = [
-    { key:"5min",  label:"5m",  kind:"direct", interval:"5min",  outputsize:900 },  // buffer for 10min derive (needs enough after ÷2)
+    { key:"5min",  label:"5m",  kind:"direct", interval:"5min",  outputsize:900 },  // buffer for 10min derive (needs enough after Ã·2)
     { key:"10min", label:"10m", kind:"derive", base:"5min",      group:2 },
     { key:"30min", label:"30m", kind:"direct", interval:"30min", outputsize:230 },
-    { key:"60min", label:"1h",  kind:"direct", interval:"1h",    outputsize:900 },  // buffer for 3h derive (needs enough after ÷3)
+    { key:"60min", label:"1h",  kind:"direct", interval:"1h",    outputsize:900 },  // buffer for 3h derive (needs enough after Ã·3)
     { key:"2h",    label:"2h",  kind:"direct", interval:"2h",    outputsize:230 },
     { key:"3h",    label:"3h",  kind:"derive", base:"60min",     group:3 },
     { key:"4h",    label:"4h",  kind:"direct", interval:"4h",    outputsize:230 },
@@ -1133,7 +1133,7 @@
 
   // ---- Which timeframes each module actually needs. Most modules render a
   // ladder/chip across all 10 timeframes, so enabling ANY of those pulls in
-  // everything. A handful of modules only look at one or a few timeframes —
+  // everything. A handful of modules only look at one or a few timeframes â
   // if ONLY those are enabled, we can skip fetching the rest entirely. ----
   const FULL_LADDER_MODULES = ["sma","ema","emacloud","bb","rsi","stoch","ichi","vwap","ad","patterns","williams","emacloud2050","emacloud50100","sr"];
   const LIMITED_TF_NEEDS = { heikin:["1week"], setup:["1week","1day","4h"], rel:["1day"] };
@@ -1162,7 +1162,7 @@
   }
 
   // Counts how many *fresh* (not already cached) API calls a run would need
-  // right now, given the ticker/benchmark and which modules are enabled —
+  // right now, given the ticker/benchmark and which modules are enabled â
   // used to show an honest time estimate before/while fetching.
   function countFreshCallsNeeded(symbol, benchmarkSymbol, enabled, movementTf){
     let n = 0;
@@ -1198,7 +1198,7 @@
   function getApiKey(){ try { return localStorage.getItem(STORAGE_KEY) || ""; } catch(e){ return ""; } }
   function setApiKey(k){
     if(!safeLocalStorageSet(STORAGE_KEY, k)){
-      setStatus("⚠ No se pudo guardar tu API key en este dispositivo (almacenamiento lleno o bloqueado) — tendrás que volver a pegarla la próxima vez que abras la app.", true);
+      setStatus("â  No se pudo guardar tu API key en este dispositivo (almacenamiento lleno o bloqueado) â tendrÃ¡s que volver a pegarla la prÃ³xima vez que abras la app.", true);
     }
   }
 
@@ -1219,7 +1219,7 @@
     return { version: 1, exportedAt: new Date().toISOString(), data: data };
   }
   function applyBackupData(payload){
-    if(!payload || typeof payload !== "object" || !payload.data) throw new Error("Archivo de respaldo inválido.");
+    if(!payload || typeof payload !== "object" || !payload.data) throw new Error("Archivo de respaldo invÃ¡lido.");
     Object.keys(payload.data).forEach(k => {
       if(BACKUP_KEYS.indexOf(k) === -1) return;
       localStorage.setItem(k, payload.data[k]);
@@ -1273,7 +1273,7 @@
   function cloudRepoParts(){
     const raw = cloudRepoInput.value.trim();
     const parts = raw.split("/").map(s => s.trim()).filter(Boolean);
-    if(parts.length !== 2) throw new Error("Repositorio inválido. Usa el formato usuario/repositorio.");
+    if(parts.length !== 2) throw new Error("Repositorio invÃ¡lido. Usa el formato usuario/repositorio.");
     return { owner: parts[0], repo: parts[1] };
   }
 
@@ -1298,7 +1298,7 @@
         headers: { "Authorization": "Bearer " + token, "Accept": "application/vnd.github+json", "Content-Type": "application/json" },
         body: JSON.stringify(body)
       });
-      if(!putRes.ok){ const errBody = await putRes.text(); throw new Error("GitHub respondió HTTP " + putRes.status + ": " + errBody.slice(0,150)); }
+      if(!putRes.ok){ const errBody = await putRes.text(); throw new Error("GitHub respondiÃ³ HTTP " + putRes.status + ": " + errBody.slice(0,150)); }
       setCloudStatus("Guardado en la nube.");
     }catch(e){ setCloudStatus("Error: " + e.message, true); }
   });
@@ -1312,8 +1312,8 @@
       setCloudStatus("Cargando...");
       const apiUrl = "https://api.github.com/repos/" + owner + "/" + repo + "/contents/" + CLOUD_PATH;
       const res = await fetch(apiUrl, { headers: { "Authorization": "Bearer " + token, "Accept": "application/vnd.github+json" } });
-      if(res.status === 404) throw new Error("Aún no hay respaldo guardado en ese repositorio.");
-      if(!res.ok) throw new Error("GitHub respondió HTTP " + res.status + ".");
+      if(res.status === 404) throw new Error("AÃºn no hay respaldo guardado en ese repositorio.");
+      if(!res.ok) throw new Error("GitHub respondiÃ³ HTTP " + res.status + ".");
       const j2 = await res.json();
       const text = decodeURIComponent(escape(atob(j2.content.replace(/\n/g,""))));
       const payload = JSON.parse(text);
@@ -1336,7 +1336,7 @@
   function updateEtaText(remaining, totalCalls){
     const el = $("etaText");
     if(remaining > 0){
-      el.textContent = "⏱ ~" + formatDuration(remaining) + " restantes (" + totalCalls + " petición" + (totalCalls===1?"":"es") + " a Twelve Data, límite 8/min)";
+      el.textContent = "â± ~" + formatDuration(remaining) + " restantes (" + totalCalls + " peticiÃ³n" + (totalCalls===1?"":"es") + " a Twelve Data, lÃ­mite 8/min)";
       el.style.display = "block";
     } else {
       el.style.display = "none";
@@ -1355,7 +1355,7 @@
   function stopEtaCountdown(){ clearInterval(etaInterval); $("etaText").style.display = "none"; }
 
   // ---- Prominent banner shown whenever the currently-active modules need
-  // data that wasn't fetched yet — much harder to miss than a status line. ----
+  // data that wasn't fetched yet â much harder to miss than a status line. ----
   function showDataMissingBanner(msg){
     const el = $("dataMissingBanner");
     el.innerHTML = `<span class="spin2"></span><span>${msg}</span>`;
@@ -1372,7 +1372,7 @@
   const RATE_LIMIT = 6; // kept below Twelve Data's real 8/min so overlapping refreshes and page reloads don't blow the server-side quota
   const RATE_WINDOW_MS = 60000;
   let callTimestamps = [];
-  let rateLimitWaiters = []; // { resolve, priority, ts } — queued requests waiting their turn. Higher-priority ones (a fresh "Analizar" click) jump ahead of queued-but-not-yet-started background ones; anything already mid-fetch is never interrupted.
+  let rateLimitWaiters = []; // { resolve, priority, ts } â queued requests waiting their turn. Higher-priority ones (a fresh "Analizar" click) jump ahead of queued-but-not-yet-started background ones; anything already mid-fetch is never interrupted.
   let rateLimitTimer = null;
   function pumpRateLimitQueue(){
     const now = Date.now();
@@ -1386,7 +1386,7 @@
     clearTimeout(rateLimitTimer);
     if(rateLimitWaiters.length){
       const waitMs = callTimestamps.length ? Math.max(300, RATE_WINDOW_MS - (now - callTimestamps[0]) + 300) : 500;
-      setStatus(`Límite de ${RATE_LIMIT} peticiones/min de Twelve Data alcanzado — esperando ${Math.ceil(waitMs/1000)}s para seguir (sin perder lo ya traído)…`);
+      setStatus(`LÃ­mite de ${RATE_LIMIT} peticiones/min de Twelve Data alcanzado â esperando ${Math.ceil(waitMs/1000)}s para seguir (sin perder lo ya traÃ­do)â¦`);
       rateLimitTimer = setTimeout(pumpRateLimitQueue, Math.min(waitMs, 4000));
     }
   }
@@ -1429,7 +1429,7 @@
   }
   let persistResponseCacheTimer = null;
   function persistResponseCache(){
-    // Debounced — a single analysis run can trigger many API responses in a
+    // Debounced â a single analysis run can trigger many API responses in a
     // burst (several timeframes, backtest series, etc.) and we don't want a
     // localStorage write per response.
     if(persistResponseCacheTimer) return;
@@ -1442,7 +1442,7 @@
       };
       try { dump(); }
       catch(e){
-        // Likely quota exceeded — drop the oldest half of entries (by
+        // Likely quota exceeded â drop the oldest half of entries (by
         // fetch time) and try once more; give up silently if it still
         // fails, the in-memory cache still works for this tab session.
         try {
@@ -1460,7 +1460,7 @@
   // No new candle can print while the market's closed, so treat cached
   // series as fresh until the next session instead of re-spending API
   // credits every few minutes during "dead time". US market holidays
-  // aren't accounted for (only the Mon-Fri 9:30-16:00 ET window) — on a
+  // aren't accounted for (only the Mon-Fri 9:30-16:00 ET window) â on a
   // holiday this just means one extra refetch when the app next expects
   // the market to be open.
   function getNyParts(date){
@@ -1483,7 +1483,7 @@
     date = date || new Date();
     if(isMarketOpenNow(date)) return 0;
     let t = date.getTime();
-    for(let i=0; i<400; i++){ // 15-min steps, ~100h ceiling — comfortably covers any long weekend
+    for(let i=0; i<400; i++){ // 15-min steps, ~100h ceiling â comfortably covers any long weekend
       t += 15*60*1000;
       if(isMarketOpenNow(new Date(t))) return t - date.getTime();
     }
@@ -1507,7 +1507,7 @@
 
   async function tdFetch(path, params, priority){
     const key = getApiKey();
-    if(!key){ overlay.style.display = "flex"; throw new Error("Falta tu API key de Twelve Data. Pégala en ⚙ API key."); }
+    if(!key){ overlay.style.display = "flex"; throw new Error("Falta tu API key de Twelve Data. PÃ©gala en â API key."); }
     const cacheKey = cacheKeyFor(path, params);
     const ttl = cacheTtlFor(path, params);
     const cached = RESPONSE_CACHE.get(cacheKey);
@@ -1524,27 +1524,27 @@
       try {
         res = await fetch(url.toString());
       } catch(networkErr){
-        // "Failed to fetch" from the browser itself — the request never
+        // "Failed to fetch" from the browser itself â the request never
         // reached Twelve Data. Often a brief blip (network hiccup, a
         // throttled background tab, a momentary extension race) rather than
         // something permanently wrong, so retry a couple of times with
         // backoff before giving up and explaining the likely causes.
         networkAttempt++;
         if(networkAttempt <= MAX_NETWORK_RETRIES){
-          setStatus(`Fallo de red al pedir datos (intento ${networkAttempt}/${MAX_NETWORK_RETRIES}) — reintentando…`, true);
+          setStatus(`Fallo de red al pedir datos (intento ${networkAttempt}/${MAX_NETWORK_RETRIES}) â reintentandoâ¦`, true);
           await sleep(1200 * networkAttempt);
           continue;
         }
         throw new Error(
-          "No se pudo conectar con Twelve Data tras " + MAX_NETWORK_RETRIES + " intentos (fetch falló antes de llegar al servidor). Causas más comunes: " +
-          "1) sin conexión a internet en este momento; " +
-          "2) un bloqueador de anuncios/privacidad (uBlock, Brave Shields, AdGuard, etc.) está bloqueando 'api.twelvedata.com' — pruébalo desactivado para esta página; " +
+          "No se pudo conectar con Twelve Data tras " + MAX_NETWORK_RETRIES + " intentos (fetch fallÃ³ antes de llegar al servidor). Causas mÃ¡s comunes: " +
+          "1) sin conexiÃ³n a internet en este momento; " +
+          "2) un bloqueador de anuncios/privacidad (uBlock, Brave Shields, AdGuard, etc.) estÃ¡ bloqueando 'api.twelvedata.com' â pruÃ©balo desactivado para esta pÃ¡gina; " +
           "3) un firewall/VPN corporativo o de red bloquea dominios externos. " +
-          "Revisa la consola del navegador (F12 → Console/Network) para ver el motivo exacto si esto se repite."
+          "Revisa la consola del navegador (F12 â Console/Network) para ver el motivo exacto si esto se repite."
         );
       }
       let data;
-      try { data = await res.json(); } catch(e){ throw new Error("Respuesta inválida del servidor de datos."); }
+      try { data = await res.json(); } catch(e){ throw new Error("Respuesta invÃ¡lida del servidor de datos."); }
       if(data && data.status === "error") throw new Error(data.message || "Error consultando datos de mercado.");
       if(res.status === 429 && rateAttempt < MAX_RATE_RETRIES){ rateAttempt++; await sleep(4000); continue; }
       RESPONSE_CACHE.set(cacheKey, { data, ts: Date.now() });
@@ -1710,7 +1710,7 @@
 
 
   // ---- Rolling historical series for RSI/Stochastic/Williams %R (used only
-  // to detect "near its own historical extreme" reversal zones — daily and
+  // to detect "near its own historical extreme" reversal zones â daily and
   // weekly timeframes only, see HIST_ALERT_TIMEFRAMES below). ----
   function rsiSeries(closesAsc, period=14){
     if(closesAsc.length < period+2) return [];
@@ -1771,9 +1771,9 @@
 
   function buildHistAlertMessage(label, tfLabel, current, currentPrice, extreme){
     if(!extreme) return null;
-    const dir = extreme.side === "low" ? "mínimo" : "máximo";
+    const dir = extreme.side === "low" ? "mÃ­nimo" : "mÃ¡ximo";
     const bias = extreme.side === "low" ? "alcista" : "bajista";
-    return "🔔 " + label + " " + tfLabel + " cerca de su " + dir + " histórico (" + current.toFixed(0) + ", " + dir + " registrado " + extreme.histExtreme.toFixed(0) + ") — posible zona de reversión " + bias + " cerca de $" + currentPrice.toFixed(2) + ".";
+    return "ð " + label + " " + tfLabel + " cerca de su " + dir + " histÃ³rico (" + current.toFixed(0) + ", " + dir + " registrado " + extreme.histExtreme.toFixed(0) + ") â posible zona de reversiÃ³n " + bias + " cerca de $" + currentPrice.toFixed(2) + ".";
   }
 
   function adLine(candlesAsc){
@@ -1790,7 +1790,7 @@
     return { rising: now > past, delta: now-past };
   }
 
-  // ---- EMA Cloud (fast EMA vs slow EMA — bullish/bearish regime ribbon) ----
+  // ---- EMA Cloud (fast EMA vs slow EMA â bullish/bearish regime ribbon) ----
   function emaCloud(closesAsc, fast=8, slow=21){
     const ef = emaSeries(closesAsc, fast), es = emaSeries(closesAsc, slow);
     if(ef===null || es===null) return null;
@@ -1852,7 +1852,7 @@
 
     const vwapD = daily ? anchoredVwapFromLow(daily, 100) : null;
     const c2 = vwapD ? currentPrice >= vwapD.vwap : null;
-    conditions.push({ id:"vwap", label:"Sobre el VWAP anclado desde mínimos", pass:c2 });
+    conditions.push({ id:"vwap", label:"Sobre el VWAP anclado desde mÃ­nimos", pass:c2 });
 
     let c3 = null;
     if(daily && daily.length>15){
@@ -1861,7 +1861,7 @@
       const sma10prev = smaArr(closes.slice(0,-5),10);
       if(sma10now!==null && sma10prev!==null) c3 = currentPrice>=sma10now && sma10now>sma10prev;
     }
-    conditions.push({ id:"ma10", label:"Sobre una media de 10 días ascendente", pass:c3 });
+    conditions.push({ id:"ma10", label:"Sobre una media de 10 dÃ­as ascendente", pass:c3 });
 
     let c4 = null;
     if(h4 && h4.length>25){
@@ -2024,13 +2024,13 @@
       found.push({pattern:"Envolvente Bajista", bias:"bearish"});
     }
     if(isBear(c2) && body(c2) > range(c2)*0.5 && body(c1) < body(c2)*0.4 && isBull(c0) && body(c0) > range(c0)*0.5 && c0.close > (c2.open+c2.close)/2){
-      found.push({pattern:"Estrella de la Mañana", bias:"bullish"});
+      found.push({pattern:"Estrella de la MaÃ±ana", bias:"bullish"});
     }
     if(isBull(c2) && body(c2) > range(c2)*0.5 && body(c1) < body(c2)*0.4 && isBear(c0) && body(c0) > range(c0)*0.5 && c0.close < (c2.open+c2.close)/2){
       found.push({pattern:"Estrella de la Tarde", bias:"bearish"});
     }
     if(body(c1) <= 0.1*range(c1)){
-      if(trendDown && isBull(c0) && c0.close > (c2.open+c2.close)/2) found.push({pattern:"Estrella de la Mañana Doji", bias:"bullish"});
+      if(trendDown && isBull(c0) && c0.close > (c2.open+c2.close)/2) found.push({pattern:"Estrella de la MaÃ±ana Doji", bias:"bullish"});
       if(trendUp && isBear(c0) && c0.close < (c2.open+c2.close)/2) found.push({pattern:"Estrella de la Tarde Doji", bias:"bearish"});
     }
     if(isBull(c2)&&isBull(c1)&&isBull(c0) && c1.close>c2.close && c0.close>c1.close && c1.open>c2.open && c1.open<c2.close && c0.open>c1.open && c0.open<c1.close){
@@ -2044,7 +2044,7 @@
 
   // ================= Analysis pipeline =================
   async function runAnalysis(symbol, benchmarkSymbol, enabled, movementTf, priority){
-    setStatus("Consultando solo lo necesario…");
+    setStatus("Consultando solo lo necesarioâ¦");
     setProgress(5);
     try {
     const seriesByTf = {};
@@ -2107,7 +2107,7 @@
       done++; setProgress(5 + (done/totalFetches)*70);
     } catch(err){
       const anyFetched = Object.values(seriesByTf).find(s => s && s.length);
-      if(!anyFetched) throw new Error("No se pudo obtener el precio actual ni ningún dato histórico para " + symbol + ".");
+      if(!anyFetched) throw new Error("No se pudo obtener el precio actual ni ningÃºn dato histÃ³rico para " + symbol + ".");
       currentPrice = anyFetched[anyFetched.length-1].close;
     }
     setProgress(92);
@@ -2116,7 +2116,7 @@
     TIMEFRAMES.forEach(tf => {
       const candles = seriesByTf[tf.key];
       if(!candles){
-        // Not fetched this round (module needing it was off) — mark as
+        // Not fetched this round (module needing it was off) â mark as
         // unavailable rather than crashing; renderers already handle "na".
         out.sma[tf.key] = {}; out.ema[tf.key] = {};
         PERIODS.forEach(p => { out.sma[tf.key][p] = {status:"na"}; out.ema[tf.key][p] = {status:"na"}; });
@@ -2142,8 +2142,8 @@
         let bbHistAlert = null;
         if(HIST_ALERT_TIMEFRAMES.includes(tf.key)){
           const percentB = (currentPrice - bb.lower) / ((bb.upper - bb.lower) || 1e-9);
-          if(percentB <= 0.15) bbHistAlert = { message: "🔔 Bollinger " + tf.label + " cerca de/rompiendo la banda inferior ($" + bb.lower.toFixed(2) + ") — posible zona de reversión alcista." };
-          else if(percentB >= 0.85) bbHistAlert = { message: "🔔 Bollinger " + tf.label + " cerca de/rompiendo la banda superior ($" + bb.upper.toFixed(2) + ") — posible zona de reversión bajista." };
+          if(percentB <= 0.15) bbHistAlert = { message: "ð Bollinger " + tf.label + " cerca de/rompiendo la banda inferior ($" + bb.lower.toFixed(2) + ") â posible zona de reversiÃ³n alcista." };
+          else if(percentB >= 0.85) bbHistAlert = { message: "ð Bollinger " + tf.label + " cerca de/rompiendo la banda superior ($" + bb.upper.toFixed(2) + ") â posible zona de reversiÃ³n bajista." };
         }
         out.bb[tf.key] = { status, extreme, value: bb.mid, histAlert: bbHistAlert };
       } else out.bb[tf.key] = { status:"na" };
@@ -2161,7 +2161,7 @@
       let stochHistAlert = null;
       if(st && HIST_ALERT_TIMEFRAMES.includes(tf.key)){
         const stochHist = nearHistoricalExtreme(stochKSeries(candles), st.k);
-        const msg = buildHistAlertMessage("Estocástico", tf.label, st.k, currentPrice, stochHist);
+        const msg = buildHistAlertMessage("EstocÃ¡stico", tf.label, st.k, currentPrice, stochHist);
         if(msg) stochHistAlert = { message: msg };
       }
       out.stoch[tf.key] = st ? { k:st.k, d:st.d, histAlert: stochHistAlert } : { status:"na" };
@@ -2177,7 +2177,7 @@
 
       // Opt-in extended-hours override: only kicks in on the 4h timeframe,
       // only for indicators the user explicitly flagged, and only when the
-      // archive actually produced usable candles — otherwise falls back to
+      // archive actually produced usable candles â otherwise falls back to
       // the regular-session `candles` used by every other indicator.
       const extCandles4h = (tf.key === "4h" && seriesByTf["4h_ext"] && seriesByTf["4h_ext"].length >= 2) ? seriesByTf["4h_ext"] : null;
       const williamsCandles = (moduleExtendedHours.williams && extCandles4h) ? extCandles4h : candles;
@@ -2226,7 +2226,7 @@
     setTimeout(()=>setProgress(null), 400);
     return out;
     } finally {
-      // no analyzeBtn.disabled handling here anymore — that's owned entirely by
+      // no analyzeBtn.disabled handling here anymore â that's owned entirely by
       // analyze() via userAnalyzing, so background cache-warming calls to this
       // same function never lock the button away from the user.
     }
@@ -2249,7 +2249,7 @@
   // Replays the app's own weighted-verdict logic one historical day at a
   // time, using only data available up to that day (no lookahead), and
   // simulates a long-only strategy following it. Reuses the exact same
-  // indicator functions as the live modules — just fed a trailing window
+  // indicator functions as the live modules â just fed a trailing window
   // instead of "up to now".
   const BT_WEIGHTS = { marketctx:1.3, sma:1, ema:1, emacloud:1, bb:0.8, rsi:0.8, stoch:0.7, ichi:1, vwap:0.8, ad:0.7, heikin:0.6, patterns:0.6, rel:0.6, setup:1.2, williams:0.7, emacloud2050:1, emacloud50100:1, sr:0.9 };
   const BT_WARMUP = 210;
@@ -2400,8 +2400,8 @@
     BT_INDICATOR_CONFIG.williams = { buyThresh: opt.buyThresh, sellThresh: opt.sellThresh };
     saveBtIndicatorConfig(BT_INDICATOR_CONFIG);
     if(statusEl){
-      const extra = (opt.totalReturn!=null && opt.tradeCount!=null) ? ` — validado con ${opt.totalReturn>=0?'+':''}${opt.totalReturn.toFixed(0)}% en backtest, ${opt.tradeCount} operaciones` : '';
-      statusEl.textContent = `✓ Usando parámetros optimizados para ${symbol} (compra ${opt.buyThresh} / vende ${opt.sellThresh}${extra}).`;
+      const extra = (opt.totalReturn!=null && opt.tradeCount!=null) ? ` â validado con ${opt.totalReturn>=0?'+':''}${opt.totalReturn.toFixed(0)}% en backtest, ${opt.tradeCount} operaciones` : '';
+      statusEl.textContent = `â Usando parÃ¡metros optimizados para ${symbol} (compra ${opt.buyThresh} / vende ${opt.sellThresh}${extra}).`;
     }
   }
 
@@ -2420,7 +2420,7 @@
   // slice of the daily series [segStartIdx, segEndIdxExclusive). Extracted
   // as its own function so both the single-period backtest AND the
   // multi-period walk-forward analysis below can reuse the exact same
-  // simulation logic without duplicating it — same indicators, same
+  // simulation logic without duplicating it â same indicators, same
   // decision rule, only the date range and the equity starting point (always
   // reset to 1 at the start of whatever segment is passed in) change.
   function simulateSegment(daily, weekly, weeklyDates, spyDaily, spyDates, qqqDaily, qqqDates, benchDaily, benchDates, segStartIdx, segEndIdxExclusive){
@@ -2486,7 +2486,7 @@
       scores.rel = relRes ? Math.max(-1,Math.min(1, relRes.excess/0.10)) : null;
 
       // Setup checklist approximation (condition 4 swaps the live 4h EMA
-      // cloud for a fast/slow daily EMA cloud — see the on-screen caveat).
+      // cloud for a fast/slow daily EMA cloud â see the on-screen caveat).
       let setupPass=0, setupTotal=0;
       if(haLast){ setupTotal++; if(haLast.close>=haLast.open) setupPass++; }
       if(vwapRes){ setupTotal++; if(price>=vwapRes.vwap) setupPass++; }
@@ -2526,7 +2526,7 @@
       scores.sr = srBtScore;
 
       // Only modules with an actual computable value this day count toward
-      // the weighted average — missing data (e.g. SPY/QQQ/weekly history
+      // the weighted average â missing data (e.g. SPY/QQQ/weekly history
       // not reaching this far back) is excluded, not treated as a diluting
       // "neutral" vote. This matters most in the earliest years of very
       // long histories, where auxiliary series may not extend as far back
@@ -2613,7 +2613,7 @@
     };
   }
 
-  // Single-period backtest — thin wrapper around simulateSegment covering the
+  // Single-period backtest â thin wrapper around simulateSegment covering the
   // whole available (or user-restricted via startDateStr) date range.
   function runBacktest(daily, weekly, spyDaily, qqqDaily, benchDaily, startDateStr){
     const n = daily.length;
@@ -2657,7 +2657,7 @@
   // different market regimes, or whether it's really just one lucky window.
   //
   // Note on methodology: this app's verdict logic uses FIXED module weights
-  // (BT_WEIGHTS above) — nothing is fit/optimized on historical data — so
+  // (BT_WEIGHTS above) â nothing is fit/optimized on historical data â so
   // there are no parameters that could "overfit" to a training set in the
   // way a fitted model's would. That's why this splits the data into
   // sequential out-of-sample blocks rather than a train/validation/test
@@ -2709,7 +2709,7 @@
     $("pcAsof").textContent = "actualizado ahora";
     priceCard.style.display = "flex";
   }
-  function formatPrice(v){ return (v===null||v===undefined) ? "—" : v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function formatPrice(v){ return (v===null||v===undefined) ? "â" : v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
   function scoreChip(score){
     if(score >= 0.5) return {cls:"bull", txt:"ALCISTA"};
@@ -2727,7 +2727,7 @@
     chip.textContent = s.txt;
     c.appendChild(chip);
     const txt = document.createElement("span");
-    txt.textContent = "score " + (score>=0?"+":"") + score.toFixed(2) + (extraNote ? " · " + extraNote : "");
+    txt.textContent = "score " + (score>=0?"+":"") + score.toFixed(2) + (extraNote ? " Â· " + extraNote : "");
     c.appendChild(txt);
   }
 
@@ -2745,7 +2745,7 @@
         cell.className = "cell " + (r.status==="na" ? "na" : r.status);
         const plab = document.createElement("div"); plab.className="plab mono"; plab.textContent = p;
         const sig = document.createElement("div"); sig.className="sig";
-        sig.textContent = r.status==="na" ? "·" : (r.status==="above" ? "▲" : "▼");
+        sig.textContent = r.status==="na" ? "Â·" : (r.status==="above" ? "â²" : "â¼");
         cell.appendChild(plab); cell.appendChild(sig);
         cells.appendChild(cell);
       });
@@ -2782,11 +2782,11 @@
     const alerts = [];
     TIMEFRAMES.forEach(tf => {
       const r = data[tf.key];
-      if(r.status==="na"){ el.appendChild(chipEl(tf.label,"·","neutral")); return; }
+      if(r.status==="na"){ el.appendChild(chipEl(tf.label,"Â·","neutral")); return; }
       valid++; if(r.status==="above") above++; else below++;
       const cls = r.status==="above" ? "up" : "down";
       const badge = r.extreme === "overbought" ? "sobrecompra" : (r.extreme==="oversold" ? "sobreventa" : "");
-      el.appendChild(chipEl(tf.label, r.status==="above"?"▲":"▼", cls, badge, !!r.extreme));
+      el.appendChild(chipEl(tf.label, r.status==="above"?"â²":"â¼", cls, badge, !!r.extreme));
       if(r.histAlert) alerts.push(r.histAlert.message);
     });
     setModuleAlert("alert-bb", alerts);
@@ -2799,7 +2799,7 @@
     const alerts = [];
     TIMEFRAMES.forEach(tf => {
       const r = data[tf.key];
-      if(r.status==="na"){ el.appendChild(chipEl(tf.label,"·","neutral")); return; }
+      if(r.status==="na"){ el.appendChild(chipEl(tf.label,"Â·","neutral")); return; }
       valid++;
       const cls = r.value>60 ? "up" : (r.value<40 ? "down" : "neutral");
       const badge = r.value>70 ? "sobrecompra" : (r.value<30 ? "sobreventa" : (r.rising?"subiendo":"bajando"));
@@ -2817,7 +2817,7 @@
     const alerts = [];
     TIMEFRAMES.forEach(tf => {
       const r = data[tf.key];
-      if(r.status==="na"){ el.appendChild(chipEl(tf.label,"·","neutral")); return; }
+      if(r.status==="na"){ el.appendChild(chipEl(tf.label,"Â·","neutral")); return; }
       valid++;
       const cls = r.k>60 ? "up" : (r.k<40 ? "down" : "neutral");
       const badge = r.k>80 ? "sobrecompra" : (r.k<20 ? "sobreventa" : (r.k>=r.d?"K>D":"K<D"));
@@ -2835,7 +2835,7 @@
     const alerts = [];
     TIMEFRAMES.forEach(tf => {
       const r = data[tf.key];
-      if(r.status==="na"){ el.appendChild(chipEl(tf.label,"·","neutral")); return; }
+      if(r.status==="na"){ el.appendChild(chipEl(tf.label,"Â·","neutral")); return; }
       valid++;
       const cls = r.value>-50 ? "up" : "down";
       const badge = r.value>-20 ? "sobrecompra" : (r.value<-80 ? "sobreventa" : (r.rising?"subiendo":"bajando"));
@@ -2852,10 +2852,10 @@
     let sum=0, valid=0;
     TIMEFRAMES.forEach(tf => {
       const r = data[tf.key];
-      if(!r || r.status==="na"){ el.appendChild(chipEl(tf.label,"·","neutral")); return; }
+      if(!r || r.status==="na"){ el.appendChild(chipEl(tf.label,"Â·","neutral")); return; }
       valid++;
       sum += r.bullish ? 1 : -1;
-      el.appendChild(chipEl(tf.label, r.bullish?"▲":"▼", r.bullish?"up":"down"));
+      el.appendChild(chipEl(tf.label, r.bullish?"â²":"â¼", r.bullish?"up":"down"));
     });
     return valid ? sum/valid : 0;
   }
@@ -2865,9 +2865,9 @@
     let sum=0, valid=0;
     TIMEFRAMES.forEach(tf => {
       const r = data[tf.key];
-      if(!r || r.status==="na"){ el.appendChild(chipEl(tf.label,"·","neutral")); return; }
+      if(!r || r.status==="na"){ el.appendChild(chipEl(tf.label,"Â·","neutral")); return; }
       valid++;
-      const val = r.nearer==="support" ? "▲" : "▼";
+      const val = r.nearer==="support" ? "â²" : "â¼";
       const cls = r.score>0.15 ? "up" : (r.score<-0.15 ? "down" : "neutral");
       sum += r.score;
       el.appendChild(chipEl(tf.label, val, cls, r.label, Math.abs(r.score)>0.6));
@@ -2880,13 +2880,13 @@
     let sum=0, valid=0;
     TIMEFRAMES.forEach(tf => {
       const r = data[tf.key];
-      if(r.status==="na"){ el.appendChild(chipEl(tf.label,"·","neutral")); return; }
+      if(r.status==="na"){ el.appendChild(chipEl(tf.label,"Â·","neutral")); return; }
       valid++;
-      const val = r.status==="above" ? "▲" : (r.status==="below" ? "▼" : "◆");
+      const val = r.status==="above" ? "â²" : (r.status==="below" ? "â¼" : "â");
       const cls = r.status==="above" ? "up" : (r.status==="below" ? "down" : "neutral");
       const score = r.status==="above" ? 1 : (r.status==="below" ? -1 : 0);
       sum += score;
-      el.appendChild(chipEl(tf.label, val, cls, r.tkBull ? "TK▲" : "TK▼"));
+      el.appendChild(chipEl(tf.label, val, cls, r.tkBull ? "TKâ²" : "TKâ¼"));
     });
     return valid ? sum/valid : 0;
   }
@@ -2896,10 +2896,10 @@
     let sum=0, valid=0;
     TIMEFRAMES.forEach(tf => {
       const r = data[tf.key];
-      if(r.status==="na"){ el.appendChild(chipEl(tf.label,"·","neutral")); return; }
+      if(r.status==="na"){ el.appendChild(chipEl(tf.label,"Â·","neutral")); return; }
       valid++;
       sum += r.rising ? 1 : -1;
-      el.appendChild(chipEl(tf.label, r.rising?"▲":"▼", r.rising?"up":"down", r.rising?"acumulación":"distribución"));
+      el.appendChild(chipEl(tf.label, r.rising?"â²":"â¼", r.rising?"up":"down", r.rising?"acumulaciÃ³n":"distribuciÃ³n"));
     });
     return valid ? sum/valid : 0;
   }
@@ -2913,7 +2913,7 @@
       row.appendChild(lab);
       const found = data[tf.key];
       if(!found || !found.length){
-        const none = document.createElement("span"); none.className="none"; none.textContent = "sin patrón relevante";
+        const none = document.createElement("span"); none.className="none"; none.textContent = "sin patrÃ³n relevante";
         row.appendChild(none);
       } else {
         found.forEach(p => {
@@ -2938,7 +2938,7 @@
       return 0;
     }
     if(benchmark.error || !benchmark.series){
-      el.innerHTML = `<div class="rel-excess">No se pudo obtener "${bench}" (${benchmark.error||'ticker inválido'}). Prueba con SPY, QQQ, o un ETF de sector válido.</div>`;
+      el.innerHTML = `<div class="rel-excess">No se pudo obtener "${bench}" (${benchmark.error||'ticker invÃ¡lido'}). Prueba con SPY, QQQ, o un ETF de sector vÃ¡lido.</div>`;
       return 0;
     }
     const rel = computeRelativeStrength(seriesByTf["1day"], benchmark.series, 60);
@@ -2946,7 +2946,7 @@
       el.innerHTML = `<div class="rel-excess">Historial insuficiente para comparar.</div>`;
       return 0;
     }
-    $("rel-desc").textContent = `Compara el rendimiento de los últimos ${rel.lookback} días de mercado contra ${bench}. Si el ticker sube pero rinde menos que ${bench}, es debilidad relativa aunque el precio suba.`;
+    $("rel-desc").textContent = `Compara el rendimiento de los Ãºltimos ${rel.lookback} dÃ­as de mercado contra ${bench}. Si el ticker sube pero rinde menos que ${bench}, es debilidad relativa aunque el precio suba.`;
     const maxAbs = Math.max(Math.abs(rel.tickerRet), Math.abs(rel.benchRet), 0.05);
     function barRow(label, val){
       const pct = (val*100).toFixed(1);
@@ -2963,7 +2963,7 @@
     html += barRow(bench, rel.benchRet);
     html += `</div>`;
     const outperform = rel.excess >= 0;
-    html += `<div class="rel-excess">${outperform?'✅ Superando':'⚠ Rindiendo por debajo de'} ${bench} por <b>${outperform?'+':''}${(rel.excess*100).toFixed(1)}%</b> en ${rel.lookback} días.</div>`;
+    html += `<div class="rel-excess">${outperform?'â Superando':'â  Rindiendo por debajo de'} ${bench} por <b>${outperform?'+':''}${(rel.excess*100).toFixed(1)}%</b> en ${rel.lookback} dÃ­as.</div>`;
     el.innerHTML = html;
     return Math.max(-1, Math.min(1, rel.excess/0.10));
   }
@@ -2978,8 +2978,8 @@
       const reasons = [];
       if(marketErrors.SPY) reasons.push("SPY: " + marketErrors.SPY);
       if(marketErrors.QQQ) reasons.push("QQQ: " + marketErrors.QQQ);
-      const detail = reasons.length ? reasons.join(" · ") : "sin detalle del error (puede ser un problema momentáneo de red).";
-      el.innerHTML = `<div class="rel-excess">⚠ No se pudo obtener SPY/QQQ en este análisis. Motivo: ${detail} — vuelve a pulsar Analizar para reintentar.</div>`;
+      const detail = reasons.length ? reasons.join(" Â· ") : "sin detalle del error (puede ser un problema momentÃ¡neo de red).";
+      el.innerHTML = `<div class="rel-excess">â  No se pudo obtener SPY/QQQ en este anÃ¡lisis. Motivo: ${detail} â vuelve a pulsar Analizar para reintentar.</div>`;
       return 0;
     }
     const cloudSpy = spy ? emaCloud(spy.map(c=>c.close)) : null;
@@ -2990,19 +2990,19 @@
     ];
     let html = `<div class="chiprow">`;
     rows.forEach(r => {
-      if(!r.cloud){ html += chipHtml(r.label, "·", "neutral", r.error ? "no disponible" : ""); return; }
-      html += chipHtml(r.label, r.cloud.bullish ? "▲ Nube alcista" : "▼ Nube bajista", r.cloud.bullish ? "up":"down");
+      if(!r.cloud){ html += chipHtml(r.label, "Â·", "neutral", r.error ? "no disponible" : ""); return; }
+      html += chipHtml(r.label, r.cloud.bullish ? "â² Nube alcista" : "â¼ Nube bajista", r.cloud.bullish ? "up":"down");
     });
     html += `</div>`;
     const partialErrors = rows.filter(r=>r.error).map(r=>r.label+": "+r.error);
-    if(partialErrors.length) html += `<div class="rel-excess">⚠ ${partialErrors.join(' · ')}</div>`;
+    if(partialErrors.length) html += `<div class="rel-excess">â  ${partialErrors.join(' Â· ')}</div>`;
     const bullCount = rows.filter(r=>r.cloud && r.cloud.bullish).length;
     const validCount = rows.filter(r=>r.cloud).length;
     let verdictTxt, score;
     if(validCount===0){ verdictTxt = "Sin datos suficientes."; score = 0; }
-    else if(bullCount===validCount){ verdictTxt = "✅ Mercado con viento a favor — más fácil sostener posiciones largas."; score = 1; }
-    else if(bullCount===0){ verdictTxt = "⚠ Mercado con viento en contra — cautela con nuevas posiciones largas."; score = -1; }
-    else { verdictTxt = "◆ Mercado mixto — SPY y QQQ no coinciden, señal de precaución."; score = 0; }
+    else if(bullCount===validCount){ verdictTxt = "â Mercado con viento a favor â mÃ¡s fÃ¡cil sostener posiciones largas."; score = 1; }
+    else if(bullCount===0){ verdictTxt = "â  Mercado con viento en contra â cautela con nuevas posiciones largas."; score = -1; }
+    else { verdictTxt = "â Mercado mixto â SPY y QQQ no coinciden, seÃ±al de precauciÃ³n."; score = 0; }
     html += `<div class="rel-excess">${verdictTxt}</div>`;
     el.innerHTML = html;
     return score;
@@ -3018,10 +3018,10 @@
     TIMEFRAMES.forEach(tf => {
       const series = seriesByTf[tf.key];
       const cloud = series ? emaCloud(series.map(c=>c.close)) : null;
-      if(!cloud){ el.appendChild(chipEl(tf.label, "·", "neutral")); return; }
+      if(!cloud){ el.appendChild(chipEl(tf.label, "Â·", "neutral")); return; }
       valid++;
       sum += cloud.bullish ? 1 : -1;
-      el.appendChild(chipEl(tf.label, cloud.bullish?"▲":"▼", cloud.bullish?"up":"down"));
+      el.appendChild(chipEl(tf.label, cloud.bullish?"â²":"â¼", cloud.bullish?"up":"down"));
     });
     return valid ? sum/valid : 0;
   }
@@ -3032,11 +3032,11 @@
     TIMEFRAMES.forEach(tf => {
       const series = seriesByTf[tf.key];
       const v = series ? anchoredVwapFromLow(series, 100) : null;
-      if(!v){ el.appendChild(chipEl(tf.label, "·", "neutral")); return; }
+      if(!v){ el.appendChild(chipEl(tf.label, "Â·", "neutral")); return; }
       valid++;
       const above = currentPrice >= v.vwap;
       sum += above ? 1 : -1;
-      el.appendChild(chipEl(tf.label, above?"▲":"▼", above?"up":"down"));
+      el.appendChild(chipEl(tf.label, above?"â²":"â¼", above?"up":"down"));
     });
     return valid ? sum/valid : 0;
   }
@@ -3050,12 +3050,12 @@
     let strip = `<div class="chiprow">`;
     last8.forEach((c,i) => {
       const green = c.close >= c.open;
-      strip += chipHtml("S-"+(last8.length-1-i), green?"▲":"▼", green?"up":"down");
+      strip += chipHtml("S-"+(last8.length-1-i), green?"â²":"â¼", green?"up":"down");
     });
     strip += `</div>`;
     const lastGreen = last8[last8.length-1].close >= last8[last8.length-1].open;
     const streak = (()=>{ let n=0; for(let i=last8.length-1;i>=0;i--){ const g=last8[i].close>=last8[i].open; if(g!==lastGreen) break; n++; } return n; })();
-    strip += `<div class="rel-excess">${lastGreen?'✅':'⚠'} Última vela semanal ${lastGreen?'verde':'roja'} — racha de ${streak} semana(s) en el mismo color.</div>`;
+    strip += `<div class="rel-excess">${lastGreen?'â':'â '} Ãltima vela semanal ${lastGreen?'verde':'roja'} â racha de ${streak} semana(s) en el mismo color.</div>`;
     el.innerHTML = strip;
     return lastGreen ? Math.min(1, 0.4 + streak*0.15) : -Math.min(1, 0.4 + streak*0.15);
   }
@@ -3065,7 +3065,7 @@
     const s = setupChecklist(seriesByTf, currentPrice);
     let html = `<div class="rel-bars">`;
     s.conditions.forEach(c => {
-      const icon = c.pass===null ? "·" : (c.pass ? "✅" : "❌");
+      const icon = c.pass===null ? "Â·" : (c.pass ? "â" : "â");
       const color = c.pass===null ? "var(--text-dim2)" : (c.pass ? "var(--up)" : "var(--down)");
       html += `<div class="pattern-tf"><span style="color:${color}; font-size:15px; width:22px; flex:none;">${icon}</span><span style="font-size:13px; color:var(--text-dim);">${c.label}</span></div>`;
     });
@@ -3082,26 +3082,26 @@
     const overall = wtotal ? wsum/wtotal : 0;
 
     const s = scoreChip(overall);
-    let icon = overall>0.15 ? "▲" : (overall<-0.15 ? "▼" : "◆");
+    let icon = overall>0.15 ? "â²" : (overall<-0.15 ? "â¼" : "â");
     $("vIcon").textContent = icon;
     const titles = {
-      bull: overall>=0.5 ? "Consenso técnico alcista" : "Sesgo técnico alcista",
-      bear: overall<=-0.5 ? "Consenso técnico bajista" : "Sesgo técnico bajista",
-      mixed: "Señales mixtas — sin consenso claro"
+      bull: overall>=0.5 ? "Consenso tÃ©cnico alcista" : "Sesgo tÃ©cnico alcista",
+      bear: overall<=-0.5 ? "Consenso tÃ©cnico bajista" : "Sesgo tÃ©cnico bajista",
+      mixed: "SeÃ±ales mixtas â sin consenso claro"
     };
     $("vTitle").textContent = titles[s.cls];
     const chip = $("vChip"); chip.className = "chip " + s.cls; chip.textContent = s.txt;
 
-    const labels = { marketctx:"Contexto de Mercado", sma:"Medias Móviles (SMA)", ema:"EMA", emacloud:"EMA Cloud", bb:"Bollinger", rsi:"RSI", stoch:"Estocástico", ichi:"Ichimoku", vwap:"VWAP Anclado", ad:"Acum/Distrib.", heikin:"Heikin Ashi Semanal", patterns:"Patrones de velas", rel:"Fuerza relativa", setup:"Setup Beardo", williams:"Williams %R", emacloud2050:"EMA Cloud 20/50", emacloud50100:"EMA Cloud 50/100", sr:"Soportes/Resistencias" };
+    const labels = { marketctx:"Contexto de Mercado", sma:"Medias MÃ³viles (SMA)", ema:"EMA", emacloud:"EMA Cloud", bb:"Bollinger", rsi:"RSI", stoch:"EstocÃ¡stico", ichi:"Ichimoku", vwap:"VWAP Anclado", ad:"Acum/Distrib.", heikin:"Heikin Ashi Semanal", patterns:"Patrones de velas", rel:"Fuerza relativa", setup:"Setup Beardo", williams:"Williams %R", emacloud2050:"EMA Cloud 20/50", emacloud50100:"EMA Cloud 50/100", sr:"Soportes/Resistencias" };
     const agree = Object.values(scores).filter(v => Math.sign(v)===Math.sign(overall) && v!==0).length;
     const totalModules = Object.keys(scores).length;
-    let text = `${agree} de ${totalModules} indicadores apuntan en la misma dirección que el veredicto general. `;
+    let text = `${agree} de ${totalModules} indicadores apuntan en la misma direcciÃ³n que el veredicto general. `;
     if(Math.abs(overall) < 0.15){
-      text += "Los indicadores de tendencia y los osciladores de momentum no coinciden entre sí — en este tipo de escenario suele convenir esperar más confirmación antes de tomar una postura direccional fuerte.";
+      text += "Los indicadores de tendencia y los osciladores de momentum no coinciden entre sÃ­ â en este tipo de escenario suele convenir esperar mÃ¡s confirmaciÃ³n antes de tomar una postura direccional fuerte.";
     } else if(overall > 0){
-      text += "La mayoría de los indicadores de tendencia (medias, Ichimoku) y momentum (RSI, estocástico) están alineados al alza. Vale la pena revisar si el RSI/estocástico ya están en zona de sobrecompra, lo que podría anticipar una pausa antes de continuar.";
+      text += "La mayorÃ­a de los indicadores de tendencia (medias, Ichimoku) y momentum (RSI, estocÃ¡stico) estÃ¡n alineados al alza. Vale la pena revisar si el RSI/estocÃ¡stico ya estÃ¡n en zona de sobrecompra, lo que podrÃ­a anticipar una pausa antes de continuar.";
     } else {
-      text += "La mayoría de los indicadores de tendencia y momentum están alineados a la baja. Si el RSI/estocástico ya están en zona de sobreventa, podría haber un rebote técnico de corto plazo antes de que la tendencia continúe.";
+      text += "La mayorÃ­a de los indicadores de tendencia y momentum estÃ¡n alineados a la baja. Si el RSI/estocÃ¡stico ya estÃ¡n en zona de sobreventa, podrÃ­a haber un rebote tÃ©cnico de corto plazo antes de que la tendencia continÃºe.";
     }
     $("vText").textContent = text;
 
@@ -3162,7 +3162,7 @@
   // look at every point in this ticker's own history that had a similar
   // configuration (regression slope, RSI, stochastic, SMA alignment) to the
   // one it's in right now, and use what ACTUALLY happened afterwards those
-  // times as the projection. The weighting is 100% a byproduct of the data —
+  // times as the projection. The weighting is 100% a byproduct of the data â
   // nobody is choosing 70/30 by hand.
   function rollingRSIArr(closes, period=14){
     const out = new Array(closes.length).fill(null);
@@ -3257,7 +3257,7 @@
     // each neighbor's ACTUAL realized path over the following H bars (real
     // historical ups and downs, not synthetic noise) and average them
     // point-by-point. The result organically rises and falls like a real
-    // price chart, and is still 100% deterministic — same data, same output.
+    // price chart, and is still 100% deterministic â same data, same output.
     const paths = neighbors.map(s => {
       const path = new Array(H);
       for(let j=1;j<=H;j++) path[j-1] = Math.log(closes[s.i+j]/closes[s.i]);
@@ -3312,7 +3312,7 @@
 
   // ---- Alert system (support/resistance/invalidation crossing) ----
   // Honest limitation: this only works while this browser tab/app stays
-  // open — a static HTML file has no server to push notifications when
+  // open â a static HTML file has no server to push notifications when
   // closed. Real background alerts would need a small backend (roadmap item).
   let alertsEnabled = false, alertPollTimer = null, alertBaseline = null, lastLevels = null;
 
@@ -3328,16 +3328,16 @@
     ["support","resistance","invalidation"].forEach(k=>{ if(lastLevels[k]) alertBaseline[k] = levelSide(price, lastLevels[k]); });
   }
   function fireAlert(ticker, key, level, price, side){
-    const names = { support:"soporte", resistance:"resistencia", invalidation:"nivel de invalidación" };
+    const names = { support:"soporte", resistance:"resistencia", invalidation:"nivel de invalidaciÃ³n" };
     const dir = side === "above" ? "por ENCIMA de" : "por DEBAJO de";
-    const msg = `${ticker} cruzó ${dir} su ${names[key]} (${level.toFixed(2)}) — precio actual ${price.toFixed(2)}`;
+    const msg = `${ticker} cruzÃ³ ${dir} su ${names[key]} (${level.toFixed(2)}) â precio actual ${price.toFixed(2)}`;
     const el = $("alertStatus");
     const banner = document.createElement("div");
     banner.className = "alert-banner";
-    banner.textContent = "⚠ " + msg;
+    banner.textContent = "â  " + msg;
     el.prepend(banner);
     if(window.Notification && Notification.permission === "granted"){
-      try { new Notification("⚠ " + ticker + " cruzó un nivel", { body: msg }); } catch(e){}
+      try { new Notification("â  " + ticker + " cruzÃ³ un nivel", { body: msg }); } catch(e){}
     }
   }
   async function pollAlerts(){
@@ -3360,14 +3360,14 @@
     alertsEnabled = on;
     const btn = $("alertToggle");
     if(on){
-      btn.textContent = "🔕 Dejar de vigilar";
+      btn.textContent = "ð Dejar de vigilar";
       btn.classList.add("active");
       alertBaseline = null;
       if(lastMovementCtx) initAlertBaseline(lastMovementCtx.price);
-      $("alertStatus").innerHTML = `<div class="alert-status-msg">Vigilando soporte, resistencia y nivel de invalidación cada 60s — solo mientras esta pestaña/app siga abierta.</div>`;
+      $("alertStatus").innerHTML = `<div class="alert-status-msg">Vigilando soporte, resistencia y nivel de invalidaciÃ³n cada 60s â solo mientras esta pestaÃ±a/app siga abierta.</div>`;
       alertPollTimer = setInterval(pollAlerts, 60000);
     } else {
-      btn.textContent = "🔔 Vigilar niveles";
+      btn.textContent = "ð Vigilar niveles";
       btn.classList.remove("active");
       if(alertPollTimer){ clearInterval(alertPollTimer); alertPollTimer = null; }
       $("alertStatus").innerHTML = "";
@@ -3391,9 +3391,9 @@
       const btn = document.createElement("button");
       btn.className = "tf-chip" + (tf.key===movementTf ? " active" : "") + (available ? "" : " tf-chip-disabled");
       btn.textContent = tf.label;
-      if(!available) btn.title = "No se descargó este marco temporal con los módulos activos actuales — actívalos y vuelve a analizar.";
+      if(!available) btn.title = "No se descargÃ³ este marco temporal con los mÃ³dulos activos actuales â actÃ­valos y vuelve a analizar.";
       btn.addEventListener("click", ()=>{
-        if(!available){ setStatus("Ese marco temporal no se descargó esta vez — activa un módulo que lo use (o cámbialo aquí) y vuelve a Analizar.", true); return; }
+        if(!available){ setStatus("Ese marco temporal no se descargÃ³ esta vez â activa un mÃ³dulo que lo use (o cÃ¡mbialo aquÃ­) y vuelve a Analizar.", true); return; }
         movementTf = tf.key;
         if(lastMovementCtx) renderMovement(lastMovementCtx.seriesByTf, lastMovementCtx.price, lastMovementCtx.overall);
       });
@@ -3426,9 +3426,9 @@
   }
 
   
-  // ---- Gráfico (candelas + overlays de SMA/EMA/Bollinger sobre datos
-  // históricos reales, sin proyección — el "mapa de movimiento" ya cubre
-  // la parte de proyección futura). Reutiliza svgCandles/svgLevelLines. ----
+  // ---- GrÃ¡fico (candelas + overlays de SMA/EMA/Bollinger sobre datos
+  // histÃ³ricos reales, sin proyecciÃ³n â el "mapa de movimiento" ya cubre
+  // la parte de proyecciÃ³n futura). Reutiliza svgCandles/svgLevelLines. ----
   let lastChartCtx = null;
   let chartTfKey = "1day";
 
@@ -3468,9 +3468,9 @@
       const btn = document.createElement("button");
       btn.className = "tf-chip" + (tf.key===chartTfKey ? " active" : "") + (available ? "" : " tf-chip-disabled");
       btn.textContent = tf.label;
-      if(!available) btn.title = "No se descargó este marco temporal con los módulos activos actuales — actívalos y vuelve a analizar.";
+      if(!available) btn.title = "No se descargÃ³ este marco temporal con los mÃ³dulos activos actuales â actÃ­valos y vuelve a analizar.";
       btn.addEventListener("click", ()=>{
-        if(!available){ setStatus("Ese marco temporal no se descargó esta vez — activa un módulo que lo use y vuelve a Analizar.", true); return; }
+        if(!available){ setStatus("Ese marco temporal no se descargÃ³ esta vez â activa un mÃ³dulo que lo use y vuelve a Analizar.", true); return; }
         chartTfKey = tf.key;
         drawChart();
       });
@@ -3561,7 +3561,7 @@
   }
 
     // ---- Per-indicator embedded charts (candle pane + optional oscillator
-  // sub-pane), built from the same seriesByTf data already fetched — no
+  // sub-pane), built from the same seriesByTf data already fetched â no
   // extra requests. Started with Williams %R; other indicators get the
   // same treatment next. ----
   let moduleChartTf = { williams: "4h" };
@@ -3574,9 +3574,9 @@
       const btn = document.createElement("button");
       btn.className = "tf-chip" + (tf.key===moduleChartTf[key] ? " active" : "") + (available ? "" : " tf-chip-disabled");
       btn.textContent = tf.label;
-      if(!available) btn.title = "No se descargó este marco temporal con los módulos activos actuales — actívalos y vuelve a analizar.";
+      if(!available) btn.title = "No se descargÃ³ este marco temporal con los mÃ³dulos activos actuales â actÃ­valos y vuelve a analizar.";
       btn.addEventListener("click", ()=>{
-        if(!available){ setStatus("Ese marco temporal no se descargó esta vez — activa un módulo que lo use y vuelve a Analizar.", true); return; }
+        if(!available){ setStatus("Ese marco temporal no se descargÃ³ esta vez â activa un mÃ³dulo que lo use y vuelve a Analizar.", true); return; }
         moduleChartTf[key] = tf.key;
         onSelect();
       });
@@ -4003,14 +4003,14 @@
     });
   }
 
-  // Backtest results chart — same daily series the backtest itself traded on,
+  // Backtest results chart â same daily series the backtest itself traded on,
   // with entry/exit markers from bt.trades. Independent of the per-indicator
   // Williams chart above (different container, different data window).
   function renderBacktestChart(bt, daily, startDateStr){
     const svgWrapEl = $("btChartSvg"), oscWrapEl = $("btChartOsc"), legendEl = $("btChartLegend");
     if(!svgWrapEl || !oscWrapEl) return;
     if(!daily || daily.length < 20){
-      svgWrapEl.innerHTML = '<div class="hint">No hay suficientes velas para mostrar el gráfico.</div>';
+      svgWrapEl.innerHTML = '<div class="hint">No hay suficientes velas para mostrar el grÃ¡fico.</div>';
       oscWrapEl.innerHTML = ""; if(legendEl) legendEl.innerHTML = "";
       return;
     }
@@ -4135,7 +4135,7 @@
 
     // ---- Adaptive x-axis: pick label granularity from the REAL time span
     // shown (computed from actual timestamps, so weekends/gaps are already
-    // accounted for) — hours for a couple of days, days for a few weeks,
+    // accounted for) â hours for a couple of days, days for a few weeks,
     // months for up to ~3 years, years beyond that. Vertical gridlines are
     // drawn now (background, under the candles); the text labels are drawn
     // at the very end (foreground, on top of everything). ----
@@ -4179,7 +4179,7 @@
     svg += svgCandles(hist, xOf, yOf, cw);
 
     // Three moving averages over the historical window (long/gray, mid/teal,
-    // short/red) — visual style inspired by @BeardoTrader's charts, computed
+    // short/red) â visual style inspired by @BeardoTrader's charts, computed
     // on the full series so they're valid from the first displayed bar.
     const fullCloses = full.map(c=>c.close);
     const histStartInFull = full.length - histCount;
@@ -4194,12 +4194,12 @@
       });
       if(d) svg += `<path d="${d}" fill="none" stroke="${color}" stroke-width="${widthPx}" opacity="0.85"/>`;
     }
-    maLinePath(150, "#9AA5B1", 1.4); // long — gray
-    maLinePath(50,  "#34C6C6", 1.4); // medium — teal
-    maLinePath(20,  "#E8607A", 1.4); // short — red/pink
+    maLinePath(150, "#9AA5B1", 1.4); // long â gray
+    maLinePath(50,  "#34C6C6", 1.4); // medium â teal
+    maLinePath(20,  "#E8607A", 1.4); // short â red/pink
 
 
-    // volume bars (historical only — future has no real volume)
+    // volume bars (historical only â future has no real volume)
     const maxVol = Math.max(...hist.map(c=>c.volume||0), 1);
     const volTop = H - padB - volH;
     hist.forEach((c,i) => {
@@ -4211,12 +4211,12 @@
     svg += `<line x1="${padL}" y1="${volTop}" x2="${W-padR}" y2="${volTop}" stroke="#232D39" stroke-width="1"/>`;
 
     const srKindLabel = { pivot:"Pivote", fib:"Fibonacci", confluencia:"Confluencia", qpivot:"Pivote trimestral" };
-    svg += svgLevelLines(sr.supports.map((s,idx)=>({price:s.price, color:"#3ECF8E", label:`Soporte ${s.n} · ${srKindLabel[s.type]} · ${s.price.toFixed(2)}`})), xOf, yOf, padL, W-padR);
-    svg += svgLevelLines(sr.resistances.map((s,idx)=>({price:s.price, color:"#FF5C5C", label:`Resistencia ${s.n} · ${srKindLabel[s.type]} · ${s.price.toFixed(2)}`})), xOf, yOf, padL, W-padR);
+    svg += svgLevelLines(sr.supports.map((s,idx)=>({price:s.price, color:"#3ECF8E", label:`Soporte ${s.n} Â· ${srKindLabel[s.type]} Â· ${s.price.toFixed(2)}`})), xOf, yOf, padL, W-padR);
+    svg += svgLevelLines(sr.resistances.map((s,idx)=>({price:s.price, color:"#FF5C5C", label:`Resistencia ${s.n} Â· ${srKindLabel[s.type]} Â· ${s.price.toFixed(2)}`})), xOf, yOf, padL, W-padR);
     if(invalidation){
       const y = yOf(invalidation);
       svg += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#F2B84B" stroke-width="1.5"/>`;
-      svg += `<text x="${W-padR-4}" y="${y-4}" fill="#F2B84B" font-size="10" text-anchor="end" font-weight="700">🛑 Invalidación ${invalidation.toFixed(2)}</text>`;
+      svg += `<text x="${W-padR-4}" y="${y-4}" fill="#F2B84B" font-size="10" text-anchor="end" font-weight="700">ð InvalidaciÃ³n ${invalidation.toFixed(2)}</text>`;
     }
 
     function bandPath(upperArr, lowerArr){
@@ -4239,7 +4239,7 @@
 
     svg += `<line x1="${xOf(histCount-1)}" y1="${padT}" x2="${xOf(histCount-1)}" y2="${H-padB}" stroke="#5E6E7C" stroke-width="1" stroke-dasharray="2 3"/>`;
 
-    // Text labels for the x-axis ticks computed earlier — drawn last so they
+    // Text labels for the x-axis ticks computed earlier â drawn last so they
     // sit on top of the candles/lines instead of the vertical gridlines
     // (which were already drawn in the background, right after the price
     // gridlines) getting drawn over everything.
@@ -4250,15 +4250,15 @@
     CHART_ZOOM["movement"] = { xStart: 0, xEnd: 900 };
     bindZoomOnlyPane("movement", "movementSvg", 380);
 
-    // Evidence box — this IS the backtesting summary (idea #3), surfaced
+    // Evidence box â this IS the backtesting summary (idea #3), surfaced
     // directly from the same historical-analog search that drives the line.
     const ev = $("movEvidence");
     if(proj.method === "analog"){
       const pct = (proj.pctPositive*100).toFixed(0);
       const ret = (proj.meanRet*100).toFixed(1);
-      ev.innerHTML = `📊 Se encontraron <b>${proj.n} configuraciones históricas similares</b> (misma combinación de pendiente de tendencia, RSI, estocástico y alineación de medias) en los ${proj.trainingSize} periodos analizados de ${TIMEFRAMES.find(t=>t.key===movementTf).label} de este ticker. De esas veces, <b>${pct}% terminó al alza</b> en los siguientes ${params.proj} periodos, con una variación promedio de <b>${ret>=0?'+':''}${ret}%</b>. Esa es la base del escenario de arriba — no una suposición.`;
+      ev.innerHTML = `ð Se encontraron <b>${proj.n} configuraciones histÃ³ricas similares</b> (misma combinaciÃ³n de pendiente de tendencia, RSI, estocÃ¡stico y alineaciÃ³n de medias) en los ${proj.trainingSize} periodos analizados de ${TIMEFRAMES.find(t=>t.key===movementTf).label} de este ticker. De esas veces, <b>${pct}% terminÃ³ al alza</b> en los siguientes ${params.proj} periodos, con una variaciÃ³n promedio de <b>${ret>=0?'+':''}${ret}%</b>. Esa es la base del escenario de arriba â no una suposiciÃ³n.`;
     } else {
-      ev.innerHTML = `⚠ No hay suficiente historial en este marco temporal (${proj.trainingSize||0} periodos comparables, se necesitan ~15+) para buscar configuraciones pasadas parecidas. Mostrando una estimación por tendencia reciente + indicadores en su lugar — prueba con un marco temporal mayor (1D, 1S, 1M) para tener más historia.`;
+      ev.innerHTML = `â  No hay suficiente historial en este marco temporal (${proj.trainingSize||0} periodos comparables, se necesitan ~15+) para buscar configuraciones pasadas parecidas. Mostrando una estimaciÃ³n por tendencia reciente + indicadores en su lugar â prueba con un marco temporal mayor (1D, 1S, 1M) para tener mÃ¡s historia.`;
     }
 
     $("movement").style.display = "block";
@@ -4268,12 +4268,12 @@
   // ================= Module registry & toggle system =================
   const MODULE_DEFS = [
     { key:"marketctx", title:"Contexto de Mercado" },
-    { key:"sma", title:"Medias Móviles (SMA)" },
+    { key:"sma", title:"Medias MÃ³viles (SMA)" },
     { key:"ema", title:"EMA" },
     { key:"emacloud", title:"EMA Cloud" },
     { key:"bb", title:"Bollinger" },
     { key:"rsi", title:"RSI" },
-    { key:"stoch", title:"Estocástico" },
+    { key:"stoch", title:"EstocÃ¡stico" },
     { key:"ichi", title:"Ichimoku" },
     { key:"vwap", title:"VWAP Anclado" },
     { key:"ad", title:"Acum/Distrib." },
@@ -4317,7 +4317,7 @@
 
   function saveToggles(){
     if(!safeLocalStorageSet(TOGGLE_STORAGE_KEY, JSON.stringify(moduleEnabled))){
-      setStatus("⚠ No se pudieron guardar tus preferencias de módulos activos en este dispositivo.", true);
+      setStatus("â  No se pudieron guardar tus preferencias de mÃ³dulos activos en este dispositivo.", true);
     }
   }
 
@@ -4332,7 +4332,7 @@
 
   let autoRefetchTimer = null;
   function scheduleAutoRefetch(moduleTitle){
-    showDataMissingBanner(`Faltan datos para "${moduleTitle}" — pidiéndolos automáticamente…`);
+    showDataMissingBanner(`Faltan datos para "${moduleTitle}" â pidiÃ©ndolos automÃ¡ticamenteâ¦`);
     clearTimeout(autoRefetchTimer);
     autoRefetchTimer = setTimeout(()=>{ analyze(); }, 700);
   }
@@ -4371,7 +4371,7 @@
         const ehLabel = document.createElement("label");
         ehLabel.className = "toggle-item";
         ehLabel.style.opacity = "0.85";
-        ehLabel.title = "Usa velas de 4h construidas con el historial de pre-market/after-hours archivado (pestaña \"Horario extendido\") en vez del 4h de sesión regular. Se aplica la próxima vez que corras el análisis \u2014 mientras más días acumulados en el archivo, más confiable.";
+        ehLabel.title = "Usa velas de 4h construidas con el historial de pre-market/after-hours archivado (pestaÃ±a \"Horario extendido\") en vez del 4h de sesiÃ³n regular. Se aplica la prÃ³xima vez que corras el anÃ¡lisis \u2014 mientras mÃ¡s dÃ­as acumulados en el archivo, mÃ¡s confiable.";
         const ehInput = document.createElement("input");
         ehInput.type = "checkbox";
         ehInput.checked = !!moduleExtendedHours[m.key];
@@ -4425,7 +4425,7 @@
     html += instrumentPresets.map(function(p){
       return '<button type="button" class="preset-tab' + (activePresetId===p.id?" active":"") + '" data-preset="' + p.id + '">' + escapePresetName(p.name) + '<span class="preset-del" data-del="' + p.id + '" title="Eliminar">\u2715</span></button>';
     }).join("");
-    html += '<button type="button" class="preset-tab-add" id="addPresetBtn">+ Agregar método</button>';
+    html += '<button type="button" class="preset-tab-add" id="addPresetBtn">+ Agregar mÃ©todo</button>';
     host.innerHTML = html;
   }
 
@@ -4449,7 +4449,7 @@
   }
 
   function addInstrumentPreset(){
-    const name = prompt("Nombre del método (ej. Método 1):");
+    const name = prompt("Nombre del mÃ©todo (ej. MÃ©todo 1):");
     if(!name || !name.trim()) return;
     const snapshot = {};
     MODULE_DEFS.forEach(function(m){ snapshot[m.key] = !!moduleEnabled[m.key]; });
@@ -4473,7 +4473,7 @@
       const delBtn = e.target.closest(".preset-del");
       if(delBtn){
         e.stopPropagation();
-        if(confirm("¿Eliminar este método?")) deleteInstrumentPreset(delBtn.dataset.del);
+        if(confirm("Â¿Eliminar este mÃ©todo?")) deleteInstrumentPreset(delBtn.dataset.del);
         return;
       }
       const addBtn = e.target.closest("#addPresetBtn");
@@ -4512,9 +4512,9 @@
   }
 
   // Re-run only the SMA/EMA ladders' DOM (cheap) plus verdict + movement,
-  // used when toggles change — no network calls, uses cached candle data.
+  // used when toggles change â no network calls, uses cached candle data.
   function recomputeAndRenderVerdictAndMovement(r){
-    const allScores = computeAllScores(r); // cheap, pure functions over cached candles — also refreshes each module's own visuals
+    const allScores = computeAllScores(r); // cheap, pure functions over cached candles â also refreshes each module's own visuals
     lastAllScores = allScores;
     renderLadder3("ladder-sma", r.sma);
     renderModuleScore("score-sma", allScores.sma);
@@ -4557,7 +4557,7 @@
 
     const prevBtnLabel = analyzeBtn.textContent;
     analyzeBtn.disabled = true;
-    analyzeBtn.textContent = "Analizando…";
+    analyzeBtn.textContent = "Analizandoâ¦";
     userAnalyzing = true;
     try {
       // priority=true: this jumps ahead of any queued-but-not-yet-started background
@@ -4571,9 +4571,9 @@
 
       const activeCount = MODULE_DEFS.filter(m=>moduleEnabled[m.key]).length;
       const tfFetched = Object.keys(r.seriesByTf).filter(k => r.seriesByTf[k] && r.seriesByTf[k].length).length;
-      setStatus("Listo — " + raw + " · " + activeCount + "/" + MODULE_DEFS.length + " módulos activos · " + tfFetched + "/" + TIMEFRAMES.length + " marcos temporales descargados (solo los que usas).");
+      setStatus("Listo â " + raw + " Â· " + activeCount + "/" + MODULE_DEFS.length + " mÃ³dulos activos Â· " + tfFetched + "/" + TIMEFRAMES.length + " marcos temporales descargados (solo los que usas).");
     } catch(err){
-      setStatus(err.message || "Ocurrió un error al analizar el ticker.", true);
+      setStatus(err.message || "OcurriÃ³ un error al analizar el ticker.", true);
     } finally {
       analyzeBtn.disabled = false;
       analyzeBtn.textContent = prevBtnLabel;
@@ -4614,29 +4614,29 @@
     const beatsBH = bt.cagr > bt.bhCagr;
     const betterRisk = bt.maxDD < bt.maxDDBH;
     if(!profitable){
-      return { icon:"❌", cls:"bear", title:"NO habría funcionado",
-        text:`Con esta lógica, tus $${BT_START_CAPITAL.toLocaleString()} habrían terminado en ${fmtUSD(BT_START_CAPITAL*(1+bt.totalReturn))} — perdiste dinero siguiéndola en este ticker y este periodo.` };
+      return { icon:"â", cls:"bear", title:"NO habrÃ­a funcionado",
+        text:`Con esta lÃ³gica, tus $${BT_START_CAPITAL.toLocaleString()} habrÃ­an terminado en ${fmtUSD(BT_START_CAPITAL*(1+bt.totalReturn))} â perdiste dinero siguiÃ©ndola en este ticker y este periodo.` };
     }
     if(beatsBH && betterRisk){
-      return { icon:"✅", cls:"bull", title:"SÍ habría funcionado, y bien",
-        text:`Ganaste dinero, le sacaste más rendimiento anual que solo comprar y mantener (${fmtPct(bt.cagr)} vs ${fmtPct(bt.bhCagr)} CAGR), y con menos caídas fuertes en el camino (drawdown de ${(bt.maxDD*100).toFixed(0)}% vs ${(bt.maxDDBH*100).toFixed(0)}%).` };
+      return { icon:"â", cls:"bull", title:"SÃ habrÃ­a funcionado, y bien",
+        text:`Ganaste dinero, le sacaste mÃ¡s rendimiento anual que solo comprar y mantener (${fmtPct(bt.cagr)} vs ${fmtPct(bt.bhCagr)} CAGR), y con menos caÃ­das fuertes en el camino (drawdown de ${(bt.maxDD*100).toFixed(0)}% vs ${(bt.maxDDBH*100).toFixed(0)}%).` };
     }
     if(beatsBH){
-      return { icon:"✅", cls:"bull", title:"SÍ habría funcionado",
-        text:`Ganaste dinero y le sacaste más rendimiento anual que solo comprar y mantener (${fmtPct(bt.cagr)} vs ${fmtPct(bt.bhCagr)} CAGR), aunque con caídas de tamaño parecido o mayor en el camino.` };
+      return { icon:"â", cls:"bull", title:"SÃ habrÃ­a funcionado",
+        text:`Ganaste dinero y le sacaste mÃ¡s rendimiento anual que solo comprar y mantener (${fmtPct(bt.cagr)} vs ${fmtPct(bt.bhCagr)} CAGR), aunque con caÃ­das de tamaÃ±o parecido o mayor en el camino.` };
     }
     if(betterRisk){
-      return { icon:"⚠", cls:"mixed", title:"Funcionó a medias",
-        text:`Ganaste dinero y con menos caídas fuertes que comprar y mantener, pero comprar y mantener te habría dado más rendimiento al final (${fmtPct(bt.bhCagr)} vs ${fmtPct(bt.cagr)} CAGR de la estrategia).` };
+      return { icon:"â ", cls:"mixed", title:"FuncionÃ³ a medias",
+        text:`Ganaste dinero y con menos caÃ­das fuertes que comprar y mantener, pero comprar y mantener te habrÃ­a dado mÃ¡s rendimiento al final (${fmtPct(bt.bhCagr)} vs ${fmtPct(bt.cagr)} CAGR de la estrategia).` };
     }
-    return { icon:"⚠", cls:"mixed", title:"Ganaste dinero, pero no valió la pena",
-      text:`Terminaste en positivo, pero simplemente comprar y mantener habría dado más rendimiento (${fmtPct(bt.bhCagr)} vs ${fmtPct(bt.cagr)} CAGR) y con menos caídas. La complejidad de seguir la estrategia no se pagó sola aquí.` };
+    return { icon:"â ", cls:"mixed", title:"Ganaste dinero, pero no valiÃ³ la pena",
+      text:`Terminaste en positivo, pero simplemente comprar y mantener habrÃ­a dado mÃ¡s rendimiento (${fmtPct(bt.bhCagr)} vs ${fmtPct(bt.cagr)} CAGR) y con menos caÃ­das. La complejidad de seguir la estrategia no se pagÃ³ sola aquÃ­.` };
   }
 
   function renderBacktestResults(bt, symbol, daily, startDateStr){
     const el = $("btResults");
     if(!bt){
-      el.innerHTML = `<div class="rel-excess">No hay suficiente historial diario para correr el backtest (hacen falta al menos ~240 días de datos).</div>`;
+      el.innerHTML = `<div class="rel-excess">No hay suficiente historial diario para correr el backtest (hacen falta al menos ~240 dÃ­as de datos).</div>`;
       el.classList.add("show");
       return;
     }
@@ -4650,23 +4650,23 @@
       <p>${v.text}</p>
     </div>`;
 
-    html += `<div class="bt-daterange">📅 Datos desde ${fmtDateShort(bt.firstDataDate)} · primer día en que pudo empezar a operar: ${fmtDateShort(bt.firstTradableDate)} (necesita ~210 velas diarias de "calentamiento" antes de poder calcular medias de 200 periodos) · hasta ${fmtDateShort(bt.lastDate)}.</div>`;
+    html += `<div class="bt-daterange">ð Datos desde ${fmtDateShort(bt.firstDataDate)} Â· primer dÃ­a en que pudo empezar a operar: ${fmtDateShort(bt.firstTradableDate)} (necesita ~210 velas diarias de "calentamiento" antes de poder calcular medias de 200 periodos) Â· hasta ${fmtDateShort(bt.lastDate)}.</div>`;
 
     html += `<div class="bt-capital">
-      <div class="btc-col"><div class="btc-label">Siguiendo la estrategia</div><div class="btc-arrow">${fmtUSD(BT_START_CAPITAL)} → <span style="color:${stratColor}">${fmtUSD(finalStratUSD)}</span></div></div>
-      <div class="btc-col"><div class="btc-label">Solo comprar y mantener</div><div class="btc-arrow">${fmtUSD(BT_START_CAPITAL)} → <span style="color:${bt.bhReturn>=0?'var(--up)':'var(--down)'}">${fmtUSD(finalBHUSD)}</span></div></div>
+      <div class="btc-col"><div class="btc-label">Siguiendo la estrategia</div><div class="btc-arrow">${fmtUSD(BT_START_CAPITAL)} â <span style="color:${stratColor}">${fmtUSD(finalStratUSD)}</span></div></div>
+      <div class="btc-col"><div class="btc-label">Solo comprar y mantener</div><div class="btc-arrow">${fmtUSD(BT_START_CAPITAL)} â <span style="color:${bt.bhReturn>=0?'var(--up)':'var(--down)'}">${fmtUSD(finalBHUSD)}</span></div></div>
     </div>`;
 
     html += `<div class="bt-metrics">
       <div class="bt-metric"><div class="btm-label">CAGR (anualizado)</div><div class="btm-value" style="color:${stratColor}">${fmtPct(bt.cagr)}</div><div class="btm-sub">vs. B&H ${fmtPct(bt.bhCagr)}</div></div>
-      <div class="bt-metric"><div class="btm-label">Retorno total</div><div class="btm-value" style="color:${stratColor}">${fmtPct(bt.totalReturn)}</div><div class="btm-sub">vs. Buy&Hold ${fmtPct(bt.bhReturn)} · no comparable entre periodos de distinta duración</div></div>
-      <div class="bt-metric"><div class="btm-label">Máx. drawdown</div><div class="btm-value" style="color:var(--down)">-${(bt.maxDD*100).toFixed(1)}%</div><div class="btm-sub">vs. B&H -${(bt.maxDDBH*100).toFixed(1)}%</div></div>
+      <div class="bt-metric"><div class="btm-label">Retorno total</div><div class="btm-value" style="color:${stratColor}">${fmtPct(bt.totalReturn)}</div><div class="btm-sub">vs. Buy&Hold ${fmtPct(bt.bhReturn)} Â· no comparable entre periodos de distinta duraciÃ³n</div></div>
+      <div class="bt-metric"><div class="btm-label">MÃ¡x. drawdown</div><div class="btm-value" style="color:var(--down)">-${(bt.maxDD*100).toFixed(1)}%</div><div class="btm-sub">vs. B&H -${(bt.maxDDBH*100).toFixed(1)}%</div></div>
       <div class="bt-metric"><div class="btm-label">Tasa de acierto</div><div class="btm-value">${(bt.winRate*100).toFixed(0)}%</div><div class="btm-sub">${bt.tradeCount} operaciones</div></div>
       <div class="bt-metric"><div class="btm-label">Tiempo invertido</div><div class="btm-value">${(bt.timeInMarket*100).toFixed(0)}%</div><div class="btm-sub">del periodo, en largo</div></div>
-      <div class="bt-metric"><div class="btm-label">Periodo simulado</div><div class="btm-value">${bt.years.toFixed(1)} años</div><div class="btm-sub">${symbol}, velas diarias</div></div>
+      <div class="bt-metric"><div class="btm-label">Periodo simulado</div><div class="btm-value">${bt.years.toFixed(1)} aÃ±os</div><div class="btm-sub">${symbol}, velas diarias</div></div>
     </div>`;
 
-    // Equity curve SVG (log scale, strategy vs buy&hold — dollar axis)
+    // Equity curve SVG (log scale, strategy vs buy&hold â dollar axis)
     const W=900, H=260, padL=8, padR=54, padT=14, padB=26;
     const plotW=W-padL-padR, plotH=H-padT-padB;
     const allVals = bt.equityStrategy.concat(bt.equityBH);
@@ -4693,23 +4693,23 @@
     svg += `</svg>`;
 
     html += `<div class="bt-legend">
-      <span><i style="background:#5B8DEF"></i> Estrategia (siguiendo el veredicto) — capital en $</span>
+      <span><i style="background:#5B8DEF"></i> Estrategia (siguiendo el veredicto) â capital en $</span>
       <span><i style="background:#8FA0AE"></i> Comprar y mantener</span>
     </div>`;
     html += `<div class="bt-chart">${svg}</div>`;
 
-    // Trade log — actual buys/sells in dollars, most recent first
+    // Trade log â actual buys/sells in dollars, most recent first
     if(bt.trades.length){
       const shown = bt.trades.slice().reverse();
-      html += `<div class="bt-trades-head">Operaciones (compra/venta) — ${bt.trades.length} en total, más recientes primero</div>`;
+      html += `<div class="bt-trades-head">Operaciones (compra/venta) â ${bt.trades.length} en total, mÃ¡s recientes primero</div>`;
       html += `<div class="bt-trades">`;
       shown.forEach(t=>{
         const gainUSD = BT_START_CAPITAL*(t.exitEquityMult - t.entryEquityMult);
         const win = t.ret >= 0;
         html += `<div class="bt-trade">
-          <div class="btt-dates">${fmtDateShort(t.entryDate)} → ${fmtDateShort(t.exitDate)}${t.stillOpen?' <span class="btt-open">(abierta)</span>':''}</div>
-          <div class="btt-prices">Compra $${t.entryPrice.toFixed(2)} → Venta $${t.exitPrice.toFixed(2)}</div>
-          <div class="btt-capital">${fmtUSD(BT_START_CAPITAL*t.entryEquityMult)} → ${fmtUSD(BT_START_CAPITAL*t.exitEquityMult)}</div>
+          <div class="btt-dates">${fmtDateShort(t.entryDate)} â ${fmtDateShort(t.exitDate)}${t.stillOpen?' <span class="btt-open">(abierta)</span>':''}</div>
+          <div class="btt-prices">Compra $${t.entryPrice.toFixed(2)} â Venta $${t.exitPrice.toFixed(2)}</div>
+          <div class="btt-capital">${fmtUSD(BT_START_CAPITAL*t.entryEquityMult)} â ${fmtUSD(BT_START_CAPITAL*t.exitEquityMult)}</div>
           <div class="btt-ret" style="color:${win?'var(--up)':'var(--down)'}">${fmtPct(t.ret)} (${gainUSD>=0?'+':''}${fmtUSD(Math.round(gainUSD))})</div>
         </div>`;
       });
@@ -4719,7 +4719,7 @@
     html += `<div class="module-body-wrap" style="margin-top:14px;">
     <div class="mov-legend" id="btChartLegend"></div>
     <div class="chart-fs-wrap" id="chartFsWrap-backtest">
-    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-backtest" title="Pantalla completa">⛶</button>
+    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-backtest" title="Pantalla completa">â¶</button>
     <div id="btChartSvg"></div>
     <div id="btChartOsc" style="margin-top:6px;"></div>
     </div>
@@ -4736,34 +4736,34 @@
 
   // Renders the multi-period walk-forward robustness table: how many of the
   // N sequential blocks were profitable, average/median CAGR across blocks,
-  // and which block was the best/worst — the point being to show a spread
+  // and which block was the best/worst â the point being to show a spread
   // instead of a single potentially-lucky (or unlucky) number.
   function renderWalkForwardMultiResults(wf, symbol){
     const el = $("wfResults");
     if(!wf){
-      el.innerHTML = `<div class="rel-excess">No hay suficiente historial para dividirlo en varios periodos de al menos ~6 meses cada uno — se necesita más historia diaria de la disponible para ${symbol}.</div>`;
+      el.innerHTML = `<div class="rel-excess">No hay suficiente historial para dividirlo en varios periodos de al menos ~6 meses cada uno â se necesita mÃ¡s historia diaria de la disponible para ${symbol}.</div>`;
       el.classList.add("show");
       return;
     }
     const reduced = wf.numPeriods < wf.requestedPeriods;
-    let html = `<div class="bt-trades-head" style="margin-top:22px;">🔁 Walk-forward multi-periodo — ${wf.numPeriods} bloque${wf.numPeriods===1?'':'s'} secuencial${wf.numPeriods===1?'':'es'} de historia${reduced ? ` (reducido de ${wf.requestedPeriods} pedidos — no hay suficiente historial diario para más)` : ''}</div>`;
-    html += `<div class="bt-desc" style="margin:4px 0 12px;">Divide todo el historial disponible en ${wf.numPeriods} tramos consecutivos y corre la misma simulación de forma independiente en cada uno (el capital se reinicia al empezar cada tramo). Como los pesos de los módulos son fijos — no se ajustan con los datos —, esto funciona como prueba de consistencia entre distintos regímenes de mercado, no como una separación train/validation/test de un modelo entrenado.</div>`;
+    let html = `<div class="bt-trades-head" style="margin-top:22px;">ð Walk-forward multi-periodo â ${wf.numPeriods} bloque${wf.numPeriods===1?'':'s'} secuencial${wf.numPeriods===1?'':'es'} de historia${reduced ? ` (reducido de ${wf.requestedPeriods} pedidos â no hay suficiente historial diario para mÃ¡s)` : ''}</div>`;
+    html += `<div class="bt-desc" style="margin:4px 0 12px;">Divide todo el historial disponible en ${wf.numPeriods} tramos consecutivos y corre la misma simulaciÃ³n de forma independiente en cada uno (el capital se reinicia al empezar cada tramo). Como los pesos de los mÃ³dulos son fijos â no se ajustan con los datos â, esto funciona como prueba de consistencia entre distintos regÃ­menes de mercado, no como una separaciÃ³n train/validation/test de un modelo entrenado.</div>`;
 
     const posColor = "var(--up)", negColor = "var(--down)";
     html += `<div class="bt-metrics">
       <div class="bt-metric"><div class="btm-label">Periodos positivos</div><div class="btm-value" style="color:${posColor}">${wf.positive}/${wf.numPeriods}</div><div class="btm-sub">${wf.negative} negativo${wf.negative===1?'':'s'}</div></div>
       <div class="bt-metric"><div class="btm-label">CAGR promedio</div><div class="btm-value" style="color:${wf.avgCagr>=0?posColor:negColor}">${fmtPct(wf.avgCagr)}</div><div class="btm-sub">entre los ${wf.numPeriods} bloques</div></div>
       <div class="bt-metric"><div class="btm-label">CAGR mediana</div><div class="btm-value" style="color:${wf.medianCagr>=0?posColor:negColor}">${fmtPct(wf.medianCagr)}</div><div class="btm-sub">menos sensible a un bloque extremo</div></div>
-      <div class="bt-metric"><div class="btm-label">Mejor periodo</div><div class="btm-value" style="color:${posColor}">${fmtPct(wf.best.cagr)}</div><div class="btm-sub">${fmtDateShort(wf.best.startDate)} → ${fmtDateShort(wf.best.endDate)}</div></div>
-      <div class="bt-metric"><div class="btm-label">Peor periodo</div><div class="btm-value" style="color:${wf.worst.cagr>=0?posColor:negColor}">${fmtPct(wf.worst.cagr)}</div><div class="btm-sub">${fmtDateShort(wf.worst.startDate)} → ${fmtDateShort(wf.worst.endDate)}</div></div>
+      <div class="bt-metric"><div class="btm-label">Mejor periodo</div><div class="btm-value" style="color:${posColor}">${fmtPct(wf.best.cagr)}</div><div class="btm-sub">${fmtDateShort(wf.best.startDate)} â ${fmtDateShort(wf.best.endDate)}</div></div>
+      <div class="bt-metric"><div class="btm-label">Peor periodo</div><div class="btm-value" style="color:${wf.worst.cagr>=0?posColor:negColor}">${fmtPct(wf.worst.cagr)}</div><div class="btm-sub">${fmtDateShort(wf.worst.startDate)} â ${fmtDateShort(wf.worst.endDate)}</div></div>
     </div>`;
 
     html += `<div class="bt-trades">`;
     wf.segments.forEach((s,i)=>{
       const win = s.cagr >= 0;
       html += `<div class="bt-trade">
-        <div class="btt-dates">Periodo ${i+1}: ${fmtDateShort(s.startDate)} → ${fmtDateShort(s.endDate)}</div>
-        <div class="btt-prices">${s.tradeCount} operaciones · ${(s.timeInMarket*100).toFixed(0)}% del tiempo invertido</div>
+        <div class="btt-dates">Periodo ${i+1}: ${fmtDateShort(s.startDate)} â ${fmtDateShort(s.endDate)}</div>
+        <div class="btt-prices">${s.tradeCount} operaciones Â· ${(s.timeInMarket*100).toFixed(0)}% del tiempo invertido</div>
         <div class="btt-capital">Retorno total ${fmtPct(s.totalReturn)}</div>
         <div class="btt-ret" style="color:${win?'var(--up)':'var(--down)'}">CAGR ${fmtPct(s.cagr)}</div>
       </div>`;
@@ -4780,7 +4780,7 @@
   // using only data available up to that point, then compare it against
   // what actually happened. This is the honest way to know whether the
   // movement guide has real predictive skill or is just a coincidence that
-  // looks nice on screen. Reuses computeProjectionAnalog verbatim — no
+  // looks nice on screen. Reuses computeProjectionAnalog verbatim â no
   // separate copy of the modeling logic to drift out of sync.
   function runMovementCalibration(daily, step=10, lookbackCap=800){
     const params = MOVEMENT_PARAMS["1day"];
@@ -4836,26 +4836,26 @@
   function renderMovementCalibration(res, symbol){
     const el = $("movCalResults");
     if(!res){
-      el.innerHTML = `<div class="rel-excess">No hay suficiente historial diario para calibrar la guía de movimiento (el horizonte es de ~130 días, hacen falta varios años de datos).</div>`;
+      el.innerHTML = `<div class="rel-excess">No hay suficiente historial diario para calibrar la guÃ­a de movimiento (el horizonte es de ~130 dÃ­as, hacen falta varios aÃ±os de datos).</div>`;
       el.classList.add("show");
       return;
     }
     if(res.tooFew){
-      el.innerHTML = `<div class="rel-excess">Solo se pudieron probar ${res.samples.length} puntos históricos de ${symbol} — muy pocos para sacar una conclusión confiable. Hace falta más historial diario para este ticker.</div>`;
+      el.innerHTML = `<div class="rel-excess">Solo se pudieron probar ${res.samples.length} puntos histÃ³ricos de ${symbol} â muy pocos para sacar una conclusiÃ³n confiable. Hace falta mÃ¡s historial diario para este ticker.</div>`;
       el.classList.add("show");
       return;
     }
-    const icTxt = res.ic == null ? "—" : res.ic.toFixed(2);
-    const icNote = res.ic == null ? "" : (res.ic > 0.15 ? " (algo de puntería real)" : res.ic > 0.03 ? " (puntería débil)" : res.ic > -0.03 ? " (básicamente nula — como tirar una moneda)" : " (peor que el azar)");
+    const icTxt = res.ic == null ? "â" : res.ic.toFixed(2);
+    const icNote = res.ic == null ? "" : (res.ic > 0.15 ? " (algo de punterÃ­a real)" : res.ic > 0.03 ? " (punterÃ­a dÃ©bil)" : res.ic > -0.03 ? " (bÃ¡sicamente nula â como tirar una moneda)" : " (peor que el azar)");
     let html = `<div class="bt-metrics">
-      <div class="bt-metric"><div class="btm-label">Acierto direccional</div><div class="btm-value">${(res.directionAcc*100).toFixed(0)}%</div><div class="btm-sub">vs. ${(res.baselineAcc*100).toFixed(0)}% apostando siempre a la dirección más común</div></div>
-      <div class="bt-metric"><div class="btm-label">Puntería real (IC)</div><div class="btm-value">${icTxt}</div><div class="btm-sub">${icNote}</div></div>
-      <div class="bt-metric"><div class="btm-label">Cobertura ±1σ</div><div class="btm-value">${(res.within1*100).toFixed(0)}%</div><div class="btm-sub">ideal ≈ 68%</div></div>
-      <div class="bt-metric"><div class="btm-label">Cobertura ±2σ</div><div class="btm-value">${(res.within2*100).toFixed(0)}%</div><div class="btm-sub">ideal ≈ 95%</div></div>
-      <div class="bt-metric"><div class="btm-label">Cuando decía "alcista"</div><div class="btm-value" style="color:${res.confBullMean>0?'var(--up)':'var(--down)'}">${res.confBullMean==null?"—":(res.confBullMean*100).toFixed(1)+"%"}</div><div class="btm-sub">retorno real promedio, ${res.confBull} casos</div></div>
-      <div class="bt-metric"><div class="btm-label">Cuando decía "bajista"</div><div class="btm-value" style="color:${res.confBearMean>0?'var(--up)':'var(--down)'}">${res.confBearMean==null?"—":(res.confBearMean*100).toFixed(1)+"%"}</div><div class="btm-sub">retorno real promedio, ${res.confBear} casos</div></div>
+      <div class="bt-metric"><div class="btm-label">Acierto direccional</div><div class="btm-value">${(res.directionAcc*100).toFixed(0)}%</div><div class="btm-sub">vs. ${(res.baselineAcc*100).toFixed(0)}% apostando siempre a la direcciÃ³n mÃ¡s comÃºn</div></div>
+      <div class="bt-metric"><div class="btm-label">PunterÃ­a real (IC)</div><div class="btm-value">${icTxt}</div><div class="btm-sub">${icNote}</div></div>
+      <div class="bt-metric"><div class="btm-label">Cobertura Â±1Ï</div><div class="btm-value">${(res.within1*100).toFixed(0)}%</div><div class="btm-sub">ideal â 68%</div></div>
+      <div class="bt-metric"><div class="btm-label">Cobertura Â±2Ï</div><div class="btm-value">${(res.within2*100).toFixed(0)}%</div><div class="btm-sub">ideal â 95%</div></div>
+      <div class="bt-metric"><div class="btm-label">Cuando decÃ­a "alcista"</div><div class="btm-value" style="color:${res.confBullMean>0?'var(--up)':'var(--down)'}">${res.confBullMean==null?"â":(res.confBullMean*100).toFixed(1)+"%"}</div><div class="btm-sub">retorno real promedio, ${res.confBull} casos</div></div>
+      <div class="bt-metric"><div class="btm-label">Cuando decÃ­a "bajista"</div><div class="btm-value" style="color:${res.confBearMean>0?'var(--up)':'var(--down)'}">${res.confBearMean==null?"â":(res.confBearMean*100).toFixed(1)+"%"}</div><div class="btm-sub">retorno real promedio, ${res.confBear} casos</div></div>
     </div>`;
-    html += `<div class="bt-daterange">🔬 ${res.n} puntos probados cada ~${res.step} días hábiles, horizonte de ${res.horizonDays} días, sin ver el futuro en ninguno. Como el horizonte es más largo que la separación entre pruebas, las muestras se traslapan — el número de puntos realmente independientes es más parecido a ${res.effectiveN}, así que trátalo como una señal orientativa, no como un p-valor limpio.</div>`;
+    html += `<div class="bt-daterange">ð¬ ${res.n} puntos probados cada ~${res.step} dÃ­as hÃ¡biles, horizonte de ${res.horizonDays} dÃ­as, sin ver el futuro en ninguno. Como el horizonte es mÃ¡s largo que la separaciÃ³n entre pruebas, las muestras se traslapan â el nÃºmero de puntos realmente independientes es mÃ¡s parecido a ${res.effectiveN}, asÃ­ que trÃ¡talo como una seÃ±al orientativa, no como un p-valor limpio.</div>`;
     el.innerHTML = html;
     el.classList.add("show");
   }
@@ -4864,7 +4864,7 @@
     const btn = $("portRefreshBtn");
     const prevLabel = btn.textContent;
     btn.disabled = true;
-    btn.textContent = "Actualizando…";
+    btn.textContent = "Actualizandoâ¦";
     try {
       await fetchUsdMxnRate();
       await refreshPortfolioLevels();
@@ -4915,24 +4915,24 @@
 
   function renderWilliamsOptResults(buyList, sellList, symbol, validation){
     const el = $("wOptResults");
-    if(!buyList.length || !sellList.length){ el.innerHTML = '<div class="hint">No se encontraron niveles de reversión con suficiente evidencia histórica para este ticker.</div>'; return; }
-    let html = '<div class="bt-caveats">Niveles donde el Williams %R históricamente tocó y el precio realmente revirtió (no solo pasó de largo), ordenados por confiabilidad:</div>';
+    if(!buyList.length || !sellList.length){ el.innerHTML = '<div class="hint">No se encontraron niveles de reversiÃ³n con suficiente evidencia histÃ³rica para este ticker.</div>'; return; }
+    let html = '<div class="bt-caveats">Niveles donde el Williams %R histÃ³ricamente tocÃ³ y el precio realmente revirtiÃ³ (no solo pasÃ³ de largo), ordenados por confiabilidad:</div>';
     html += '<div style="font-size:11px; color:#8FA0AE; margin:6px 0 2px;">COMPRA (zona de sobreventa)</div>';
     buyList.forEach((r,i) => {
       html += `<div class="bt-trade">
-        <div class="btt-dates">#${i+1} — ${r.threshold}${i===0?' <span class="btt-open">(aplicado)</span>':''}</div>
-        <div class="btt-prices">${r.touches} toques · ${(r.reversalRate*100).toFixed(0)}% revirtió</div>
+        <div class="btt-dates">#${i+1} â ${r.threshold}${i===0?' <span class="btt-open">(aplicado)</span>':''}</div>
+        <div class="btt-prices">${r.touches} toques Â· ${(r.reversalRate*100).toFixed(0)}% revirtiÃ³</div>
       </div>`;
     });
     html += '<div style="font-size:11px; color:#8FA0AE; margin:10px 0 2px;">VENTA (zona de sobrecompra)</div>';
     sellList.forEach((r,i) => {
       html += `<div class="bt-trade">
-        <div class="btt-dates">#${i+1} — ${r.threshold}${i===0?' <span class="btt-open">(aplicado)</span>':''}</div>
-        <div class="btt-prices">${r.touches} toques · ${(r.reversalRate*100).toFixed(0)}% revirtió</div>
+        <div class="btt-dates">#${i+1} â ${r.threshold}${i===0?' <span class="btt-open">(aplicado)</span>':''}</div>
+        <div class="btt-prices">${r.touches} toques Â· ${(r.reversalRate*100).toFixed(0)}% revirtiÃ³</div>
       </div>`;
     });
     if(validation){
-      html += `<div class="bt-caveats">Backtest de validación con estos parámetros: <span style="color:${validation.totalReturn>=0?'var(--up)':'var(--down)'}">${validation.totalReturn>=0?'+':''}${validation.totalReturn.toFixed(0)}%</span> · ${validation.tradeCount} operaciones · ${(validation.winRate*100).toFixed(0)}% ganadoras.</div>`;
+      html += `<div class="bt-caveats">Backtest de validaciÃ³n con estos parÃ¡metros: <span style="color:${validation.totalReturn>=0?'var(--up)':'var(--down)'}">${validation.totalReturn>=0?'+':''}${validation.totalReturn.toFixed(0)}%</span> Â· ${validation.tradeCount} operaciones Â· ${(validation.winRate*100).toFixed(0)}% ganadoras.</div>`;
     }
     el.innerHTML = html;
   }
@@ -4945,14 +4945,14 @@
     $("wOptResults").innerHTML = "";
     const savedCfg = { buyThresh: BT_INDICATOR_CONFIG.williams.buyThresh, sellThresh: BT_INDICATOR_CONFIG.williams.sellThresh };
     try {
-      statusEl.textContent = "Descargando historial completo…";
+      statusEl.textContent = "Descargando historial completoâ¦";
       const daily = await fetchSeries(symbol, "1day", 5000);
       const series = williamsRSeries(daily, 14);
       if(series.length < 30){
         statusEl.textContent = "No hay suficiente historial para analizar este ticker.";
         return;
       }
-      statusEl.textContent = "Analizando niveles de reversión histórica…";
+      statusEl.textContent = "Analizando niveles de reversiÃ³n histÃ³ricaâ¦";
       await new Promise(r => setTimeout(r, 0));
       const { buy, sell } = analyzeWilliamsThresholds(series);
       if(!buy.length || !sell.length){
@@ -4964,7 +4964,7 @@
       const bestBuy = buy[0], bestSell = sell[0];
       BT_INDICATOR_CONFIG.williams = { buyThresh: bestBuy.threshold, sellThresh: bestSell.threshold };
 
-      statusEl.textContent = "Validando con un backtest…";
+      statusEl.textContent = "Validando con un backtestâ¦";
       await new Promise(r => setTimeout(r, 0));
       let validation = null;
       try {
@@ -4993,7 +4993,7 @@
       saveWilliamsOpt(map);
 
       renderWilliamsOptResults(buy.slice(0,4), sell.slice(0,4), symbol, validation);
-      statusEl.textContent = `Listo — compra ${bestBuy.threshold} / vende ${bestSell.threshold} aplicado y guardado para ${symbol}.`;
+      statusEl.textContent = `Listo â compra ${bestBuy.threshold} / vende ${bestSell.threshold} aplicado y guardado para ${symbol}.`;
     } catch(e){
       BT_INDICATOR_CONFIG.williams = savedCfg;
       statusEl.textContent = "Error: " + (e.message || e);
@@ -5030,38 +5030,38 @@
     btn.disabled = true;
     $("btResults").classList.remove("show");
     $("wfResults").classList.remove("show");
-    $("btStatus").textContent = "Descargando historial completo…";
+    $("btStatus").textContent = "Descargando historial completoâ¦";
     try {
       const daily = await fetchSeries(symbol, "1day", 5000);
-      $("btStatus").textContent = "Historial diario listo (" + daily.length + " velas) — trayendo semanal y mercado…";
+      $("btStatus").textContent = "Historial diario listo (" + daily.length + " velas) â trayendo semanal y mercadoâ¦";
       const [weekly, spyDaily, qqqDaily, benchDaily] = await Promise.all([
         fetchSeries(symbol, "1week", 1000),
         fetchSeries("SPY", "1day", 5000),
         fetchSeries("QQQ", "1day", 5000),
         bench === "SPY" ? Promise.resolve(null) : fetchSeries(bench, "1day", 5000),
       ]);
-      $("btStatus").textContent = "Simulando " + daily.length + " días, día por día…";
+      $("btStatus").textContent = "Simulando " + daily.length + " dÃ­as, dÃ­a por dÃ­aâ¦";
       await sleep(30); // let the status paint before the (synchronous) crunch
       const startDateStr = $("btStartDate").value || null;
       const bt = runBacktest(daily, weekly, spyDaily, qqqDaily, benchDaily || spyDaily, startDateStr);
       renderBacktestResults(bt, symbol, daily, startDateStr);
 
-      // Reuses the exact same already-downloaded series — no extra Twelve
-      // Data calls — to also run the 5-block walk-forward robustness check.
+      // Reuses the exact same already-downloaded series â no extra Twelve
+      // Data calls â to also run the 5-block walk-forward robustness check.
       // Always uses the FULL available history (ignores the "empezar desde"
       // date above, which is a single-period setting) so the consistency
       // check gets as many blocks of data as possible.
       const wf = runWalkForwardMultiPeriod(daily, weekly, spyDaily, qqqDaily, benchDaily || spyDaily, 5);
       renderWalkForwardMultiResults(wf, symbol);
 
-      // Reuses the same already-downloaded daily series — no extra Twelve
-      // Data calls — to also calibrate the movement guide's analog engine.
+      // Reuses the same already-downloaded daily series â no extra Twelve
+      // Data calls â to also calibrate the movement guide's analog engine.
       const movCal = runMovementCalibration(daily);
       renderMovementCalibration(movCal, symbol);
 
-      $("btStatus").textContent = bt ? ("Listo — " + bt.years.toFixed(1) + " años simulados.") : "";
+      $("btStatus").textContent = bt ? ("Listo â " + bt.years.toFixed(1) + " aÃ±os simulados.") : "";
     } catch(err){
-      $("btStatus").textContent = err.message || "Ocurrió un error corriendo el backtest.";
+      $("btStatus").textContent = err.message || "OcurriÃ³ un error corriendo el backtest.";
     } finally {
       btn.disabled = false;
     }
@@ -5074,7 +5074,7 @@
     window.addEventListener("load", ()=>{ navigator.serviceWorker.register("sw.js").catch(()=>{}); });
   }
 
-  if(!getApiKey()){ setStatus("Configura tu API key de Twelve Data (⚙ arriba a la derecha) para empezar."); }
+  if(!getApiKey()){ setStatus("Configura tu API key de Twelve Data (â arriba a la derecha) para empezar."); }
 
   // ================= Portfolio (seguimiento de posiciones) =================
   const PORT_LOTS_KEY = "ta_scanner_portfolio_lots";
@@ -5088,7 +5088,7 @@
   function loadPortLots(){ try { return JSON.parse(localStorage.getItem(PORT_LOTS_KEY) || "[]"); } catch(e){ return []; } }
   function savePortLots(){
     if(!safeLocalStorageSet(PORT_LOTS_KEY, JSON.stringify(portLots))){
-      setPortFormStatus("⚠ No se pudo guardar tu portafolio en este dispositivo (almacenamiento lleno o bloqueado) — vuelve a intentarlo o libera espacio.", true);
+      setPortFormStatus("â  No se pudo guardar tu portafolio en este dispositivo (almacenamiento lleno o bloqueado) â vuelve a intentarlo o libera espacio.", true);
     }
     syncExtendedHoursAutoTickers();
     renderExtendedHoursTab();
@@ -5096,7 +5096,7 @@
   function loadPortSales(){ try { return JSON.parse(localStorage.getItem(PORT_SALES_KEY) || "[]"); } catch(e){ return []; } }
   function savePortSales(){
     if(!safeLocalStorageSet(PORT_SALES_KEY, JSON.stringify(portSales))){
-      setPortFormStatus("⚠ No se pudo guardar tus ventas en este dispositivo (almacenamiento lleno o bloqueado) — vuelve a intentarlo o libera espacio.", true);
+      setPortFormStatus("â  No se pudo guardar tus ventas en este dispositivo (almacenamiento lleno o bloqueado) â vuelve a intentarlo o libera espacio.", true);
     }
   }
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
@@ -5111,7 +5111,7 @@
     const host = $("portMovementsList");
     if(!host) return;
     if(!portMovements.length){
-      host.innerHTML = '<div class="port-empty" style="margin:0">Aún no hay movimientos registrados.</div>';
+      host.innerHTML = '<div class="port-empty" style="margin:0">AÃºn no hay movimientos registrados.</div>';
       return;
     }
     const sorted = portMovements.slice().sort((a,b)=>b.ts-a.ts);
@@ -5139,7 +5139,7 @@
   let activeTab = "scanner";
   let scannerLastTicker = null, scannerLastBench = null;
   let portfolioLastTicker = null;
-  let portSRData = {}; // ticker -> { sr, alert, error } — soporte/resistencia + alerta por posición
+  let portSRData = {}; // ticker -> { sr, alert, error } â soporte/resistencia + alerta por posiciÃ³n
 
   function groupLotsByTicker(){
     const groups = {};
@@ -5156,7 +5156,7 @@
     const lots = portLots.filter(l=>l.ticker===ticker).sort((a,b)=>(a.ts||0)-(b.ts||0));
     const sum = positionSummary(lots);
     if(sharesSold <= 0 || sharesSold > sum.totalShares + 1e-9){
-      throw new Error("Cantidad de acciones inválida.");
+      throw new Error("Cantidad de acciones invÃ¡lida.");
     }
     const avgCost = sum.avgCost;
     let remaining = sharesSold;
@@ -5188,7 +5188,7 @@
       const data = await res.json();
       if(data && data.rates && typeof data.rates.MXN === "number"){
         usdMxnRate = data.rates.MXN; usdMxnRateTs = now;
-        $("fxRateNote").textContent = "1 USD ≈ " + usdMxnRate.toFixed(2) + " MXN";
+        $("fxRateNote").textContent = "1 USD â " + usdMxnRate.toFixed(2) + " MXN";
       }
     } catch(e){
       if(!usdMxnRate) $("fxRateNote").textContent = "No se pudo obtener el tipo de cambio.";
@@ -5221,7 +5221,7 @@
   function setDisplayCurrency(ccy){
     displayCurrency = ccy;
     if(!safeLocalStorageSet(PORT_CCY_KEY, ccy)){
-      setPortFormStatus("⚠ No se pudo guardar tu preferencia de moneda en este dispositivo.", true);
+      setPortFormStatus("â  No se pudo guardar tu preferencia de moneda en este dispositivo.", true);
     }
     $("ccyUSD").classList.toggle("active", ccy==="USD");
     $("ccyMXN").classList.toggle("active", ccy==="MXN");
@@ -5249,17 +5249,17 @@
     const enteredPrice = parseFloat($("portPriceInput").value);
     const entryCcy = displayCurrency; // capture in whatever currency is selected right now
     if(!ticker){ setPortFormStatus("Escribe un ticker.", true); return; }
-    if(!(shares>0)){ setPortFormStatus("El número de acciones debe ser mayor a 0.", true); return; }
+    if(!(shares>0)){ setPortFormStatus("El nÃºmero de acciones debe ser mayor a 0.", true); return; }
     if(!(enteredPrice>0)){ setPortFormStatus("El precio de compra debe ser mayor a 0.", true); return; }
 
     let priceUSD = enteredPrice;
     if(entryCcy === "MXN"){
       const btn = $("portAddBtn");
       btn.disabled = true;
-      setPortFormStatus("Obteniendo tipo de cambio…");
+      setPortFormStatus("Obteniendo tipo de cambioâ¦");
       const rate = await fetchUsdMxnRate();
       btn.disabled = false;
-      if(!rate){ setPortFormStatus("No se pudo obtener el tipo de cambio USD/MXN — intenta de nuevo en un momento.", true); return; }
+      if(!rate){ setPortFormStatus("No se pudo obtener el tipo de cambio USD/MXN â intenta de nuevo en un momento.", true); return; }
       priceUSD = enteredPrice / rate; // internal storage/calculations always in USD, consistent with live prices from Twelve Data
     }
 
@@ -5270,7 +5270,7 @@
     savePortLots();
     recordMovement({ type:"buy", ticker, shares, price:priceUSD, entryCcy, enteredPrice });
     $("portTickerInput").value = ""; $("portSharesInput").value = ""; $("portPriceInput").value = "";
-    setPortFormStatus(entryCcy === "MXN" ? `Compra agregada (${enteredPrice.toFixed(2)} MXN ≈ ${priceUSD.toFixed(2)} USD).` : "Compra agregada.");
+    setPortFormStatus(entryCcy === "MXN" ? `Compra agregada (${enteredPrice.toFixed(2)} MXN â ${priceUSD.toFixed(2)} USD).` : "Compra agregada.");
     renderPortfolioTable();
     populateTickerSelect();
     renderMovementsHistory();
@@ -5284,18 +5284,18 @@
     const entryCcy = displayCurrency;
     if(!ticker){ setPortSellFormStatus("Escribe un ticker.", true); return; }
     const lots = portLots.filter(l=>l.ticker===ticker);
-    if(!lots.length){ setPortSellFormStatus("No tienes posición abierta en ese ticker.", true); return; }
-    if(!(sharesSold>0)){ setPortSellFormStatus("El número de acciones debe ser mayor a 0.", true); return; }
+    if(!lots.length){ setPortSellFormStatus("No tienes posiciÃ³n abierta en ese ticker.", true); return; }
+    if(!(sharesSold>0)){ setPortSellFormStatus("El nÃºmero de acciones debe ser mayor a 0.", true); return; }
     if(!(enteredPrice>0)){ setPortSellFormStatus("El precio de venta debe ser mayor a 0.", true); return; }
 
     let sellPriceUSD = enteredPrice;
     if(entryCcy === "MXN"){
       const btn = $("portSellBtn");
       btn.disabled = true;
-      setPortSellFormStatus("Obteniendo tipo de cambio…");
+      setPortSellFormStatus("Obteniendo tipo de cambioâ¦");
       const rate = await fetchUsdMxnRate();
       btn.disabled = false;
-      if(!rate){ setPortSellFormStatus("No se pudo obtener el tipo de cambio USD/MXN — intenta de nuevo en un momento.", true); return; }
+      if(!rate){ setPortSellFormStatus("No se pudo obtener el tipo de cambio USD/MXN â intenta de nuevo en un momento.", true); return; }
       sellPriceUSD = enteredPrice / rate;
     }
 
@@ -5309,13 +5309,13 @@
       const curPrice = portPrices[ticker];
       let extra;
       if(remSum.totalShares > 1e-9){
-        const valTxt = (curPrice!=null) ? (" (valor actual ≈ $" + (curPrice*remSum.totalShares).toFixed(2) + " USD)") : "";
+        const valTxt = (curPrice!=null) ? (" (valor actual â $" + (curPrice*remSum.totalShares).toFixed(2) + " USD)") : "";
         extra = " Te quedan " + remSum.totalShares + " acciones de " + ticker + valTxt + ".";
       } else {
-        extra = " Cerraste tu posición completa en " + ticker + ".";
+        extra = " Cerraste tu posiciÃ³n completa en " + ticker + ".";
       }
       const gainTxt = result.gainUSD >= 0 ? ("ganaste $" + result.gainUSD.toFixed(2) + " USD") : ("perdiste $" + Math.abs(result.gainUSD).toFixed(2) + " USD");
-      setPortSellFormStatus("Venta registrada: " + gainTxt + " en esta operación." + extra);
+      setPortSellFormStatus("Venta registrada: " + gainTxt + " en esta operaciÃ³n." + extra);
       renderPortfolioTable();
       populateTickerSelect();
       renderMovementsHistory();
@@ -5340,15 +5340,15 @@
     const info = portSRData[ticker];
     const srKindLabel = { pivot:"Pivote", fib:"Fibonacci", confluencia:"Confluencia", qpivot:"Pivote trimestral" };
     if(!info){
-      return `<div class="rel-excess">Calculando niveles de soporte/resistencia…</div>`;
+      return `<div class="rel-excess">Calculando niveles de soporte/resistenciaâ¦</div>`;
     }
     if(!info.sr){
-      return `<div class="rel-excess">⚠ No se pudieron calcular niveles${info.error?(" ("+info.error+")"):""}.</div>`;
+      return `<div class="rel-excess">â  No se pudieron calcular niveles${info.error?(" ("+info.error+")"):""}.</div>`;
     }
     const s1 = info.sr.supports[0], r1 = info.sr.resistances[0];
     let html = `<div class="port-row-body">
-      <div class="port-stat"><div class="pslabel">Soporte más cercano (USD)</div><div class="psval">${s1?("$"+s1.price.toFixed(2)+" · "+srKindLabel[s1.type]):"—"}</div></div>
-      <div class="port-stat"><div class="pslabel">Resistencia más cercana (USD)</div><div class="psval">${r1?("$"+r1.price.toFixed(2)+" · "+srKindLabel[r1.type]):"—"}</div></div>
+      <div class="port-stat"><div class="pslabel">Soporte mÃ¡s cercano (USD)</div><div class="psval">${s1?("$"+s1.price.toFixed(2)+" Â· "+srKindLabel[s1.type]):"â"}</div></div>
+      <div class="port-stat"><div class="pslabel">Resistencia mÃ¡s cercana (USD)</div><div class="psval">${r1?("$"+r1.price.toFixed(2)+" Â· "+srKindLabel[r1.type]):"â"}</div></div>
     </div>`;
     if(info.alert.urgent){
       html += `<div class="bt-verdict ${info.alert.cls}">
@@ -5423,9 +5423,9 @@
     const realizedUSD = portSales.reduce((s,sale)=>s+(sale.gainUSD||0), 0);
     host.style.display = "block";
     host.innerHTML = `<div class="port-summary-grid">
-      <div class="port-stat"><div class="pslabel">Valor actual</div><div class="psval">${hasAllPrices?fmtCcy(convertUSD(totalValue)):"—"}</div></div>
+      <div class="port-stat"><div class="pslabel">Valor actual</div><div class="psval">${hasAllPrices?fmtCcy(convertUSD(totalValue)):"â"}</div></div>
       <div class="port-stat"><div class="pslabel">Invertido</div><div class="psval">${fmtCcy(convertUSD(totalInvested))}</div></div>
-      <div class="port-stat"><div class="pslabel">P&L no realizada</div><div class="psval ${unrealizedUSD==null?"":(unrealizedUSD>=0?"pos":"neg")}">${unrealizedUSD==null?"—":fmtCcy(convertUSD(unrealizedUSD))}</div></div>
+      <div class="port-stat"><div class="pslabel">P&L no realizada</div><div class="psval ${unrealizedUSD==null?"":(unrealizedUSD>=0?"pos":"neg")}">${unrealizedUSD==null?"â":fmtCcy(convertUSD(unrealizedUSD))}</div></div>
       <div class="port-stat"><div class="pslabel">P&L realizada</div><div class="psval ${realizedUSD>=0?"pos":"neg"}">${fmtCcy(convertUSD(realizedUSD))}</div></div>
     </div>`;
   }
@@ -5452,27 +5452,27 @@
           <span class="port-ticker mono">${ticker}</span>
           <span class="port-shares">${sum.totalShares} acc. @ ${fmtCcy(convertUSD(sum.avgCost))} prom.</span>
           <span class="port-updated">${info && info.ts ? fmtRelativeTime(info.ts) : ""}</span>
-          <button class="port-del" data-ticker="${ticker}" title="Eliminar posición completa">🗑</button>
+          <button class="port-del" data-ticker="${ticker}" title="Eliminar posiciÃ³n completa">ð</button>
         </div>
         <div class="port-row-body">
-          <div class="port-stat"><div class="pslabel">Precio actual</div><div class="psval">${curPrice!=null?fmtCcy(convertUSD(curPrice)):(info&&info.error?"⚠ error":"…")}</div></div>
+          <div class="port-stat"><div class="pslabel">Precio actual</div><div class="psval">${curPrice!=null?fmtCcy(convertUSD(curPrice)):(info&&info.error?"â  error":"â¦")}</div></div>
           <div class="port-stat"><div class="pslabel">Costo total</div><div class="psval">${fmtCcy(convertUSD(sum.totalCost))}</div></div>
-          <div class="port-stat"><div class="pslabel">Valor actual</div><div class="psval">${curVal!=null?fmtCcy(convertUSD(curVal)):"…"}</div></div>
-          <div class="port-stat"><div class="pslabel">Ganancia/Pérdida</div><div class="psval ${gainCls}">${gainUSD!=null?((gainUSD>=0?"+":"")+fmtCcy(convertUSD(gainUSD))+" ("+(gainPct*100).toFixed(1)+"%)"):"…"}</div></div>
+          <div class="port-stat"><div class="pslabel">Valor actual</div><div class="psval">${curVal!=null?fmtCcy(convertUSD(curVal)):"â¦"}</div></div>
+          <div class="port-stat"><div class="pslabel">Ganancia/PÃ©rdida</div><div class="psval ${gainCls}">${gainUSD!=null?((gainUSD>=0?"+":"")+fmtCcy(convertUSD(gainUSD))+" ("+(gainPct*100).toFixed(1)+"%)"):"â¦"}</div></div>
         </div>
         ${renderPortfolioSRBlock(ticker)}
         <div class="port-lots">
           ${lots.map(l=>{
-            const ccy = l.entryCcy || "USD"; // older lots saved before this fix have no entryCcy — they were always USD
+            const ccy = l.entryCcy || "USD"; // older lots saved before this fix have no entryCcy â they were always USD
             const amt = l.entryPrice!=null ? l.entryPrice : l.price;
             const sym = ccy==="MXN" ? "MX$" : "$";
-            return `<div class="port-lot"><span>${l.shares} acc. @ ${sym}${amt.toFixed(2)} ${ccy} — ${new Date(l.ts).toLocaleDateString("es-MX")}</span><button class="port-lot-del" data-id="${l.id}">✕</button></div>`;
+            return `<div class="port-lot"><span>${l.shares} acc. @ ${sym}${amt.toFixed(2)} ${ccy} â ${new Date(l.ts).toLocaleDateString("es-MX")}</span><button class="port-lot-del" data-id="${l.id}">â</button></div>`;
           }).join("")}
         </div>
       </div>`;
     });
     host.innerHTML = html;
-    host.querySelectorAll(".port-del").forEach(b=>b.addEventListener("click", ()=>{ if(confirm("¿Eliminar toda la posición de "+b.dataset.ticker+"?")) deletePosition(b.dataset.ticker); }));
+    host.querySelectorAll(".port-del").forEach(b=>b.addEventListener("click", ()=>{ if(confirm("Â¿Eliminar toda la posiciÃ³n de "+b.dataset.ticker+"?")) deletePosition(b.dataset.ticker); }));
     host.querySelectorAll(".port-lot-del").forEach(b=>b.addEventListener("click", ()=>deleteLot(b.dataset.id)));
     const stamps = Object.values(portPrices).map(p=>p.ts).filter(Boolean);
     $("portLastUpdate").textContent = stamps.length ? ("Precios: " + fmtRelativeTime(Math.max(...stamps)) + " (" + new Date(Math.max(...stamps)).toLocaleTimeString("es-MX") + ")") : "";
@@ -5480,7 +5480,7 @@
 
   async function refreshPortfolioPrices(){
     // Price is now derived from the same daily series refreshPortfolioLevels
-    // fetches (last close) instead of a separate /price call per ticker —
+    // fetches (last close) instead of a separate /price call per ticker â
     // halves the API credits this refresh needs. Only the FX rate is fetched here.
     if(displayCurrency === "MXN") await fetchUsdMxnRate();
   }
@@ -5493,7 +5493,7 @@
   // opening Scanner on an owned ticker is instant, without touching the
   // shared Scanner UI unless the person explicitly picks a chip. =====
   let scannerCache = {}; // ticker -> { result, updatedAt, error }
-  let userAnalyzing = false; // true only while the user's own foreground "Analizar" click is running — background scanner-cache warming must never disable the button because of this
+  let userAnalyzing = false; // true only while the user's own foreground "Analizar" click is running â background scanner-cache warming must never disable the button because of this
   let scannerRefreshTimer = null;
 
   function renderScannerTickerChips(){
@@ -5508,9 +5508,9 @@
       const active = t === scannerLastTicker ? " active" : "";
       let sub;
       if(c && c.result) sub = new Date(c.updatedAt).toLocaleTimeString("es-MX");
-      else if(c && c.error) sub = "⚠ error";
-      else sub = "cargando…";
-      return `<button class="ccy-btn scanner-chip${active}" data-ticker="${t}" type="button">${t} <span class="fx-note">· ${sub}</span></button>`;
+      else if(c && c.error) sub = "â  error";
+      else sub = "cargandoâ¦";
+      return `<button class="ccy-btn scanner-chip${active}" data-ticker="${t}" type="button">${t} <span class="fx-note">Â· ${sub}</span></button>`;
     }).join("");
   }
 
@@ -5522,7 +5522,7 @@
       lastResult = c.result;
       renderPrice(ticker, c.result.currentPrice);
       recomputeAndRenderVerdictAndMovement(c.result);
-      setStatus("Mostrando caché de portafolio — actualizado " + new Date(c.updatedAt).toLocaleTimeString("es-MX") + ". Pulsa \"Analizar\" para forzar una consulta nueva.");
+      setStatus("Mostrando cachÃ© de portafolio â actualizado " + new Date(c.updatedAt).toLocaleTimeString("es-MX") + ". Pulsa \"Analizar\" para forzar una consulta nueva.");
       renderScannerTickerChips();
     } else {
       analyze();
@@ -5563,31 +5563,31 @@
     const prevClose = daily.length>1 ? daily[daily.length-2].close : null;
 
     if(s1 && prevClose!=null && prevClose>=s1.price && currentPrice<s1.price){
-      return { urgent:true, icon:"⚠", cls:"bear", title:"Acaba de romper un soporte",
-        text:`El precio cruzó por debajo del Soporte ${s1.n} (${s1.price.toFixed(2)} USD) — zona de riesgo.` + (s2?` Si sigue cayendo, el siguiente soporte está en ${s2.price.toFixed(2)} USD.`:'') };
+      return { urgent:true, icon:"â ", cls:"bear", title:"Acaba de romper un soporte",
+        text:`El precio cruzÃ³ por debajo del Soporte ${s1.n} (${s1.price.toFixed(2)} USD) â zona de riesgo.` + (s2?` Si sigue cayendo, el siguiente soporte estÃ¡ en ${s2.price.toFixed(2)} USD.`:'') };
     }
     if(r1 && prevClose!=null && prevClose<=r1.price && currentPrice>r1.price){
-      return { urgent:true, icon:"🚀", cls:"bull", title:"Acaba de romper una resistencia",
-        text:`El precio cruzó por encima de la Resistencia ${r1.n} (${r1.price.toFixed(2)} USD) — podría acelerar al alza.` + (r2?` Siguiente resistencia en ${r2.price.toFixed(2)} USD.`:'') };
+      return { urgent:true, icon:"ð", cls:"bull", title:"Acaba de romper una resistencia",
+        text:`El precio cruzÃ³ por encima de la Resistencia ${r1.n} (${r1.price.toFixed(2)} USD) â podrÃ­a acelerar al alza.` + (r2?` Siguiente resistencia en ${r2.price.toFixed(2)} USD.`:'') };
     }
 
     const distS = s1 ? (currentPrice-s1.price)/currentPrice : null;
     const distR = r1 ? (r1.price-currentPrice)/currentPrice : null;
 
     if(distS!=null && distS>=0 && distS<=PORT_SR_PROXIMITY){
-      return { urgent:true, icon:"⚠", cls:"mixed", title:"Cerca de un soporte — zona de riesgo",
-        text:`Estás a ${(distS*100).toFixed(1)}% de tocar el Soporte ${s1.n} (${s1.price.toFixed(2)} USD).` + (s2?` Si se rompe, el siguiente soporte está en ${s2.price.toFixed(2)} USD.`:'') };
+      return { urgent:true, icon:"â ", cls:"mixed", title:"Cerca de un soporte â zona de riesgo",
+        text:`EstÃ¡s a ${(distS*100).toFixed(1)}% de tocar el Soporte ${s1.n} (${s1.price.toFixed(2)} USD).` + (s2?` Si se rompe, el siguiente soporte estÃ¡ en ${s2.price.toFixed(2)} USD.`:'') };
     }
     if(distR!=null && distR>=0 && distR<=PORT_SR_PROXIMITY){
-      return { urgent:true, icon:"◆", cls:"mixed", title:"Cerca de una resistencia",
-        text:`Estás a ${(distR*100).toFixed(1)}% de la Resistencia ${r1.n} (${r1.price.toFixed(2)} USD).` + (r2?` Si la rompe, la siguiente resistencia está en ${r2.price.toFixed(2)} USD.`:'') };
+      return { urgent:true, icon:"â", cls:"mixed", title:"Cerca de una resistencia",
+        text:`EstÃ¡s a ${(distR*100).toFixed(1)}% de la Resistencia ${r1.n} (${r1.price.toFixed(2)} USD).` + (r2?` Si la rompe, la siguiente resistencia estÃ¡ en ${r2.price.toFixed(2)} USD.`:'') };
     }
 
     const parts = [];
     if(distS!=null && distS>=0) parts.push(`${(distS*100).toFixed(1)}% arriba del Soporte ${s1.n} (${s1.price.toFixed(2)} USD)`);
     if(distR!=null && distR>=0) parts.push(`${(distR*100).toFixed(1)}% debajo de la Resistencia ${r1.n} (${r1.price.toFixed(2)} USD)`);
-    return { urgent:false, icon:"◇",
-      text: parts.length ? `Precio a ${parts.join(" y ")} — sin niveles clave inmediatos que vigilar.` : "No hay suficiente historial para calcular soportes/resistencias confiables todavía." };
+    return { urgent:false, icon:"â",
+      text: parts.length ? `Precio a ${parts.join(" y ")} â sin niveles clave inmediatos que vigilar.` : "No hay suficiente historial para calcular soportes/resistencias confiables todavÃ­a." };
   }
 
   async function refreshPortfolioLevels(onlyTickers){
@@ -5683,7 +5683,7 @@
   function saveExtendedHoursTickers(list){
     if(!safeLocalStorageSet(EXTENDED_HOURS_KEY, JSON.stringify(list))){
       const el = $("extFormStatus");
-      if(el){ el.textContent = "⚠ No se pudo guardar la lista en este dispositivo."; el.className = "port-form-status err"; }
+      if(el){ el.textContent = "â  No se pudo guardar la lista en este dispositivo."; el.className = "port-form-status err"; }
     }
   }
 
@@ -5707,8 +5707,8 @@
     const t = (raw || "").trim().toUpperCase();
     if(!t) return { ok:false, msg:"Escribe un ticker." };
     const list = loadExtendedHoursTickers();
-    if(list.some(e=>e.ticker===t)) return { ok:false, msg: t + " ya está en la lista." };
-    if(list.length >= EXTENDED_HOURS_CAP) return { ok:false, msg: "Límite de " + EXTENDED_HOURS_CAP + " alcanzado — quita alguno antes de agregar otro." };
+    if(list.some(e=>e.ticker===t)) return { ok:false, msg: t + " ya estÃ¡ en la lista." };
+    if(list.length >= EXTENDED_HOURS_CAP) return { ok:false, msg: "LÃ­mite de " + EXTENDED_HOURS_CAP + " alcanzado â quita alguno antes de agregar otro." };
     list.push({ ticker: t, source: "manual", addedAt: Date.now() });
     saveExtendedHoursTickers(list);
     return { ok:true };
@@ -5742,9 +5742,9 @@
       return '<span class="ext-chip" data-ticker="' + escapeExtTicker(e.ticker) + '">' +
         '<span class="ext-chip-ticker">' + escapeExtTicker(e.ticker) + '</span>' +
         '<span class="ext-chip-src">' + (e.source === "portfolio" ? "portafolio" : "manual") + '</span>' +
-        '<button class="ext-chip-rm" data-ticker="' + escapeExtTicker(e.ticker) + '" type="button" title="Quitar">✕</button>' +
+        '<button class="ext-chip-rm" data-ticker="' + escapeExtTicker(e.ticker) + '" type="button" title="Quitar">â</button>' +
         '</span>';
-    }).join("") : '<div class="port-empty">Todavía no hay tickers en la lista.</div>';
+    }).join("") : '<div class="port-empty">TodavÃ­a no hay tickers en la lista.</div>';
 
     if(extendedHoursRemoteTickers === null) await loadExtendedHoursRemote();
     const banner = $("extSyncBanner");
@@ -5757,7 +5757,7 @@
         const parts = [];
         if(added.length) parts.push("agregar: " + added.join(", "));
         if(removed.length) parts.push("quitar: " + removed.join(", "));
-        banner.textContent = "⏳ Cambios pendientes de sincronizar en GitHub (" + parts.join(" · ") + ") — dile a Claude \"sincroniza el horario extendido\" para aplicarlos.";
+        banner.textContent = "â³ Cambios pendientes de sincronizar en GitHub (" + parts.join(" Â· ") + ") â dile a Claude \"sincroniza el horario extendido\" para aplicarlos.";
         banner.style.display = "block";
       } else {
         banner.style.display = "none";
@@ -5772,11 +5772,11 @@
     const statusEl = $("extFormStatus");
     if(r.ok){
       $("extTickerInput").value = "";
-      statusEl.textContent = "✓ Agregado.";
+      statusEl.textContent = "â Agregado.";
       statusEl.className = "port-form-status ok";
       renderExtendedHoursTab();
     } else {
-      statusEl.textContent = "⚠ " + r.msg;
+      statusEl.textContent = "â  " + r.msg;
       statusEl.className = "port-form-status err";
     }
   });
@@ -5790,9 +5790,9 @@
 
   // ---- shared cache, written by the "Refresh portfolio cache" GitHub
   // Action. NOTE: GitHub runs scheduled workflows on ITS OWN schedule, not
-  // strictly ours — observed gaps in practice have ranged from 20 minutes
+  // strictly ours â observed gaps in practice have ranged from 20 minutes
   // to several hours, regardless of the cron interval in the workflow file.
-  // So this cache is best-effort freshness, never a guarantee — which is
+  // So this cache is best-effort freshness, never a guarantee â which is
   // exactly why we always show it (with an honest per-ticker timestamp)
   // instead of gating on an age cutoff and silently falling back to a live
   // fetch that spends this device's own API credits without being asked.
@@ -5819,10 +5819,10 @@
     await fetchUsdMxnRate();
     const shared = await loadSharedPortfolioCache();
     if(shared && shared.tickers){
-      // Always paint whatever the shared cache has, however old — no
+      // Always paint whatever the shared cache has, however old â no
       // device-side API credits spent just from opening the app. The
       // per-ticker timestamp in Portfolio shows exactly how stale it is;
-      // use "🔄 Actualizar ahora" there to force a live refresh on demand.
+      // use "ð Actualizar ahora" there to force a live refresh on demand.
       Object.entries(shared.tickers).forEach(([t, entry]) => {
         if(entry.error){
           portPrices[t] = Object.assign({}, portPrices[t], { error: entry.error, ts: entry.updatedAt });
@@ -5838,7 +5838,7 @@
       const missing = Object.keys(groupLotsByTicker()).filter(t => !(t in shared.tickers));
       if(missing.length) await refreshPortfolioLevels(missing);
     } else {
-      await refreshPortfolioAll(); // no shared cache at all yet (first-ever load) — fetch live once
+      await refreshPortfolioAll(); // no shared cache at all yet (first-ever load) â fetch live once
     }
     await refreshScannerCacheAll(); // then fill the Scanner cache in the background, without competing for API slots
   })();
