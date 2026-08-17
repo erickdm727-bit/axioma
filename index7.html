@@ -5600,7 +5600,7 @@
       let sub;
       if(c && c.result) sub = new Date(c.updatedAt).toLocaleTimeString("es-MX");
       else if(c && c.error) sub = "⚠ error";
-      else sub = "cargando…";
+      else sub = "toca para analizar";
       return `<button class="ccy-btn scanner-chip${active}" data-ticker="${t}" type="button">${t} <span class="fx-note">· ${sub}</span></button>`;
     }).join("");
   }
@@ -5644,7 +5644,10 @@
 
   function startScannerAutoRefresh(){
     clearInterval(scannerRefreshTimer);
-    scannerRefreshTimer = setInterval(refreshScannerCacheAll, 2*60*60*1000);
+    // No longer bulk-live-fetches every ticker on a timer (that silently burned API
+    // credits every 2h even with the app just sitting open). Chips just repaint from
+    // whatever is already cached; tap a ticker to analyze it live on demand.
+    scannerRefreshTimer = setInterval(renderScannerTickerChips, 2*60*60*1000);
   }
 
   const PORT_SR_PROXIMITY = 0.02; // dentro de 2% cuenta como "cerca" de un nivel
@@ -5933,7 +5936,9 @@
     } else {
       await refreshPortfolioAll(); // no shared cache at all yet (first-ever load) — fetch live once
     }
-    await refreshScannerCacheAll(); // then fill the Scanner cache in the background, without competing for API slots
+    // Scanner ticker chips are no longer bulk-live-fetched here — that was silently
+    // re-analyzing the whole portfolio (and burning API credits) on every single
+    // open/reload. Chips populate from scannerCache as you tap them or run analyses.
   })();
 })();
 </script>
