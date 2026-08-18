@@ -4061,7 +4061,7 @@
     if(series.length){
       oscWrapEl.innerHTML = buildOscillatorSvg(hist, series, {
         height: 120, min: -100, max: 0, color: "#5B8DEF",
-        refLines: (() => { const wCfg = (BT_INDICATOR_CONFIG && BT_INDICATOR_CONFIG.williams) || { buyThreshold: -80, sellThreshold: -20 }; return [ { value: wCfg.sellThreshold, color: "#FF5C5C", label: String(wCfg.sellThreshold) }, { value: wCfg.buyThreshold, color: "#3ECF8E", label: String(wCfg.buyThreshold) } ]; })()
+        refLines: (() => { const wCfg = (BT_INDICATOR_CONFIG && BT_INDICATOR_CONFIG.williams) || { buyThresh: -80, sellThresh: -20 }; return [ { value: wCfg.sellThresh, color: "#FF5C5C", label: String(wCfg.sellThresh) }, { value: wCfg.buyThresh, color: "#3ECF8E", label: String(wCfg.buyThresh) } ]; })()
       }).replace("</svg>", crosshairOverlaySvg() + "</svg>");
     } else {
       oscWrapEl.innerHTML = '<div class="hint">No hay suficientes datos para calcular Williams %R en este marco.</div>';
@@ -4131,7 +4131,7 @@
     if(series.length){
       oscWrapEl.innerHTML = buildOscillatorSvg(hist, series, {
         height: 120, min: -100, max: 0,
-        refLines: (() => { const wCfg = (BT_INDICATOR_CONFIG && BT_INDICATOR_CONFIG.williams) || { buyThreshold: -80, sellThreshold: -20 }; return [ { value: wCfg.sellThreshold, color: "#FF5C5C", label: String(wCfg.sellThreshold) }, { value: wCfg.buyThreshold, color: "#3ECF8E", label: String(wCfg.buyThreshold) } ]; })()
+        refLines: (() => { const wCfg = (BT_INDICATOR_CONFIG && BT_INDICATOR_CONFIG.williams) || { buyThresh: -80, sellThresh: -20 }; return [ { value: wCfg.sellThresh, color: "#FF5C5C", label: String(wCfg.sellThresh) }, { value: wCfg.buyThresh, color: "#3ECF8E", label: String(wCfg.buyThresh) } ]; })()
       }).replace("</svg>", crosshairOverlaySvg() + "</svg>");
     } else {
       oscWrapEl.innerHTML = '<div class="hint">No hay suficientes datos para calcular Williams %R.</div>';
