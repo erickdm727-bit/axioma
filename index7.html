@@ -686,13 +686,7 @@
     <div class="module-body-wrap">
     <div id="setup-body"></div>
     <div class="module-score" id="score-setup"></div>
-    <div class="chart-fs-wrap" id="chartFsWrap-setup">
-    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-setup" title="Pantalla completa">⛶</button>
-    <div id="chartSvg-setup"></div>
-    <div id="oscSvg-setup" style="margin-top:6px;"></div>
-    </div>
-    <div class="mov-legend" id="chartLegend-setup"></div>
-    </div>
+  </div>
   </div>
 
   <!-- 15. Williams %R -->
@@ -4399,38 +4393,6 @@
     drawRelChart(result);
   }
 
-  function drawSetupChart(result){
-    const svgWrapEl = $("chartSvg-setup"), oscWrapEl = $("oscSvg-setup"), legendEl = $("chartLegend-setup");
-    if(!svgWrapEl || !oscWrapEl) return;
-    const full = result.seriesByTf ? result.seriesByTf["1day"] : null;
-    if(!full || !full.length){
-      svgWrapEl.innerHTML = '<div class="hint" style="padding:12px;text-align:center;">No hay datos suficientes en el marco diario.</div>';
-      oscWrapEl.innerHTML = "";
-      if(legendEl) legendEl.innerHTML = "";
-      return;
-    }
-    const hist = __axWindowSlice(full, "setup", 120);
-    const price = result.currentPrice;
-    const candleCtx = buildCandleSvg(hist, { height: 260 });
-    svgWrapEl.innerHTML = finishCandleSvg(candleCtx, hist, price);
-    oscWrapEl.innerHTML = "";
-    if(legendEl){
-      const conditions = (setupChecklist(result.seriesByTf, price) || {}).conditions || [];
-      const passCount = conditions.filter(function(c){ return c.pass === true; }).length;
-      const items = conditions.map(function(c){
-        const icon = c.pass === null ? "&middot;" : (c.pass ? "&#10003;" : "&#10007;");
-        const color = c.pass === null ? "#8FA0AE" : (c.pass ? "#3ECF8E" : "#FF5C5C");
-        return '<span style="color:' + color + '">' + icon + ' ' + c.label + '</span>';
-      });
-      legendEl.innerHTML = '<span style="font-weight:600;">' + passCount + '/' + conditions.length + ' condiciones cumplidas</span>' + items.join("");
-    }
-    __axAttachPanZoom(svgWrapEl, "setup", function(){ drawSetupChart(lastChartResult); });
-  }
-
-  function renderSetupChart(result){
-    drawSetupChart(result);
-  }
-
   function drawSrChart(result){
     const full = result.seriesByTf[moduleChartTf.sr];
     const svgWrapEl = $("chartSvg-sr"), oscWrapEl = $("oscSvg-sr"), legendEl = $("chartLegend-sr");
@@ -5448,7 +5410,6 @@
     renderHeikinChart(r);
     renderPatternsChart(r);
     renderRelChart(r);
-    renderSetupChart(r);
     renderSrChart(r);
     applyAllToggleUI();
     return overall;
