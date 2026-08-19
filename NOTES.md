@@ -112,3 +112,18 @@ Ambos siguen el patron estandar: candlestick arriba (finishCandleSvg) + panel pe
 
 Verificado en vivo con datos reales (AAPL vía modo prueba, sin gastar API): las 16 graficas restantes (williams, rsi, stoch, sma, ema, emacloud, emacloud2050, emacloud50100, bb, ichi, vwap, ad, heikin, patterns, rel, sr) renderizan bien, sin NaN. Setup Beardo confirmado sin elemento de grafico (chartSvg-setup ya no existe), checklist y score intactos ("SESGO ALCISTA score +0.20"). EMA Cloud 20/50 muestra leyenda "EMA(20) EMA(50)" y EMA Cloud 50/100 muestra "EMA(50) EMA(100)", ambos con 3 paths SVG (nube + 2 lineas) en el panel. Cero errores de consola, cero peticiones a Twelve Data durante la prueba (modo prueba funcionando correctamente).
 Commits: "Remove dedicated chart from Setup Beardo (5 condiciones)" y "Add EMA Cloud 20/50 and 50/100 dedicated charts".
+
+## 2026-08-19 - Modo prueba: cache permanente para cualquier ticker (no solo AAPL)
+
+Erick pidio que el modo prueba deje de pedirle datos a Twelve Data cada vez y que, en cambio, pida cada dato una unica vez y lo guarde para siempre. Se encontro la causa raiz: el modo prueba estaba disenado solo para un ticker fijo (AAPL, con el input bloqueado en solo lectura) y la funcion de sembrado usaba una unica llamada recursiva a ensureTestModeData() sin soporte para otros tickers.
+
+Rediseno:
+- Se elimino el bloqueo del campo de ticker (y del de benchmark) en modo prueba: ahora se puede escribir cualquier ticker, igual que en modo normal.
+- Nuevo cache generico en localStorage (axTestGenericCacheV1) indexado por "simbolo|intervalo|outputsize" para las series, y por simbolo para el precio actual. fetchSeries y fetchCurrentPrice, en modo prueba, primero consultan este cache; si el dato ya existe lo devuelven al instante; si no existe, hacen la peticion real a Twelve Data UNA sola vez, la guardan en el cache y la devuelven.
+- El cache viejo de AAPL (axTestModeDataV1) se migra automaticamente la primera vez que se usa el nuevo cache, para no perder los datos de AAPL ya descargados en sesiones anteriores.
+- El banner de modo prueba y el enlace "Borrar cache guardada" se actualizaron para reflejar el comportamiento general (ya no menciona solo AAPL) y ahora muestra la fecha real del ultimo guardado.
+
+Bug encontrado y corregido durante la verificacion: la primera version de este cambio reintrodujo el flag __AX_TEST_SEEDING__ como guarda de reentrada (heredado del diseno viejo). Como analyze() pide varios timeframes en paralelo, ese flag global hacia que solo la PRIMERA peticion concurrente pasara por la rama de cache-y-guardar; el resto caia al camino normal (sin persistir en el cache de modo prueba). Resultado: solo se guardaba 1 de los 8 timeframes por ticker. Se quito el guard de reentrada (ya no hace falta, fetchSeries/fetchCurrentPrice ya no se llaman a si mismas recursivamente en el nuevo diseno) y se verifico que los 8 timeframes + el benchmark quedan guardados correctamente.
+
+Verificado en vivo: se borro el cache viejo y el nuevo, se activo modo prueba, se analizo AAPL desde cero (8 llamadas reales a Twelve Data, una por timeframe, respetando el limite de 6/min) y se confirmo que las 8 quedaron guardadas en axTestGenericCacheV1. Se volvio a analizar AAPL y salio instantaneo, con cero peticiones de red a Twelve Data (confirmado con la herramienta de inspeccion de red). La fecha del banner ("Ultimo guardado") ahora se actualiza sola tras cada guardado. Los 16 graficos siguen renderizando bien, sin NaN, cero errores de consola.
+Commits: "Test mode: cache any ticker permanently, fetch once per symbol/interval", "Fix test mode concurrency bug: only first parallel timeframe fetch was cached", "Refresh test mode banner date after each save".
