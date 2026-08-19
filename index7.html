@@ -1671,22 +1671,17 @@
     const __ck = symbol + "|" + interval + "|" + outputsize;
     const __hit = __ax_seriesCache.get(__ck);
     if(__hit && (Date.now() - __hit.t) < __AX_SERIES_TTL_MS) return __hit.v;
-    if(__AX_TEST_MODE__ && !__AX_TEST_SEEDING__){
+    if(__AX_TEST_MODE__){
       const __gcache = __axTestLoadGeneric();
       const __gk = symbol + "|" + interval + "|" + outputsize;
       if(__gcache.series[__gk]) return __gcache.series[__gk];
-      __AX_TEST_SEEDING__ = true;
-      try {
-        setStatus("Modo prueba: pidiendo " + symbol + " (" + interval + ") por primera y unica vez, se guardara para siempre...");
-        const __td = await tdFetch("/time_series", { symbol, interval, outputsize }, priority);
-        if(!__td.values || !Array.isArray(__td.values)) throw new Error("Sin datos para " + symbol + " en " + interval + ". Revisa el ticker.");
-        const __tout = __td.values.map(function(v){ return { datetime:v.datetime, open:parseFloat(v.open), high:parseFloat(v.high), low:parseFloat(v.low), close:parseFloat(v.close), volume: v.volume!=null ? parseFloat(v.volume)||0 : 0 }; }).reverse();
-        __gcache.series[__gk] = __tout;
-        __axTestSaveGeneric();
-        return __tout;
-      } finally {
-        __AX_TEST_SEEDING__ = false;
-      }
+      setStatus("Modo prueba: pidiendo " + symbol + " (" + interval + ") por primera y unica vez, se guardara para siempre...");
+      const __td = await tdFetch("/time_series", { symbol, interval, outputsize }, priority);
+      if(!__td.values || !Array.isArray(__td.values)) throw new Error("Sin datos para " + symbol + " en " + interval + ". Revisa el ticker.");
+      const __tout = __td.values.map(function(v){ return { datetime:v.datetime, open:parseFloat(v.open), high:parseFloat(v.high), low:parseFloat(v.low), close:parseFloat(v.close), volume: v.volume!=null ? parseFloat(v.volume)||0 : 0 }; }).reverse();
+      __gcache.series[__gk] = __tout;
+      __axTestSaveGeneric();
+      return __tout;
     }
     const data = await tdFetch("/time_series", { symbol, interval, outputsize }, priority);
     if(!data.values || !Array.isArray(data.values)) throw new Error(`Sin datos para ${symbol} en ${interval}. Revisa el ticker.`);
@@ -1700,7 +1695,7 @@
   }
 
   async function fetchCurrentPrice(symbol){
-    if(__AX_TEST_MODE__ && !__AX_TEST_SEEDING__){ const __gcache = __axTestLoadGeneric(); if(__gcache.price[symbol] != null) return __gcache.price[symbol]; __AX_TEST_SEEDING__ = true; try { const __td = await tdFetch("/price", { symbol }); if(!__td.price) throw new Error("No se pudo obtener el precio actual."); const __p = parseFloat(__td.price); __gcache.price[symbol] = __p; __axTestSaveGeneric(); return __p; } finally { __AX_TEST_SEEDING__ = false; } }
+    if(__AX_TEST_MODE__){ const __gcache = __axTestLoadGeneric(); if(__gcache.price[symbol] != null) return __gcache.price[symbol]; const __td = await tdFetch("/price", { symbol }); if(!__td.price) throw new Error("No se pudo obtener el precio actual."); const __p = parseFloat(__td.price); __gcache.price[symbol] = __p; __axTestSaveGeneric(); return __p; }
     const data = await tdFetch("/price", { symbol });
     if(!data.price) throw new Error("No se pudo obtener el precio actual.");
     return parseFloat(data.price);
