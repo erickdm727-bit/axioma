@@ -72,6 +72,16 @@ Verificado en vivo con ticker fresco (MMM): el grafico muestra velas diarias rea
 Commit grafico: "Add dedicated chart to Setup Beardo indicator".
 Commit fix bug: "Fix Setup Beardo checklist: setupChecklist returns wrapper object, not bare array".
 
-14. Siguiente y ultimo indicador estandar: Soportes/Resistencias (sr)
+14. HECHO: Soportes/Resistencias (ultimo indicador estandar)
+Grafico dedicado: velas del timeframe seleccionable (por defecto 4h, con selector de marco temporal igual que Williams/RSI/etc.), SIN panel de oscilador (los niveles de soporte/resistencia son precios estaticos, no una serie continua). En vez de reimplementar la deteccion de niveles, se reutiliza computeSupportResistanceLevels(hist, price) tal cual sobre la ventana de velas visible (mismo enfoque que Patterns: recalculo directo sobre el hist visible, no sobre el resultado precalculado de analyze() que usa su propio candle set interno). La funcion combina tres fuentes de niveles: pivotes de precio (maximos/minimos locales de 90 velas), retrocesos de Fibonacci (23.6/38.2/50/61.8/78.6%) del rango reciente, y el pivote trimestral (PP, R1, S1). Los niveles cercanos se agrupan en clusters ("confluencia" cuando coinciden varios tipos).
 
-Cada uno se hace y se verifica en vivo con datos reales antes de pasar al siguiente.
+Visualizacion: los 3 soportes mas cercanos (verde #3ECF8E) y las 3 resistencias mas cercanas (rojo #FF5C5C) se dibujan como lineas horizontales punteadas sobre las velas, con etiqueta de precio y tipo de nivel (Pivote / Fibonacci / Pivote trimestral / Confluencia). La leyenda debajo del grafico muestra el soporte y la resistencia mas cercanos al precio actual.
+
+Verificado en vivo con ticker fresco (JNJ, timeframe 4h): 130 elementos de linea renderizados, colores de soporte/resistencia correctos, leyenda mostrando "Soporte mas cercano: $269.21 · Resistencia mas cercana: $274.90" (valores reales, sin NaN). Regresion completa de los 14 indicadores anteriores (williams, rsi, stoch, sma, ema, emacloud, bb, ichi, vwap, ad, heikin, patterns, rel, setup) sigue limpia. Cero errores de consola. #statusLine sin clase de error.
+Commit: "Add dedicated chart to Soportes/Resistencias indicator".
+
+=== LISTA COMPLETA: los 15 indicadores estandar ya tienen su propio grafico dedicado (velas + pan/zoom + selector de temporalidad donde aplica) siguiendo el patron de Williams %R: williams, rsi, stoch, sma, ema, emacloud, bb, ichi, vwap, ad, heikin, patterns, rel, setup, sr. ===
+
+Pendiente para revisar con Erick (no se toca sin supervision):
+- Overlay real de precio para SMA/EMA/EMA Cloud/Bollinger (dibujar las lineas de la media/banda directamente sobre las velas, en vez de solo el panel de oscilador). Requiere extender buildCandleSvg/finishCandleSvg con soporte para overlays.
+- Ichimoku completo: falta Senkou Span A/B (nube Kumo) y Chikou Span en el grafico dedicado.
