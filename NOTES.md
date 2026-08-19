@@ -35,7 +35,9 @@ Orden sugerido, empezando por los más parecidos a Williams (osciladores acotado
 
 Dato importante para el futuro: el drawChart() muerto tambien tiene un patron ya resuelto para dibujar overlays de EMA/Bollinger ENCIMA de las velas (maLineSvgPath + bollingerSvgPaths con xOf/yOf compartidos con las velas). Si en algun momento decidimos hacer overlays de verdad (en vez de panel separado) para SMA/EMA/Bollinger, ese codigo muerto es la referencia a seguir — ya resolvieron el problema de alineación de coordenadas antes.
 
-7. Siguiente: Ichimoku (mas complejo — 5 lineas, nube Kumo)
-8. (resto — VWAP Anclado, Acum/Distrib., Heikin Ashi Semanal, Patrones de velas, Fuerza relativa, Setup Beardo, Soportes/Resistencias)
+7. Ichimoku — HECHO PARCIAL, a proposito. Ichimoku completo son 5 lineas: Tenkan-sen(9), Kijun-sen(26), Senkou Span A/B (que forman la nube Kumo, desplazada 26 periodos HACIA ADELANTE), y Chikou Span (precio desplazado 26 periodos HACIA ATRAS). Implemente solo Tenkan-sen y Kijun-sen (el cruce entre estas dos es en si una senal valida y muy usada). NO implemente la nube Kumo ni el Chikou porque requieren desplazamiento temporal (mostrar valores calculados hace 26 velas en la posicion actual, y proyectar 26 velas hacia el futuro donde no hay velas todavia) — es facil hacerlo mal y mostrar una nube en el lugar equivocado, lo cual en una herramienta de trading real es peor que no mostrarla. Lo deje documentado aqui en vez de improvisar. Verificado en vivo con regresion de los 8 indicadores, cero errores. Commit: "Add dedicated chart to Ichimoku indicator..."
+
+8. Siguiente: VWAP Anclado
+9. (resto — Acum/Distrib., Heikin Ashi Semanal, Patrones de velas, Fuerza relativa, Setup Beardo, Soportes/Resistencias)
 
 Cada uno se hace y se verifica en vivo con datos reales antes de pasar al siguiente.
