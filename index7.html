@@ -610,6 +610,13 @@
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-ad"></div>
     <div class="module-score" id="score-ad"></div>
+    <div class="tf-selector" id="chartTf-ad"></div>
+    <div class="chart-fs-wrap" id="chartFsWrap-ad">
+    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-ad" title="Pantalla completa">⛶</button>
+    <div id="chartSvg-ad"></div>
+    <div id="oscSvg-ad" style="margin-top:6px;"></div>
+    </div>
+    <div class="mov-legend" id="chartLegend-ad"></div>
   </div>
   </div>
 
@@ -3633,7 +3640,7 @@
   // sub-pane), built from the same seriesByTf data already fetched — no
   // extra requests. Started with Williams %R; other indicators get the
   // same treatment next. ----
-  let moduleChartTf = { williams: "4h", rsi: "4h", stoch: "4h", sma: "4h", ema: "4h", emacloud: "4h", bb: "4h", ichi: "4h", vwap: "4h" };
+  let moduleChartTf = { williams: "4h", rsi: "4h", stoch: "4h", sma: "4h", ema: "4h", emacloud: "4h", bb: "4h", ichi: "4h", vwap: "4h", ad: "4h" };
 
   function buildModuleChartTfSelector(key, availableKeys, onSelect){
     const el = $("chartTf-" + key); if(!el) return;
@@ -4141,6 +4148,56 @@
     if(!availableKeys.has(moduleChartTf.vwap)) moduleChartTf.vwap = availableKeys.has("4h") ? "4h" : Array.from(availableKeys)[0];
     buildModuleChartTfSelector("vwap", availableKeys, () => drawVwapChart(lastChartResult));
     drawVwapChart(result);
+  }
+
+  function drawAdChart(result){
+    const tfKey = moduleChartTf.ad;
+    const full = result.seriesByTf[tfKey];
+    const svgWrapEl = $("chartSvg-ad"), oscWrapEl = $("oscSvg-ad"), legendEl = $("chartLegend-ad");
+    if(!svgWrapEl || !oscWrapEl) return;
+    if(!full || !full.length){
+      svgWrapEl.innerHTML = '<div class="hint" style="padding:12px;text-align:center;">No hay datos suficientes para este marco temporal.</div>';
+      oscWrapEl.innerHTML = ""; if(legendEl) legendEl.innerHTML = "";
+      return;
+    }
+    const hist = __axWindowSlice(full, "ad", 180);
+    const price = result.currentPrice;
+    const candleCtx = buildCandleSvg(hist, { height: 260 });
+    svgWrapEl.innerHTML = finishCandleSvg(candleCtx, hist, price);
+
+    let ad = 0;
+    const series = [];
+    hist.forEach(c => {
+      const range = (c.high - c.low) || 1e-9;
+      const clv = ((c.close-c.low)-(c.high-c.close))/range;
+      ad += clv * (c.volume||0);
+      series.push(ad);
+    });
+    if(series.length){
+      const W=900, H=120, padL=8, padR=66, padT=10, padB=20;
+      const plotH = H-padT-padB, plotW = W-padL-padR;
+      const lo = Math.min(...series), hi = Math.max(...series);
+      const range2 = (hi-lo) || 1;
+      const xOf = i => padL + (i/(hist.length-1))*plotW;
+      const yOf = v => padT + (1-(v-lo)/range2)*plotH;
+      let adPath = "";
+      series.forEach((v,idx) => { adPath += (idx===0?"M":"L")+xOf(idx)+","+yOf(v)+" "; });
+      oscWrapEl.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;display:block;">' +
+        '<path d="' + adPath.trim() + '" fill="none" stroke="#9B8AFB" stroke-width="1.4"></path>' +
+        '</svg>';
+    } else {
+      oscWrapEl.innerHTML = "";
+    }
+    if(legendEl) legendEl.innerHTML = '<span><i style="background:#9B8AFB"></i> Linea Acum/Distrib (CLV x volumen, acumulado)</span>';
+    __axAttachPanZoom(svgWrapEl, "ad", () => drawAdChart(lastChartResult));
+    __axAttachPanZoom(oscWrapEl, "ad", () => drawAdChart(lastChartResult));
+  }
+
+  function renderAdChart(result){
+    const availableKeys = new Set(Object.keys(result.seriesByTf).filter(k => result.seriesByTf[k] && result.seriesByTf[k].length));
+    if(!availableKeys.has(moduleChartTf.ad)) moduleChartTf.ad = availableKeys.has("4h") ? "4h" : Array.from(availableKeys)[0];
+    buildModuleChartTfSelector("ad", availableKeys, () => drawAdChart(lastChartResult));
+    drawAdChart(result);
   }
 
   // ---- Generic chart fullscreen (any .chart-fs-wrap with a matching .chart-fs-btn) ----
@@ -5079,6 +5136,7 @@
     renderBollingerChart(r);
     renderIchimokuChart(r);
     renderVwapChart(r);
+    renderAdChart(r);
     applyAllToggleUI();
     return overall;
   }
