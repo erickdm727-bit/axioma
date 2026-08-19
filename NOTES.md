@@ -98,3 +98,17 @@ Si se quieren datos de prueba mas recientes, el aviso amarillo incluye un enlace
 
 Verificado en vivo: activacion + primer analisis (con espera real por el limite de 6-8 peticiones/min de Twelve Data, la app ya maneja esto sola con reintentos), luego 2 analisis mas sin ninguna peticion de red a Twelve Data (confirmado con la herramienta de inspeccion de red), los 15 graficos con datos y sin NaN, cero errores de consola. Tambien se confirmo que el modo normal (boton desactivado) sigue funcionando sin cambios: ticker real XOM analizado con datos en vivo despues de desactivar el modo prueba.
 Commit: "Add offline test mode (AAPL, self-seeding via localStorage, zero API cost after first use)".
+
+## 2026-08-19 - Setup Beardo: grafico eliminado + EMA Cloud 20/50 y 50/100: graficos nuevos
+
+Dos cambios pedidos por Erick a partir de capturas de pantalla:
+
+1) Setup Beardo (5 condiciones): se elimino por completo el grafico de velas dedicado que tenia (HTML del card, las funciones drawSetupChart/renderSetupChart, y la llamada renderSetupChart(r) en el dispatch de analyze()). El modulo vuelve a su estado original: solo checklist + score, sin grafico. Instruccion explicita: no se debe volver a modificar este modulo despues de este cambio.
+
+2) EMA Cloud 20/50 y EMA Cloud 50/100: estos dos modulos (distintos del modulo generico "EMA Cloud" que ya tenia grafico) no mostraban ningun grafico, solo el selector de marco temporal vacio. Se investigo el modulo generico emacloud (que ya calculaba EMA(20)/EMA(50) con nube) y se uso como plantilla:
+- emacloud2050: clon exacto del generico (mismos periodos 20/50), apuntando a los IDs propios del modulo (chartSvg-emacloud2050, etc.) para que tenga su propio grafico independiente.
+- emacloud50100: misma logica pero con EMA(50)/EMA(100) en vez de EMA(20)/EMA(50).
+Ambos siguen el patron estandar: candlestick arriba (finishCandleSvg) + panel pequeno abajo con las dos EMAs y la nube alcista/bajista entre ellas, leyenda con colores, selector de marco temporal multi-timeframe (igual que el resto de indicadores estandar).
+
+Verificado en vivo con datos reales (AAPL vía modo prueba, sin gastar API): las 16 graficas restantes (williams, rsi, stoch, sma, ema, emacloud, emacloud2050, emacloud50100, bb, ichi, vwap, ad, heikin, patterns, rel, sr) renderizan bien, sin NaN. Setup Beardo confirmado sin elemento de grafico (chartSvg-setup ya no existe), checklist y score intactos ("SESGO ALCISTA score +0.20"). EMA Cloud 20/50 muestra leyenda "EMA(20) EMA(50)" y EMA Cloud 50/100 muestra "EMA(50) EMA(100)", ambos con 3 paths SVG (nube + 2 lineas) en el panel. Cero errores de consola, cero peticiones a Twelve Data durante la prueba (modo prueba funcionando correctamente).
+Commits: "Remove dedicated chart from Setup Beardo (5 condiciones)" y "Add EMA Cloud 20/50 and 50/100 dedicated charts".
