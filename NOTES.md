@@ -183,3 +183,20 @@ Verificado en vivo (modo prueba, AAPL, 4h): chartSvg-ichi con 5 paths (Tenkan, K
 Con esto queda completo el pendiente historico: "Overlay real de precio para SMA/EMA/EMA Cloud/Bollinger" y "completar Ichimoku (Kumo cloud, Chikou Span)" — ya no quedan overlays pendientes en NOTES.md.
 
 Commit: "Ichimoku: overlay real (Senkou A/B, Kumo cloud, Chikou Span) sobre velas" (sha 4d3ff05a).
+
+## 2026-08-19 — RSI, Estocastico, VWAP, Acum/Distrib y Fuerza relativa: unificados en un solo grafico
+
+Ultima tanda de "overlay real". Estos 5 modulos no son indicadores de precio (RSI y %K estocastico van de 0 a 100, Acum/Distrib es un acumulado sin limite natural, Fuerza relativa es un ratio contra el benchmark) asi que ponerlos literalmente sobre el eje de precio de las velas no tiene sentido matematico. En vez de eso se unificaron en UN SOLO grafico SVG junto con las velas (antes cada uno vivia en un panel separado debajo, con su propio elemento y su propio pan/zoom).
+
+Cambios tecnicos:
+- Nueva funcion compartida mergeOscPanel(svg, hist, xOf, seriesValues, opts): toma el SVG ya armado de las velas, agranda su viewBox/height para abrir espacio abajo, y dibuja ahi la linea del indicador (con su propia escala local 0-100, o min/max de los datos) usando el mismo candleCtx.xOf para que quede perfectamente alineada en X con las velas. Reutilizada por RSI, Estocastico, Acum/Distrib y Fuerza relativa.
+- VWAP es distinto: SI esta en escala de precio (es un promedio de precio ponderado por volumen), asi que se overlayo literalmente sobre las velas igual que SMA/EMA, sin necesitar mergeOscPanel.
+- Se quito el panel inferior separado (oscWrapEl) en los 5 casos.
+
+Williams %R se dejo intacto a proposito: ya tenia una funcionalidad mas avanzada (crosshair sincronizado entre las velas y su panel, con pan/zoom tactil) que ninguno de los otros indicadores tenia. Fusionarlo en un solo SVG habria sido un paso atras, no un avance, asi que no se toco.
+
+Verificado en vivo (modo prueba, AAPL, 4h): los 5 graficos muestran 1 path cada uno, sin NaN, panel inferior colapsado a 0 de alto, leyenda correcta en cada uno (RSI 70/30, Estocastico 80/20, VWAP sin franjas, Acum/Distrib sin franjas, Fuerza relativa vs SPY con linea en 100). Williams confirmado sin cambios (panel propio de 112px de alto, como siempre). Regresion completa de los 13 modulos de grafico sin NaN y sin errores de consola.
+
+Con esto termina el pendiente de "overlay real" para todos los indicadores del scanner, salvo Williams que ya iba mas adelantado.
+
+Commit: "RSI/Estocastico/VWAP/AD/Fuerza relativa: overlay real sobre velas" (sha 94f89760).
