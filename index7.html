@@ -572,6 +572,13 @@
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-ichi"></div>
     <div class="module-score" id="score-ichi"></div>
+    <div class="tf-selector" id="chartTf-ichi"></div>
+    <div class="chart-fs-wrap" id="chartFsWrap-ichi">
+    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-ichi" title="Pantalla completa">⛶</button>
+    <div id="chartSvg-ichi"></div>
+    <div id="oscSvg-ichi" style="margin-top:6px;"></div>
+    </div>
+    <div class="mov-legend" id="chartLegend-ichi"></div>
   </div>
   </div>
 
@@ -3619,7 +3626,7 @@
   // sub-pane), built from the same seriesByTf data already fetched — no
   // extra requests. Started with Williams %R; other indicators get the
   // same treatment next. ----
-  let moduleChartTf = { williams: "4h", rsi: "4h", stoch: "4h", sma: "4h", ema: "4h", emacloud: "4h", bb: "4h" };
+  let moduleChartTf = { williams: "4h", rsi: "4h", stoch: "4h", sma: "4h", ema: "4h", emacloud: "4h", bb: "4h", ichi: "4h" };
 
   function buildModuleChartTfSelector(key, availableKeys, onSelect){
     const el = $("chartTf-" + key); if(!el) return;
@@ -4016,6 +4023,60 @@
     if(!availableKeys.has(moduleChartTf.bb)) moduleChartTf.bb = availableKeys.has("4h") ? "4h" : Array.from(availableKeys)[0];
     buildModuleChartTfSelector("bb", availableKeys, () => drawBollingerChart(lastChartResult));
     drawBollingerChart(result);
+  }
+
+  function drawIchimokuChart(result){
+    const tfKey = moduleChartTf.ichi;
+    const full = result.seriesByTf[tfKey];
+    const svgWrapEl = $("chartSvg-ichi"), oscWrapEl = $("oscSvg-ichi"), legendEl = $("chartLegend-ichi");
+    if(!svgWrapEl || !oscWrapEl) return;
+    if(!full || !full.length){
+      svgWrapEl.innerHTML = '<div class="hint" style="padding:12px;text-align:center;">No hay datos suficientes para este marco temporal.</div>';
+      oscWrapEl.innerHTML = ""; if(legendEl) legendEl.innerHTML = "";
+      return;
+    }
+    const hist = __axWindowSlice(full, "ichi", 180);
+    const price = result.currentPrice;
+    const candleCtx = buildCandleSvg(hist, { height: 260 });
+    svgWrapEl.innerHTML = finishCandleSvg(candleCtx, hist, price);
+
+    const highs = hist.map(c => c.high), lows = hist.map(c => c.low);
+    const tkP = 9, kjP = 26;
+    const tkSeries = [], kjSeries = [];
+    for(let i=kjP-1;i<hist.length;i++){
+      const tk = windowHHLL(highs, lows, i+1, tkP);
+      const kj = windowHHLL(highs, lows, i+1, kjP);
+      if(tk && kj){ tkSeries.push((tk.h+tk.l)/2); kjSeries.push((kj.h+kj.l)/2); }
+    }
+    if(tkSeries.length){
+      const off = hist.length - tkSeries.length;
+      const W=900, H=120, padL=8, padR=66, padT=10, padB=20;
+      const plotH = H-padT-padB, plotW = W-padL-padR;
+      const allVals = tkSeries.concat(kjSeries);
+      const lo = Math.min(...allVals), hi = Math.max(...allVals);
+      const range = (hi-lo) || 1;
+      const xOf = i => padL + (i/(hist.length-1))*plotW;
+      const yOf = v => padT + (1-(v-lo)/range)*plotH;
+      let tkPath="", kjPath="";
+      tkSeries.forEach((v,idx) => { const i=idx+off; tkPath += (idx===0?"M":"L")+xOf(i)+","+yOf(v)+" "; });
+      kjSeries.forEach((v,idx) => { const i=idx+off; kjPath += (idx===0?"M":"L")+xOf(i)+","+yOf(v)+" "; });
+      oscWrapEl.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;display:block;">' +
+        '<path d="' + tkPath.trim() + '" fill="none" stroke="#5BC0EB" stroke-width="1.4"></path>' +
+        '<path d="' + kjPath.trim() + '" fill="none" stroke="#FF5C5C" stroke-width="1.4"></path>' +
+        '</svg>';
+    } else {
+      oscWrapEl.innerHTML = "";
+    }
+    if(legendEl) legendEl.innerHTML = '<span><i style="background:#5BC0EB"></i> Tenkan-sen (9)</span><span><i style="background:#FF5C5C"></i> Kijun-sen (26)</span><span style="opacity:.7;font-size:11px;"> Nube Kumo y Chikou: pendiente</span>';
+    __axAttachPanZoom(svgWrapEl, "ichi", () => drawIchimokuChart(lastChartResult));
+    __axAttachPanZoom(oscWrapEl, "ichi", () => drawIchimokuChart(lastChartResult));
+  }
+
+  function renderIchimokuChart(result){
+    const availableKeys = new Set(Object.keys(result.seriesByTf).filter(k => result.seriesByTf[k] && result.seriesByTf[k].length));
+    if(!availableKeys.has(moduleChartTf.ichi)) moduleChartTf.ichi = availableKeys.has("4h") ? "4h" : Array.from(availableKeys)[0];
+    buildModuleChartTfSelector("ichi", availableKeys, () => drawIchimokuChart(lastChartResult));
+    drawIchimokuChart(result);
   }
 
   // ---- Generic chart fullscreen (any .chart-fs-wrap with a matching .chart-fs-btn) ----
@@ -4952,6 +5013,7 @@
     renderEmaChart(r);
     renderEmaCloudChart(r);
     renderBollingerChart(r);
+    renderIchimokuChart(r);
     applyAllToggleUI();
     return overall;
   }
