@@ -4207,7 +4207,7 @@
   }
 
   function drawHeikinChart(result){
-    const full = result.seriesByTf["1S"];
+    const full = result.seriesByTf["1week"];
     const svgWrapEl = $("chartSvg-heikin"), oscWrapEl = $("oscSvg-heikin"), legendEl = $("chartLegend-heikin");
     if(!svgWrapEl || !oscWrapEl) return;
     if(!full || !full.length){
