@@ -154,3 +154,32 @@ Se reemplazo el bloque que llamaba a buildOscillatorSvg / dibujaba el panel de e
 
 Verificado en vivo: el div del panel queda vacio y colapsa a 0 de alto (sin hueco visual), la tarjeta de cada modulo ahora termina justo despues del grafico de velas + leyenda. Los 4 overlays siguen intactos (SMA 1 path, EMA 1 path, EMA Cloud 3 paths, Bollinger 4 paths, sin NaN). Regresion completa de las 16 graficas sin cambios, cero errores de consola. EMA Cloud 20/50, 50/100 y Setup Beardo no se tocaron.
 Commit: "Remove separate bottom panel for SMA/EMA/EMA Cloud/Bollinger (now overlaid on candles)".
+
+## 2026-08-19 — EMA Cloud 20/50 y 50/100: overlay real + quitar panel
+
+Se aplico el mismo patron de overlay real (lineas EMA + nube de relleno directamente sobre las velas usando candleCtx.xOf/yOf) a los dos modulos EMA Cloud restantes: EMA Cloud 20/50 y EMA Cloud 50/100. Antes solo el EMA Cloud generico tenia overlay real; estos dos seguian con el panel inferior de escala local. Se quito ese panel inferior en ambos (oscWrapEl queda vacio y colapsado a 0 de alto), igual que se hizo con los otros 4 modulos.
+
+Verificado en vivo (modo prueba, AAPL): chartSvg-emacloud2050 y chartSvg-emacloud50100 con 3 paths cada uno (EMA corta, EMA larga, nube), sin NaN, oscWrapEl con alto 0 en ambos. Leyenda correcta: "EMA(20) EMA(50)" para 2050 y "EMA(50) EMA(100)" para 50100. Regresion completa de los 12 modulos de grafico sin errores de consola.
+
+Commit: "EMA Cloud 20/50 and 50/100: overlay real + remove bottom panel" (sha cc3da431).
+
+## 2026-08-19 — Ichimoku completo: Senkou Span A/B (nube Kumo) y Chikou Span
+
+Se completo el ultimo pendiente de overlay real: Ichimoku ahora dibuja los 5 componentes directamente sobre las velas, no solo Tenkan-sen y Kijun-sen como antes.
+
+Cambios:
+- buildCandleSvg ahora acepta un parametro opcional opts.futureSlots (default 0, no rompe ningun llamador existente) que extiende el denominador de xOf para dejar espacio a la derecha de las velas — necesario porque la nube Kumo se proyecta 26 periodos hacia adelante del ultimo precio real.
+- drawIchimokuChart llama buildCandleSvg con futureSlots: 26 y calcula:
+  - Tenkan-sen (9) y Kijun-sen (26): igual que antes, ahora dibujadas sobre las velas (antes solo en el panel).
+  - Senkou Span A = (Tenkan+Kijun)/2, proyectada 26 periodos adelante.
+  - Senkou Span B = punto medio del maximo/minimo de 52 periodos, proyectada 26 periodos adelante.
+  - Nube Kumo: relleno entre Senkou A y B (poligono), color segun la relacion actual (verde si A>=B, rojo si A<B), opacidad 0.15.
+  - Chikou Span: precio de cierre desplazado 26 periodos hacia atras.
+- Se quito el panel inferior (oscWrapEl vacio y colapsado), igual que los demas modulos con overlay real.
+- Leyenda actualizada con los 5 componentes y colores.
+
+Verificado en vivo (modo prueba, AAPL, 4h): chartSvg-ichi con 5 paths (Tenkan, Kijun, Senkou A, Senkou B, Chikou) + 1 poligono (nube), sin NaN, oscWrapEl colapsado a 0. Visualmente la nube se proyecta correctamente al hueco vacio a la derecha de las velas, y el Chikou se ve desplazado hacia atras siguiendo el precio. Regresion completa de los 12 modulos de grafico sin errores de consola.
+
+Con esto queda completo el pendiente historico: "Overlay real de precio para SMA/EMA/EMA Cloud/Bollinger" y "completar Ichimoku (Kumo cloud, Chikou Span)" — ya no quedan overlays pendientes en NOTES.md.
+
+Commit: "Ichimoku: overlay real (Senkou A/B, Kumo cloud, Chikou Span) sobre velas" (sha 4d3ff05a).
