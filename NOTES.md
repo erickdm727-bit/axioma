@@ -46,7 +46,16 @@ Dato importante para el futuro: el drawChart() muerto tambien tiene un patron ya
 Bug encontrado y corregido en vivo: la primera version uso result.seriesByTf["1S"] (la ETIQUETA visible del selector) en lugar de result.seriesByTf["1week"] (la KEY real con la que se guarda la serie, confirmado revisando la config de timeframes: { key:"1week", label:"1S", kind:"direct", interval:"1week", outputsize:230 }). Esto hacia que el grafico SIEMPRE cayera en el estado vacio ("No hay datos suficientes en el marco semanal") sin importar el ticker, incluso con datos validos (verificado con la API de Twelve Data devolviendo 230 velas semanales OK para el ticker de prueba). Corregido cambiando la key a "1week". Verificado en vivo con ticker fresco (KO): el grafico ahora renderiza velas Heikin Ashi semanales reales, sin NaN, con leyenda visible. Regresion de los 10 indicadores anteriores (williams, rsi, stoch, sma, ema, emacloud, bb, ichi, vwap, ad) sigue limpia, cero errores de consola.
 Commits: "Add dedicated chart to Heikin Ashi Semanal indicator" + fix "Fix Heikin Ashi chart: correct seriesByTf key from \"1S\" to \"1week\"".
 
-11. Siguiente: Patrones de velas
-12. (resto — Fuerza relativa, Setup Beardo, Soportes/Resistencias)
+11. HECHO: Patrones de velas. Se agrego drawPatternsChart/renderPatternsChart. A diferencia de los demas indicadores, la funcion existente detectPatterns(candlesAsc) NO devuelve una serie completa: solo evalua las ultimas 3 velas del array que se le pasa (usa candlesAsc[n-1], [n-2], [n-3] y las 6 anteriores para la tendencia), devolviendo un array de {pattern, bias} para ese punto. Para poder marcar patrones a lo largo de todo el historial visible, el grafico nuevo llama detectPatterns(hist.slice(i-6, i+1)) para cada barra i de la ventana (equivalente a pasar el historial completo hasta i, ya que la funcion solo lee las ultimas 7 velas) — sin modificar detectPatterns en absoluto.
+
+El grafico principal reutiliza buildCandleSvg/finishCandleSvg (igual que Heikin Ashi, sin panel de oscilador propio) y le agrega marcadores encima: triangulo verde debajo de la vela para patrones alcistas, triangulo rojo arriba para bajistas, circulo amarillo para neutros (Doji), cada uno con un <title> SVG con el/los nombre(s) del patron para hover. Los marcadores se inyectan en el string SVG ya terminado (antes del cierre </svg>) usando los mismos xOf/yOf que devolvio buildCandleSvg, para que queden alineados exactamente con las velas y dibujados POR ENCIMA de estas. La leyenda debajo del grafico lista en texto los ultimos 3 patrones detectados en la ventana visible con fecha (via fmtDateShort) y sesgo.
+
+Los 13 tipos de patron que reconoce detectPatterns (sin cambios): Doji, Martillo, Hombre Colgado, Estrella Fugaz, Martillo Invertido, Envolvente Alcista/Bajista, Estrella de la Mañana/Tarde (+ variantes Doji), Tres Soldados Blancos, Tres Cuervos Negros.
+
+Verificado en vivo con ticker fresco (PFE): el grafico muestra velas reales con marcadores de patrones correctos (Doji y Envolvente Alcista detectados en fechas reales), leyenda con texto correcto, sin NaN. Regresion de los 11 indicadores anteriores (williams, rsi, stoch, sma, ema, emacloud, bb, ichi, vwap, ad, heikin) sigue limpia, cero errores de consola.
+Commit: "Add dedicated chart to Candlestick Patterns indicator".
+
+12. Siguiente: Fuerza relativa
+13. (resto — Setup Beardo, Soportes/Resistencias)
 
 Cada uno se hace y se verifica en vivo con datos reales antes de pasar al siguiente.
