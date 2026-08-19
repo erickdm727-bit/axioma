@@ -647,6 +647,13 @@
     <div class="module-body-wrap">
     <div id="patterns-list"></div>
     <div class="module-score" id="score-patterns"></div>
+    <div class="tf-selector" id="chartTf-patterns"></div>
+    <div class="chart-fs-wrap" id="chartFsWrap-patterns">
+    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-patterns" title="Pantalla completa">⛶</button>
+    <div id="chartSvg-patterns"></div>
+    <div id="oscSvg-patterns" style="margin-top:6px;"></div>
+    </div>
+    <div class="mov-legend" id="chartLegend-patterns"></div>
   </div>
   </div>
 
@@ -3646,7 +3653,7 @@
   // sub-pane), built from the same seriesByTf data already fetched — no
   // extra requests. Started with Williams %R; other indicators get the
   // same treatment next. ----
-  let moduleChartTf = { williams: "4h", rsi: "4h", stoch: "4h", sma: "4h", ema: "4h", emacloud: "4h", bb: "4h", ichi: "4h", vwap: "4h", ad: "4h" };
+  let moduleChartTf = { williams: "4h", rsi: "4h", stoch: "4h", sma: "4h", ema: "4h", emacloud: "4h", bb: "4h", ichi: "4h", vwap: "4h", ad: "4h", patterns: "4h" };
 
   function buildModuleChartTfSelector(key, availableKeys, onSelect){
     const el = $("chartTf-" + key); if(!el) return;
@@ -4204,6 +4211,67 @@
     if(!availableKeys.has(moduleChartTf.ad)) moduleChartTf.ad = availableKeys.has("4h") ? "4h" : Array.from(availableKeys)[0];
     buildModuleChartTfSelector("ad", availableKeys, () => drawAdChart(lastChartResult));
     drawAdChart(result);
+  }
+
+  function drawPatternsChart(result){
+    const full = result.seriesByTf[moduleChartTf.patterns];
+    const svgWrapEl = $("chartSvg-patterns"), oscWrapEl = $("oscSvg-patterns"), legendEl = $("chartLegend-patterns");
+    if(!svgWrapEl || !oscWrapEl) return;
+    const hist = full ? __axWindowSlice(full, "patterns", 120) : null;
+    if(!hist || hist.length < 7){
+      svgWrapEl.innerHTML = '<div class="hint" style="padding:12px;text-align:center;">No hay datos suficientes en este marco temporal.</div>';
+      oscWrapEl.innerHTML = "";
+      if(legendEl) legendEl.innerHTML = "";
+      return;
+    }
+    const price = result.currentPrice;
+    const candleCtx = buildCandleSvg(hist, { height: 260 });
+    let svgStr = finishCandleSvg(candleCtx, hist, price);
+    const found = [];
+    for(let i = 6; i < hist.length; i++){
+      const pats = detectPatterns(hist.slice(i-6, i+1));
+      if(pats && pats.length) found.push({ i: i, c: hist[i], pats: pats });
+    }
+    let markersSvg = "";
+    found.forEach(function(f){
+      const x = candleCtx.xOf(f.i);
+      const hasBull = f.pats.some(function(p){ return p.bias === "bullish"; });
+      const hasBear = f.pats.some(function(p){ return p.bias === "bearish"; });
+      const names = f.pats.map(function(p){ return p.pattern; }).join(", ");
+      if(hasBull){
+        const y = candleCtx.yOf(f.c.low) + 14;
+        markersSvg += '<path d="M ' + (x-5) + ' ' + (y+7) + ' L ' + (x+5) + ' ' + (y+7) + ' L ' + x + ' ' + (y-3) + ' Z" fill="#3ECF8E" opacity="0.9"><title>' + names + '</title></path>';
+      } else if(hasBear){
+        const y = candleCtx.yOf(f.c.high) - 14;
+        markersSvg += '<path d="M ' + (x-5) + ' ' + (y-7) + ' L ' + (x+5) + ' ' + (y-7) + ' L ' + x + ' ' + (y+3) + ' Z" fill="#FF5C5C" opacity="0.9"><title>' + names + '</title></path>';
+      } else {
+        const y = candleCtx.yOf(f.c.high) - 12;
+        markersSvg += '<circle cx="' + x + '" cy="' + y + '" r="4" fill="#E0A93E" opacity="0.9"><title>' + names + '</title></circle>';
+      }
+    });
+    if(markersSvg) svgStr = svgStr.slice(0, -6) + markersSvg + "</svg>";
+    svgWrapEl.innerHTML = svgStr;
+    oscWrapEl.innerHTML = "";
+    if(legendEl){
+      if(found.length){
+        const recent = found.slice(-3).reverse();
+        const items = recent.map(function(f){
+          const biasLabel = f.pats.some(function(p){ return p.bias === "bullish"; }) ? "alcista" : (f.pats.some(function(p){ return p.bias === "bearish"; }) ? "bajista" : "neutral");
+          return "<span>" + fmtDateShort(f.c.datetime) + ": " + f.pats.map(function(p){ return p.pattern; }).join(", ") + " (" + biasLabel + ")</span>";
+        });
+        legendEl.innerHTML = items.join("") + '<span style="opacity:.7;font-size:11px;"> Triangulo verde = alcista, triangulo rojo = bajista, circulo amarillo = neutral (Doji).</span>';
+      } else {
+        legendEl.innerHTML = '<span style="opacity:.7;">Sin patrones de velas detectados en las velas visibles.</span>';
+      }
+    }
+    __axAttachPanZoom(svgWrapEl, "patterns", function(){ drawPatternsChart(lastChartResult); });
+  }
+
+  function renderPatternsChart(result){
+    const availableKeys = new Set(Object.keys(result.seriesByTf).filter(function(k){ return result.seriesByTf[k] && result.seriesByTf[k].length; }));
+    if(!availableKeys.has(moduleChartTf.patterns)) moduleChartTf.patterns = availableKeys.has("4h") ? "4h" : Array.from(availableKeys)[0];
+    buildModuleChartTfSelector("patterns", availableKeys, function(){ drawPatternsChart(lastChartResult); });
+    drawPatternsChart(result);
   }
 
   function drawHeikinChart(result){
@@ -5172,6 +5240,7 @@
     renderVwapChart(r);
     renderAdChart(r);
     renderHeikinChart(r);
+    renderPatternsChart(r);
     applyAllToggleUI();
     return overall;
   }
