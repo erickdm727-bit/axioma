@@ -145,3 +145,12 @@ Nota: EMA Cloud 20/50 y 50/100 (los modulos nuevos separados del generico) NO se
 
 Verificado en vivo con datos reales (AAPL via modo prueba, cero costo de API): los 4 overlays aparecen correctamente sobre las velas, coordenadas dentro del rango esperado del grafico, sin NaN. Confirmado visualmente por captura de pantalla que la linea de SMA(20) sigue el precio de forma natural, cruzando por dentro de las velas donde corresponde. Bollinger muestra banda superior por encima, inferior por debajo y media al centro, en el orden correcto. Regresion completa: las 16 graficas del sitio siguen renderizando bien, cero errores de consola, emacloud2050/emacloud50100/setup no se vieron afectados (verificado que sus funciones siguen intactas en el codigo fuente).
 Commit: "Add real price overlay for SMA/EMA/EMA Cloud/Bollinger on candlesticks".
+
+## 2026-08-19 - Se quito el panel separado de abajo en SMA/EMA/EMA Cloud/Bollinger
+
+Erick pidio quitar el panel pequeno de abajo (oscSvg) en los 4 modulos donde se agrego el overlay real sobre las velas, ya que ahora es informacion duplicada (la misma linea se veia dos veces: sobre las velas y en el panel aparte).
+
+Se reemplazo el bloque que llamaba a buildOscillatorSvg / dibujaba el panel de escala propia por simplemente oscWrapEl.innerHTML = "" en los 4 casos (SMA, EMA, EMA Cloud, Bollinger). La funcion buildOscillatorSvg no se toco, sigue en uso por los demas indicadores (Williams, RSI, Estocastico, VWAP, AD, etc.) que no tienen overlay real todavia.
+
+Verificado en vivo: el div del panel queda vacio y colapsa a 0 de alto (sin hueco visual), la tarjeta de cada modulo ahora termina justo despues del grafico de velas + leyenda. Los 4 overlays siguen intactos (SMA 1 path, EMA 1 path, EMA Cloud 3 paths, Bollinger 4 paths, sin NaN). Regresion completa de las 16 graficas sin cambios, cero errores de consola. EMA Cloud 20/50, 50/100 y Setup Beardo no se tocaron.
+Commit: "Remove separate bottom panel for SMA/EMA/EMA Cloud/Bollinger (now overlaid on candles)".
