@@ -505,6 +505,13 @@
     <div class="chiprow" id="chip-rsi"></div>
     <div class="module-score" id="score-rsi"></div>
     <div class="module-alert" id="alert-rsi"></div>
+    <div class="tf-selector" id="chartTf-rsi"></div>
+    <div class="chart-fs-wrap" id="chartFsWrap-rsi">
+    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-rsi" title="Pantalla completa">⛶</button>
+    <div id="chartSvg-rsi"></div>
+    <div id="oscSvg-rsi" style="margin-top:6px;"></div>
+    </div>
+    <div class="mov-legend" id="chartLegend-rsi"></div>
   </div>
   </div>
 
@@ -3577,7 +3584,7 @@
   // sub-pane), built from the same seriesByTf data already fetched — no
   // extra requests. Started with Williams %R; other indicators get the
   // same treatment next. ----
-  let moduleChartTf = { williams: "4h" };
+  let moduleChartTf = { williams: "4h", rsi: "4h" };
 
   function buildModuleChartTfSelector(key, availableKeys, onSelect){
     const el = $("chartTf-" + key); if(!el) return;
@@ -3682,6 +3689,43 @@
     if(!availableKeys.has(moduleChartTf.williams)) moduleChartTf.williams = availableKeys.has("4h") ? "4h" : Array.from(availableKeys)[0];
     buildModuleChartTfSelector("williams", availableKeys, () => drawWilliamsChart(lastChartResult));
     drawWilliamsChart(result);
+  }
+
+  function drawRsiChart(result){
+    const tfKey = moduleChartTf.rsi;
+    const full = result.seriesByTf[tfKey];
+    const svgWrapEl = $("chartSvg-rsi"), oscWrapEl = $("oscSvg-rsi"), legendEl = $("chartLegend-rsi");
+    if(!svgWrapEl || !oscWrapEl) return;
+    if(!full || !full.length){
+      svgWrapEl.innerHTML = '<div class="hint" style="padding:12px;text-align:center;">No hay datos suficientes para este marco temporal.</div>';
+      oscWrapEl.innerHTML = ""; if(legendEl) legendEl.innerHTML = "";
+      return;
+    }
+    const hist = __axWindowSlice(full, "rsi", 180);
+    const price = result.currentPrice;
+    const candleCtx = buildCandleSvg(hist, { height: 260 });
+    svgWrapEl.innerHTML = finishCandleSvg(candleCtx, hist, price);
+
+    const closes = hist.map(c => c.close);
+    const series = rsiSeries(closes, 14);
+    if(series.length){
+      oscWrapEl.innerHTML = buildOscillatorSvg(hist, series, {
+        height: 120, min: 0, max: 100, color: "#5B8DEF",
+        refLines: [ { value: 70, color: "#FF5C5C", label: "70" }, { value: 30, color: "#3ECF8E", label: "30" } ]
+      });
+    } else {
+      oscWrapEl.innerHTML = "";
+    }
+    if(legendEl) legendEl.innerHTML = '<span><i style="background:#3ECF8E"></i> Sobreventa (&lt;30)</span><span><i style="background:#FF5C5C"></i> Sobrecompra (&gt;70)</span><span><i style="background:#5B8DEF"></i> RSI (14)</span>';
+    __axAttachPanZoom(svgWrapEl, "rsi", () => drawRsiChart(lastChartResult));
+    __axAttachPanZoom(oscWrapEl, "rsi", () => drawRsiChart(lastChartResult));
+  }
+
+  function renderRsiChart(result){
+    const availableKeys = new Set(Object.keys(result.seriesByTf).filter(k => result.seriesByTf[k] && result.seriesByTf[k].length));
+    if(!availableKeys.has(moduleChartTf.rsi)) moduleChartTf.rsi = availableKeys.has("4h") ? "4h" : Array.from(availableKeys)[0];
+    buildModuleChartTfSelector("rsi", availableKeys, () => drawRsiChart(lastChartResult));
+    drawRsiChart(result);
   }
 
   // ---- Generic chart fullscreen (any .chart-fs-wrap with a matching .chart-fs-btn) ----
@@ -4612,6 +4656,7 @@
     const overall = renderVerdict(activeScores);
     renderMovement(r.seriesByTf, r.currentPrice, overall);
     renderWilliamsChart(r);
+    renderRsiChart(r);
     applyAllToggleUI();
     return overall;
   }
