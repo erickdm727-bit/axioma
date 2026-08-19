@@ -3941,6 +3941,12 @@ function buildModuleChartTfSelector(key, availableKeys, onSelect){
       series.push(sum/period);
     }
     if(series.length){
+      const __off = hist.length - series.length;
+      let __path = "";
+      series.forEach(function(v, idx){ const __x = candleCtx.xOf(idx + __off); const __y = candleCtx.yOf(v); __path += (idx === 0 ? "M" : "L") + __x + "," + __y + " "; });
+      svgWrapEl.innerHTML = svgWrapEl.innerHTML.slice(0, -6) + '<path d="' + __path.trim() + '" fill="none" stroke="#5BC0EB" stroke-width="1.6" opacity="0.95"></path>' + "</svg>";
+    }
+    if(series.length){
       oscWrapEl.innerHTML = buildOscillatorSvg(hist, series, {
         height: 120, color: "#5BC0EB"
       });
@@ -3948,7 +3954,7 @@ function buildModuleChartTfSelector(key, availableKeys, onSelect){
       oscWrapEl.innerHTML = "";
     }
     if(legendEl) legendEl.innerHTML = '<span><i style="background:#5BC0EB"></i> SMA(20)</span>';
-    __axAttachPanZoom(svgWrapEl, "sma", () => drawSmaChart(lastChartResult));
+__axAttachPanZoom(svgWrapEl, "sma", () => drawSmaChart(lastChartResult));
     __axAttachPanZoom(oscWrapEl, "sma", () => drawSmaChart(lastChartResult));
   }
 
@@ -3984,6 +3990,12 @@ function buildModuleChartTfSelector(key, availableKeys, onSelect){
       for(let i=period;i<closes.length;i++){ ema = closes[i]*k + ema*(1-k); series.push(ema); }
     }
     if(series.length){
+      const __off = hist.length - series.length;
+      let __path = "";
+      series.forEach(function(v, idx){ const __x = candleCtx.xOf(idx + __off); const __y = candleCtx.yOf(v); __path += (idx === 0 ? "M" : "L") + __x + "," + __y + " "; });
+      svgWrapEl.innerHTML = svgWrapEl.innerHTML.slice(0, -6) + '<path d="' + __path.trim() + '" fill="none" stroke="#C77DFF" stroke-width="1.6" opacity="0.95"></path>' + "</svg>";
+    }
+    if(series.length){
       oscWrapEl.innerHTML = buildOscillatorSvg(hist, series, {
         height: 120, color: "#C77DFF"
       });
@@ -3991,7 +4003,7 @@ function buildModuleChartTfSelector(key, availableKeys, onSelect){
       oscWrapEl.innerHTML = "";
     }
     if(legendEl) legendEl.innerHTML = '<span><i style="background:#C77DFF"></i> EMA(20)</span>';
-    __axAttachPanZoom(svgWrapEl, "ema", () => drawEmaChart(lastChartResult));
+__axAttachPanZoom(svgWrapEl, "ema", () => drawEmaChart(lastChartResult));
     __axAttachPanZoom(oscWrapEl, "ema", () => drawEmaChart(lastChartResult));
   }
 
@@ -4032,6 +4044,23 @@ function buildModuleChartTfSelector(key, availableKeys, onSelect){
     const s20 = __emaCalc(closes, 20);
     const s50 = __emaCalc(closes, 50);
     if(s20.length && s50.length){
+      const __off20 = hist.length - s20.length;
+      const __off50 = hist.length - s50.length;
+      let __path20 = "", __path50 = "";
+      s20.forEach(function(v,idx){ const i=idx+__off20; const x=candleCtx.xOf(i), y=candleCtx.yOf(v); __path20 += (idx===0?"M":"L")+x+","+y+" "; });
+      s50.forEach(function(v,idx){ const i=idx+__off50; const x=candleCtx.xOf(i), y=candleCtx.yOf(v); __path50 += (idx===0?"M":"L")+x+","+y+" "; });
+      const __startI = Math.max(__off20, __off50);
+      let __topPts = [], __botPts = [];
+      for(let i=__startI;i<hist.length;i++){
+        __topPts.push(candleCtx.xOf(i)+","+candleCtx.yOf(s20[i-__off20]));
+        __botPts.push(candleCtx.xOf(i)+","+candleCtx.yOf(s50[i-__off50]));
+      }
+      const __cloudPath = __topPts.length>1 ? ("M"+__topPts.join(" L")+" L"+__botPts.slice().reverse().join(" L")+" Z") : "";
+      const __bullish = s20[s20.length-1] >= s50[s50.length-1];
+      const __cloudColor = __bullish ? "#3ECF8E" : "#FF5C5C";
+      svgWrapEl.innerHTML = svgWrapEl.innerHTML.slice(0, -6) + '<path d="' + __cloudPath + '" fill="' + __cloudColor + '" opacity="0.15"></path>' + '<path d="' + __path20.trim() + '" fill="none" stroke="#5BC0EB" stroke-width="1.6" opacity="0.95"></path>' + '<path d="' + __path50.trim() + '" fill="none" stroke="#C77DFF" stroke-width="1.6" opacity="0.95"></path>' + "</svg>";
+    }
+    if(s20.length && s50.length){
       const off20 = hist.length - s20.length;
       const off50 = hist.length - s50.length;
       const W=900, H=120, padL=8, padR=66, padT=10, padB=20;
@@ -4058,7 +4087,7 @@ function buildModuleChartTfSelector(key, availableKeys, onSelect){
       oscWrapEl.innerHTML = "";
     }
     if(legendEl) legendEl.innerHTML = '<span><i style="background:#5BC0EB"></i> EMA(20)</span><span><i style="background:#C77DFF"></i> EMA(50)</span><span><i style="background:#3ECF8E"></i> Nube alcista</span><span><i style="background:#FF5C5C"></i> Nube bajista</span>';
-    __axAttachPanZoom(svgWrapEl, "emacloud", () => drawEmaCloudChart(lastChartResult));
+__axAttachPanZoom(svgWrapEl, "emacloud", () => drawEmaCloudChart(lastChartResult));
     __axAttachPanZoom(oscWrapEl, "emacloud", () => drawEmaCloudChart(lastChartResult));
   }
 
@@ -4207,6 +4236,27 @@ function buildModuleChartTfSelector(key, availableKeys, onSelect){
       mids.push(mid); ups.push(mid+mult*sd); los.push(mid-mult*sd);
     }
     if(mids.length){
+      const __offo = hist.length - mids.length;
+      let __upPath = "", __loPath = "", __midPath = "";
+      const __topPts = [], __botPts = [];
+      mids.forEach(function(v, idx){
+        const i = idx + __offo;
+        const x = candleCtx.xOf(i);
+        __upPath += (idx===0?"M":"L")+x+","+candleCtx.yOf(ups[idx])+" ";
+        __loPath += (idx===0?"M":"L")+x+","+candleCtx.yOf(los[idx])+" ";
+        __midPath += (idx===0?"M":"L")+x+","+candleCtx.yOf(v)+" ";
+        __topPts.push(x+","+candleCtx.yOf(ups[idx]));
+        __botPts.push(x+","+candleCtx.yOf(los[idx]));
+      });
+      const __fillPath = __topPts.length>1 ? ("M"+__topPts.join(" L")+" L"+__botPts.slice().reverse().join(" L")+" Z") : "";
+      svgWrapEl.innerHTML = svgWrapEl.innerHTML.slice(0, -6) +
+        '<path d="' + __fillPath + '" fill="#5BC0EB" opacity="0.08"></path>' +
+        '<path d="' + __upPath.trim() + '" fill="none" stroke="#5BC0EB" stroke-width="1.4" opacity="0.9"></path>' +
+        '<path d="' + __loPath.trim() + '" fill="none" stroke="#5BC0EB" stroke-width="1.4" opacity="0.9"></path>' +
+        '<path d="' + __midPath.trim() + '" fill="none" stroke="#C77DFF" stroke-width="1.2" stroke-dasharray="3 2" opacity="0.9"></path>' +
+        "</svg>";
+    }
+    if(mids.length){
       const off = hist.length - mids.length;
       const W=900, H=120, padL=8, padR=66, padT=10, padB=20;
       const plotH = H-padT-padB, plotW = W-padL-padR;
@@ -4236,8 +4286,8 @@ function buildModuleChartTfSelector(key, availableKeys, onSelect){
     } else {
       oscWrapEl.innerHTML = "";
     }
-    if(legendEl) legendEl.innerHTML = '<span><i style="background:#5BC0EB"></i> Bandas (\u00b12\u03c3)</span><span><i style="background:#C77DFF"></i> Media (20)</span>';
-    __axAttachPanZoom(svgWrapEl, "bb", () => drawBollingerChart(lastChartResult));
+    if(legendEl) legendEl.innerHTML = '<span><i style="background:#5BC0EB"></i> Bandas (±2σ)</span><span><i style="background:#C77DFF"></i> Media (20)</span>';
+__axAttachPanZoom(svgWrapEl, "bb", () => drawBollingerChart(lastChartResult));
     __axAttachPanZoom(oscWrapEl, "bb", () => drawBollingerChart(lastChartResult));
   }
 
