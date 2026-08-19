@@ -37,7 +37,9 @@ Dato importante para el futuro: el drawChart() muerto tambien tiene un patron ya
 
 7. Ichimoku — HECHO PARCIAL, a proposito. Ichimoku completo son 5 lineas: Tenkan-sen(9), Kijun-sen(26), Senkou Span A/B (que forman la nube Kumo, desplazada 26 periodos HACIA ADELANTE), y Chikou Span (precio desplazado 26 periodos HACIA ATRAS). Implemente solo Tenkan-sen y Kijun-sen (el cruce entre estas dos es en si una senal valida y muy usada). NO implemente la nube Kumo ni el Chikou porque requieren desplazamiento temporal (mostrar valores calculados hace 26 velas en la posicion actual, y proyectar 26 velas hacia el futuro donde no hay velas todavia) — es facil hacerlo mal y mostrar una nube en el lugar equivocado, lo cual en una herramienta de trading real es peor que no mostrarla. Lo deje documentado aqui en vez de improvisar. Verificado en vivo con regresion de los 8 indicadores, cero errores. Commit: "Add dedicated chart to Ichimoku indicator..."
 
-8. Siguiente: VWAP Anclado
-9. (resto — Acum/Distrib., Heikin Ashi Semanal, Patrones de velas, Fuerza relativa, Setup Beardo, Soportes/Resistencias)
+8. VWAP Anclado — HECHO. Encontre anchoredVwapFromLow(candlesAsc, lookback=100) ya en el codigo (busca el minimo mas bajo en las ultimas 100 velas y ancla desde ahi), pero solo devuelve el valor FINAL, no una serie. Reimplemente la misma logica de anclaje pero calculando el VWAP acumulado en cada vela desde el ancla, para poder dibujar la linea completa. Verificado en vivo con regresion de los 9 indicadores, cero errores. Commit: "Add dedicated chart to VWAP Anclado indicator..."
+
+9. Siguiente: Acumulacion/Distribucion
+10. (resto — Heikin Ashi Semanal, Patrones de velas, Fuerza relativa, Setup Beardo, Soportes/Resistencias)
 
 Cada uno se hace y se verifica en vivo con datos reales antes de pasar al siguiente.
