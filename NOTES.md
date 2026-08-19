@@ -85,3 +85,16 @@ Commit: "Add dedicated chart to Soportes/Resistencias indicator".
 Pendiente para revisar con Erick (no se toca sin supervision):
 - Overlay real de precio para SMA/EMA/EMA Cloud/Bollinger (dibujar las lineas de la media/banda directamente sobre las velas, en vez de solo el panel de oscilador). Requiere extender buildCandleSvg/finishCandleSvg con soporte para overlays.
 - Ichimoku completo: falta Senkou Span A/B (nube Kumo) y Chikou Span en el grafico dedicado.
+
+## Modo prueba (sin consumir API)
+
+Boton "Modo prueba" junto al buscador de ticker. Al activarlo: el ticker se fija en AAPL (solo lectura), el benchmark se fija en SPY (solo lectura), y aparece un aviso amarillo dejando claro que son datos congelados de ejemplo, no precios en vivo.
+
+Como funciona (auto-sembrado, sin archivo de datos en el repo): la PRIMERA vez que se activa el modo prueba y se pulsa Analizar, la app hace una unica ronda real de llamadas a Twelve Data (los 8 marcos temporales que usan los graficos: 5min, 30min, 1h, 2h, 4h, 1day, 1week, 1month, mas el benchmark SPY diario) y guarda el resultado completo en localStorage bajo la clave axTestModeDataV1. A partir de ahi, mientras el modo prueba este activo, CADA analisis (tantos como quieras) lee de ese cache local y no hace ninguna llamada a la API — verificado con la herramienta de red: segundo y tercer analisis con modo prueba activo, cero peticiones a api.twelvedata.com. El cache sobrevive a recargas de pagina y a cerrar el navegador (localStorage persiste).
+
+Los dos puntos de entrada a la API pagada (fetchSeries y fetchCurrentPrice) llevan un guardado `if(__AX_TEST_MODE__ && !__AX_TEST_SEEDING__)` al principio: si el modo prueba esta activo devuelven datos del cache en vez de llamar a tdFetch. El flag __AX_TEST_SEEDING__ evita que la propia siembra inicial (que SI necesita llamar a fetchSeries de verdad) se quede atrapada en su propio cache vacio. El resto del pipeline (analyze(), todos los modulos, los 15 graficos) no se toco — consumen el resultado exactamente igual que con datos reales, por eso los 15 indicadores funcionan igual en modo prueba que en modo normal.
+
+Si se quieren datos de prueba mas recientes, el aviso amarillo incluye un enlace "Actualizar datos ↻" que borra el cache y vuelve a sembrarlo (otra ronda real de llamadas, una sola vez).
+
+Verificado en vivo: activacion + primer analisis (con espera real por el limite de 6-8 peticiones/min de Twelve Data, la app ya maneja esto sola con reintentos), luego 2 analisis mas sin ninguna peticion de red a Twelve Data (confirmado con la herramienta de inspeccion de red), los 15 graficos con datos y sin NaN, cero errores de consola. Tambien se confirmo que el modo normal (boton desactivado) sigue funcionando sin cambios: ticker real XOM analizado con datos en vivo despues de desactivar el modo prueba.
+Commit: "Add offline test mode (AAPL, self-seeding via localStorage, zero API cost after first use)".
