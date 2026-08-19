@@ -493,6 +493,13 @@
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-emacloud"></div>
     <div class="module-score" id="score-emacloud"></div>
+    <div class="tf-selector" id="chartTf-emacloud"></div>
+    <div class="chart-fs-wrap" id="chartFsWrap-emacloud">
+    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-emacloud" title="Pantalla completa">⛶</button>
+    <div id="chartSvg-emacloud"></div>
+    <div id="oscSvg-emacloud" style="margin-top:6px;"></div>
+    </div>
+    <div class="mov-legend" id="chartLegend-emacloud"></div>
     </div>
   </div>
 
@@ -3605,7 +3612,7 @@
   // sub-pane), built from the same seriesByTf data already fetched — no
   // extra requests. Started with Williams %R; other indicators get the
   // same treatment next. ----
-  let moduleChartTf = { williams: "4h", rsi: "4h", stoch: "4h", sma: "4h", ema: "4h" };
+  let moduleChartTf = { williams: "4h", rsi: "4h", stoch: "4h", sma: "4h", ema: "4h", emacloud: "4h" };
 
   function buildModuleChartTfSelector(key, availableKeys, onSelect){
     const el = $("chartTf-" + key); if(!el) return;
@@ -3868,6 +3875,73 @@
     if(!availableKeys.has(moduleChartTf.ema)) moduleChartTf.ema = availableKeys.has("4h") ? "4h" : Array.from(availableKeys)[0];
     buildModuleChartTfSelector("ema", availableKeys, () => drawEmaChart(lastChartResult));
     drawEmaChart(result);
+  }
+
+  function __emaCalc(closesAsc, period){
+    const series = [];
+    if(closesAsc.length >= period){
+      const k = 2/(period+1);
+      let ema = closesAsc.slice(0,period).reduce((a,b)=>a+b,0)/period;
+      series.push(ema);
+      for(let i=period;i<closesAsc.length;i++){ ema = closesAsc[i]*k + ema*(1-k); series.push(ema); }
+    }
+    return series;
+  }
+
+  function drawEmaCloudChart(result){
+    const tfKey = moduleChartTf.emacloud;
+    const full = result.seriesByTf[tfKey];
+    const svgWrapEl = $("chartSvg-emacloud"), oscWrapEl = $("oscSvg-emacloud"), legendEl = $("chartLegend-emacloud");
+    if(!svgWrapEl || !oscWrapEl) return;
+    if(!full || !full.length){
+      svgWrapEl.innerHTML = '<div class="hint" style="padding:12px;text-align:center;">No hay datos suficientes para este marco temporal.</div>';
+      oscWrapEl.innerHTML = ""; if(legendEl) legendEl.innerHTML = "";
+      return;
+    }
+    const hist = __axWindowSlice(full, "emacloud", 180);
+    const price = result.currentPrice;
+    const candleCtx = buildCandleSvg(hist, { height: 260 });
+    svgWrapEl.innerHTML = finishCandleSvg(candleCtx, hist, price);
+
+    const closes = hist.map(c => c.close);
+    const s20 = __emaCalc(closes, 20);
+    const s50 = __emaCalc(closes, 50);
+    if(s20.length && s50.length){
+      const off20 = hist.length - s20.length;
+      const off50 = hist.length - s50.length;
+      const W=900, H=120, padL=8, padR=66, padT=10, padB=20;
+      const plotH = H-padT-padB, plotW = W-padL-padR;
+      const allVals = s20.concat(s50);
+      const lo = Math.min(...allVals), hi = Math.max(...allVals);
+      const range = (hi-lo) || 1;
+      const xOf = i => padL + (i/(hist.length-1))*plotW;
+      const yOf = v => padT + (1-(v-lo)/range)*plotH;
+      let path20 = "", path50 = "";
+      s20.forEach((v,idx) => { const i=idx+off20; path20 += (idx===0?"M":"L")+xOf(i)+","+yOf(v)+" "; });
+      s50.forEach((v,idx) => { const i=idx+off50; path50 += (idx===0?"M":"L")+xOf(i)+","+yOf(v)+" "; });
+      const startI = Math.max(off20, off50);
+      let topPts = [], botPts = [];
+      for(let i=startI;i<hist.length;i++){
+        topPts.push(xOf(i)+","+yOf(s20[i-off20]));
+        botPts.push(xOf(i)+","+yOf(s50[i-off50]));
+      }
+      const cloudPath = topPts.length>1 ? ("M"+topPts.join(" L")+" L"+botPts.reverse().join(" L")+" Z") : "";
+      const bullish = s20[s20.length-1] >= s50[s50.length-1];
+      const cloudColor = bullish ? "#3ECF8E" : "#FF5C5C";
+      oscWrapEl.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;display:block;">' + '<path d="' + cloudPath + '" fill="' + cloudColor + '" opacity="0.18"></path>' + '<path d="' + path20.trim() + '" fill="none" stroke="#5BC0EB" stroke-width="1.4"></path>' + '<path d="' + path50.trim() + '" fill="none" stroke="#C77DFF" stroke-width="1.4"></path>' + '</svg>';
+    } else {
+      oscWrapEl.innerHTML = "";
+    }
+    if(legendEl) legendEl.innerHTML = '<span><i style="background:#5BC0EB"></i> EMA(20)</span><span><i style="background:#C77DFF"></i> EMA(50)</span><span><i style="background:#3ECF8E"></i> Nube alcista</span><span><i style="background:#FF5C5C"></i> Nube bajista</span>';
+    __axAttachPanZoom(svgWrapEl, "emacloud", () => drawEmaCloudChart(lastChartResult));
+    __axAttachPanZoom(oscWrapEl, "emacloud", () => drawEmaCloudChart(lastChartResult));
+  }
+
+  function renderEmaCloudChart(result){
+    const availableKeys = new Set(Object.keys(result.seriesByTf).filter(k => result.seriesByTf[k] && result.seriesByTf[k].length));
+    if(!availableKeys.has(moduleChartTf.emacloud)) moduleChartTf.emacloud = availableKeys.has("4h") ? "4h" : Array.from(availableKeys)[0];
+    buildModuleChartTfSelector("emacloud", availableKeys, () => drawEmaCloudChart(lastChartResult));
+    drawEmaCloudChart(result);
   }
 
   // ---- Generic chart fullscreen (any .chart-fs-wrap with a matching .chart-fs-btn) ----
@@ -4802,6 +4876,7 @@
     renderStochChart(r);
     renderSmaChart(r);
     renderEmaChart(r);
+    renderEmaCloudChart(r);
     applyAllToggleUI();
     return overall;
   }
