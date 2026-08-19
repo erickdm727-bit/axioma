@@ -592,6 +592,13 @@
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-vwap"></div>
     <div class="module-score" id="score-vwap"></div>
+    <div class="tf-selector" id="chartTf-vwap"></div>
+    <div class="chart-fs-wrap" id="chartFsWrap-vwap">
+    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-vwap" title="Pantalla completa">⛶</button>
+    <div id="chartSvg-vwap"></div>
+    <div id="oscSvg-vwap" style="margin-top:6px;"></div>
+    </div>
+    <div class="mov-legend" id="chartLegend-vwap"></div>
     </div>
   </div>
 
@@ -3626,7 +3633,7 @@
   // sub-pane), built from the same seriesByTf data already fetched — no
   // extra requests. Started with Williams %R; other indicators get the
   // same treatment next. ----
-  let moduleChartTf = { williams: "4h", rsi: "4h", stoch: "4h", sma: "4h", ema: "4h", emacloud: "4h", bb: "4h", ichi: "4h" };
+  let moduleChartTf = { williams: "4h", rsi: "4h", stoch: "4h", sma: "4h", ema: "4h", emacloud: "4h", bb: "4h", ichi: "4h", vwap: "4h" };
 
   function buildModuleChartTfSelector(key, availableKeys, onSelect){
     const el = $("chartTf-" + key); if(!el) return;
@@ -4077,6 +4084,63 @@
     if(!availableKeys.has(moduleChartTf.ichi)) moduleChartTf.ichi = availableKeys.has("4h") ? "4h" : Array.from(availableKeys)[0];
     buildModuleChartTfSelector("ichi", availableKeys, () => drawIchimokuChart(lastChartResult));
     drawIchimokuChart(result);
+  }
+
+  function drawVwapChart(result){
+    const tfKey = moduleChartTf.vwap;
+    const full = result.seriesByTf[tfKey];
+    const svgWrapEl = $("chartSvg-vwap"), oscWrapEl = $("oscSvg-vwap"), legendEl = $("chartLegend-vwap");
+    if(!svgWrapEl || !oscWrapEl) return;
+    if(!full || !full.length){
+      svgWrapEl.innerHTML = '<div class="hint" style="padding:12px;text-align:center;">No hay datos suficientes para este marco temporal.</div>';
+      oscWrapEl.innerHTML = ""; if(legendEl) legendEl.innerHTML = "";
+      return;
+    }
+    const hist = __axWindowSlice(full, "vwap", 180);
+    const price = result.currentPrice;
+    const candleCtx = buildCandleSvg(hist, { height: 260 });
+    svgWrapEl.innerHTML = finishCandleSvg(candleCtx, hist, price);
+
+    const lookback = Math.min(100, hist.length);
+    const win = hist.slice(-lookback);
+    let lowIdxInWin = 0, lowVal = Infinity;
+    win.forEach((c,i) => { if(c.low < lowVal){ lowVal = c.low; lowIdxInWin = i; } });
+    const anchorOff = hist.length - win.length + lowIdxInWin;
+    const series = [];
+    let cumPV = 0, cumVol = 0;
+    for(let i=anchorOff;i<hist.length;i++){
+      const c = hist[i];
+      const typical = (c.high + c.low + c.close)/3;
+      cumPV += typical * (c.volume||0);
+      cumVol += (c.volume||0);
+      series.push(cumVol > 0 ? cumPV/cumVol : typical);
+    }
+    if(series.length){
+      const off = anchorOff;
+      const W=900, H=120, padL=8, padR=66, padT=10, padB=20;
+      const plotH = H-padT-padB, plotW = W-padL-padR;
+      const lo = Math.min(...series), hi = Math.max(...series);
+      const range = (hi-lo) || 1;
+      const xOf = i => padL + (i/(hist.length-1))*plotW;
+      const yOf = v => padT + (1-(v-lo)/range)*plotH;
+      let vwapPath = "";
+      series.forEach((v,idx) => { const i=idx+off; vwapPath += (idx===0?"M":"L")+xOf(i)+","+yOf(v)+" "; });
+      oscWrapEl.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;display:block;">' +
+        '<path d="' + vwapPath.trim() + '" fill="none" stroke="#F5A623" stroke-width="1.5"></path>' +
+        '</svg>';
+    } else {
+      oscWrapEl.innerHTML = "";
+    }
+    if(legendEl) legendEl.innerHTML = '<span><i style="background:#F5A623"></i> VWAP anclado desde el minimo mas reciente</span>';
+    __axAttachPanZoom(svgWrapEl, "vwap", () => drawVwapChart(lastChartResult));
+    __axAttachPanZoom(oscWrapEl, "vwap", () => drawVwapChart(lastChartResult));
+  }
+
+  function renderVwapChart(result){
+    const availableKeys = new Set(Object.keys(result.seriesByTf).filter(k => result.seriesByTf[k] && result.seriesByTf[k].length));
+    if(!availableKeys.has(moduleChartTf.vwap)) moduleChartTf.vwap = availableKeys.has("4h") ? "4h" : Array.from(availableKeys)[0];
+    buildModuleChartTfSelector("vwap", availableKeys, () => drawVwapChart(lastChartResult));
+    drawVwapChart(result);
   }
 
   // ---- Generic chart fullscreen (any .chart-fs-wrap with a matching .chart-fs-btn) ----
@@ -5014,6 +5078,7 @@
     renderEmaCloudChart(r);
     renderBollingerChart(r);
     renderIchimokuChart(r);
+    renderVwapChart(r);
     applyAllToggleUI();
     return overall;
   }
