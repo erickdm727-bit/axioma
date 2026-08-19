@@ -3946,13 +3946,7 @@ function buildModuleChartTfSelector(key, availableKeys, onSelect){
       series.forEach(function(v, idx){ const __x = candleCtx.xOf(idx + __off); const __y = candleCtx.yOf(v); __path += (idx === 0 ? "M" : "L") + __x + "," + __y + " "; });
       svgWrapEl.innerHTML = svgWrapEl.innerHTML.slice(0, -6) + '<path d="' + __path.trim() + '" fill="none" stroke="#5BC0EB" stroke-width="1.6" opacity="0.95"></path>' + "</svg>";
     }
-    if(series.length){
-      oscWrapEl.innerHTML = buildOscillatorSvg(hist, series, {
-        height: 120, color: "#5BC0EB"
-      });
-    } else {
-      oscWrapEl.innerHTML = "";
-    }
+    oscWrapEl.innerHTML = "";
     if(legendEl) legendEl.innerHTML = '<span><i style="background:#5BC0EB"></i> SMA(20)</span>';
 __axAttachPanZoom(svgWrapEl, "sma", () => drawSmaChart(lastChartResult));
     __axAttachPanZoom(oscWrapEl, "sma", () => drawSmaChart(lastChartResult));
@@ -3995,13 +3989,7 @@ __axAttachPanZoom(svgWrapEl, "sma", () => drawSmaChart(lastChartResult));
       series.forEach(function(v, idx){ const __x = candleCtx.xOf(idx + __off); const __y = candleCtx.yOf(v); __path += (idx === 0 ? "M" : "L") + __x + "," + __y + " "; });
       svgWrapEl.innerHTML = svgWrapEl.innerHTML.slice(0, -6) + '<path d="' + __path.trim() + '" fill="none" stroke="#C77DFF" stroke-width="1.6" opacity="0.95"></path>' + "</svg>";
     }
-    if(series.length){
-      oscWrapEl.innerHTML = buildOscillatorSvg(hist, series, {
-        height: 120, color: "#C77DFF"
-      });
-    } else {
-      oscWrapEl.innerHTML = "";
-    }
+    oscWrapEl.innerHTML = "";
     if(legendEl) legendEl.innerHTML = '<span><i style="background:#C77DFF"></i> EMA(20)</span>';
 __axAttachPanZoom(svgWrapEl, "ema", () => drawEmaChart(lastChartResult));
     __axAttachPanZoom(oscWrapEl, "ema", () => drawEmaChart(lastChartResult));
@@ -4060,32 +4048,7 @@ __axAttachPanZoom(svgWrapEl, "ema", () => drawEmaChart(lastChartResult));
       const __cloudColor = __bullish ? "#3ECF8E" : "#FF5C5C";
       svgWrapEl.innerHTML = svgWrapEl.innerHTML.slice(0, -6) + '<path d="' + __cloudPath + '" fill="' + __cloudColor + '" opacity="0.15"></path>' + '<path d="' + __path20.trim() + '" fill="none" stroke="#5BC0EB" stroke-width="1.6" opacity="0.95"></path>' + '<path d="' + __path50.trim() + '" fill="none" stroke="#C77DFF" stroke-width="1.6" opacity="0.95"></path>' + "</svg>";
     }
-    if(s20.length && s50.length){
-      const off20 = hist.length - s20.length;
-      const off50 = hist.length - s50.length;
-      const W=900, H=120, padL=8, padR=66, padT=10, padB=20;
-      const plotH = H-padT-padB, plotW = W-padL-padR;
-      const allVals = s20.concat(s50);
-      const lo = Math.min(...allVals), hi = Math.max(...allVals);
-      const range = (hi-lo) || 1;
-      const xOf = i => padL + (i/(hist.length-1))*plotW;
-      const yOf = v => padT + (1-(v-lo)/range)*plotH;
-      let path20 = "", path50 = "";
-      s20.forEach((v,idx) => { const i=idx+off20; path20 += (idx===0?"M":"L")+xOf(i)+","+yOf(v)+" "; });
-      s50.forEach((v,idx) => { const i=idx+off50; path50 += (idx===0?"M":"L")+xOf(i)+","+yOf(v)+" "; });
-      const startI = Math.max(off20, off50);
-      let topPts = [], botPts = [];
-      for(let i=startI;i<hist.length;i++){
-        topPts.push(xOf(i)+","+yOf(s20[i-off20]));
-        botPts.push(xOf(i)+","+yOf(s50[i-off50]));
-      }
-      const cloudPath = topPts.length>1 ? ("M"+topPts.join(" L")+" L"+botPts.reverse().join(" L")+" Z") : "";
-      const bullish = s20[s20.length-1] >= s50[s50.length-1];
-      const cloudColor = bullish ? "#3ECF8E" : "#FF5C5C";
-      oscWrapEl.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;display:block;">' + '<path d="' + cloudPath + '" fill="' + cloudColor + '" opacity="0.18"></path>' + '<path d="' + path20.trim() + '" fill="none" stroke="#5BC0EB" stroke-width="1.4"></path>' + '<path d="' + path50.trim() + '" fill="none" stroke="#C77DFF" stroke-width="1.4"></path>' + '</svg>';
-    } else {
-      oscWrapEl.innerHTML = "";
-    }
+    oscWrapEl.innerHTML = "";
     if(legendEl) legendEl.innerHTML = '<span><i style="background:#5BC0EB"></i> EMA(20)</span><span><i style="background:#C77DFF"></i> EMA(50)</span><span><i style="background:#3ECF8E"></i> Nube alcista</span><span><i style="background:#FF5C5C"></i> Nube bajista</span>';
 __axAttachPanZoom(svgWrapEl, "emacloud", () => drawEmaCloudChart(lastChartResult));
     __axAttachPanZoom(oscWrapEl, "emacloud", () => drawEmaCloudChart(lastChartResult));
@@ -4256,36 +4219,7 @@ __axAttachPanZoom(svgWrapEl, "emacloud", () => drawEmaCloudChart(lastChartResult
         '<path d="' + __midPath.trim() + '" fill="none" stroke="#C77DFF" stroke-width="1.2" stroke-dasharray="3 2" opacity="0.9"></path>' +
         "</svg>";
     }
-    if(mids.length){
-      const off = hist.length - mids.length;
-      const W=900, H=120, padL=8, padR=66, padT=10, padB=20;
-      const plotH = H-padT-padB, plotW = W-padL-padR;
-      const allVals = ups.concat(los);
-      const lo = Math.min(...allVals), hi = Math.max(...allVals);
-      const range = (hi-lo) || 1;
-      const xOf = i => padL + (i/(hist.length-1))*plotW;
-      const yOf = v => padT + (1-(v-lo)/range)*plotH;
-      let upPath="", loPath="", midPath="";
-      const topPts=[], botPts=[];
-      mids.forEach((v,idx) => {
-        const i = idx+off;
-        const x = xOf(i);
-        upPath += (idx===0?"M":"L")+x+","+yOf(ups[idx])+" ";
-        loPath += (idx===0?"M":"L")+x+","+yOf(los[idx])+" ";
-        midPath += (idx===0?"M":"L")+x+","+yOf(v)+" ";
-        topPts.push(x+","+yOf(ups[idx]));
-        botPts.push(x+","+yOf(los[idx]));
-      });
-      const fillPath = topPts.length>1 ? ("M"+topPts.join(" L")+" L"+botPts.slice().reverse().join(" L")+" Z") : "";
-      oscWrapEl.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;display:block;">' +
-        '<path d="' + fillPath + '" fill="#5BC0EB" opacity="0.10"></path>' +
-        '<path d="' + upPath.trim() + '" fill="none" stroke="#5BC0EB" stroke-width="1.3"></path>' +
-        '<path d="' + loPath.trim() + '" fill="none" stroke="#5BC0EB" stroke-width="1.3"></path>' +
-        '<path d="' + midPath.trim() + '" fill="none" stroke="#C77DFF" stroke-width="1" stroke-dasharray="3 2"></path>' +
-        '</svg>';
-    } else {
-      oscWrapEl.innerHTML = "";
-    }
+    oscWrapEl.innerHTML = "";
     if(legendEl) legendEl.innerHTML = '<span><i style="background:#5BC0EB"></i> Bandas (±2σ)</span><span><i style="background:#C77DFF"></i> Media (20)</span>';
 __axAttachPanZoom(svgWrapEl, "bb", () => drawBollingerChart(lastChartResult));
     __axAttachPanZoom(oscWrapEl, "bb", () => drawBollingerChart(lastChartResult));
