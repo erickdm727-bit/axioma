@@ -127,3 +127,21 @@ Bug encontrado y corregido durante la verificacion: la primera version de este c
 
 Verificado en vivo: se borro el cache viejo y el nuevo, se activo modo prueba, se analizo AAPL desde cero (8 llamadas reales a Twelve Data, una por timeframe, respetando el limite de 6/min) y se confirmo que las 8 quedaron guardadas en axTestGenericCacheV1. Se volvio a analizar AAPL y salio instantaneo, con cero peticiones de red a Twelve Data (confirmado con la herramienta de inspeccion de red). La fecha del banner ("Ultimo guardado") ahora se actualiza sola tras cada guardado. Los 16 graficos siguen renderizando bien, sin NaN, cero errores de consola.
 Commits: "Test mode: cache any ticker permanently, fetch once per symbol/interval", "Fix test mode concurrency bug: only first parallel timeframe fetch was cached", "Refresh test mode banner date after each save".
+
+## 2026-08-19 - Overlay real de precio: SMA/EMA/EMA Cloud/Bollinger sobre las velas
+
+Ultimo punto pendiente listado en NOTES.md: hasta ahora SMA, EMA, EMA Cloud y Bollinger dibujaban su indicador solo en el panel pequeno debajo de las velas (escala propia, lineal, 900x120), nunca directamente sobre el precio. Se agrego el overlay real.
+
+Como se hizo: buildCandleSvg(hist, opts) ya devuelve, ademas del string SVG, las funciones xOf(i) y yOf(precio) que usa internamente para dibujar las velas (escala logaritmica, mismo rango que los máximos/mínimos visibles). Bastaba con reutilizar esas mismas funciones (candleCtx.xOf / candleCtx.yOf) para trazar el indicador con las coordenadas EXACTAS de la escala de precio, en vez de reimplementar una escala propia — asi la alineacion queda garantizada por construccion, no por ajuste visual.
+
+Patron aplicado en los 4 modulos: se calcula la serie del indicador (igual que antes), se construye un path SVG con candleCtx.xOf(indice)/candleCtx.yOf(valor), y se inyecta dentro del SVG de las velas ya generado (con la tecnica ya usada en Soportes/Resistencias: quitar los ultimos 6 caracteres "</svg>", concatenar el overlay, volver a cerrar). El panel pequeno de abajo se dejo intacto (no se quito nada), asi que ahora se ve el indicador dos veces: encima de las velas (nuevo, real) y en el panel aparte (como antes, para contexto/zoom).
+
+- SMA(20): una linea celeste (#5BC0EB) sobre el precio.
+- EMA(20): una linea violeta (#C77DFF) sobre el precio.
+- EMA Cloud (generico, 20/50): las dos EMAs (celeste/violeta) mas la nube de relleno entre ellas (verde si alcista, rojo si bajista), igual que en el panel pero ahora tambien sobre las velas.
+- Bollinger (20, 2 sigma): banda superior e inferior (celeste) con relleno translucido entre ellas, mas la media movil central (violeta, punteada).
+
+Nota: EMA Cloud 20/50 y 50/100 (los modulos nuevos separados del generico) NO se tocaron en este cambio — se dejaron fuera a proposito para no ampliar el alcance sin que Erick lo pida. Se puede replicar el mismo patron para esos dos en cualquier momento, es codigo casi identico.
+
+Verificado en vivo con datos reales (AAPL via modo prueba, cero costo de API): los 4 overlays aparecen correctamente sobre las velas, coordenadas dentro del rango esperado del grafico, sin NaN. Confirmado visualmente por captura de pantalla que la linea de SMA(20) sigue el precio de forma natural, cruzando por dentro de las velas donde corresponde. Bollinger muestra banda superior por encima, inferior por debajo y media al centro, en el orden correcto. Regresion completa: las 16 graficas del sitio siguen renderizando bien, cero errores de consola, emacloud2050/emacloud50100/setup no se vieron afectados (verificado que sus funciones siguen intactas en el codigo fuente).
+Commit: "Add real price overlay for SMA/EMA/EMA Cloud/Bollinger on candlesticks".
