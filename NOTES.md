@@ -39,7 +39,9 @@ Dato importante para el futuro: el drawChart() muerto tambien tiene un patron ya
 
 8. VWAP Anclado — HECHO. Encontre anchoredVwapFromLow(candlesAsc, lookback=100) ya en el codigo (busca el minimo mas bajo en las ultimas 100 velas y ancla desde ahi), pero solo devuelve el valor FINAL, no una serie. Reimplemente la misma logica de anclaje pero calculando el VWAP acumulado en cada vela desde el ancla, para poder dibujar la linea completa. Verificado en vivo con regresion de los 9 indicadores, cero errores. Commit: "Add dedicated chart to VWAP Anclado indicator..."
 
-9. Siguiente: Acumulacion/Distribucion
-10. (resto — Heikin Ashi Semanal, Patrones de velas, Fuerza relativa, Setup Beardo, Soportes/Resistencias)
+9. Acumulacion/Distribucion — HECHO. Encontre adLine(candlesAsc) ya en el codigo pero solo devuelve {rising, delta} (resumen), no la serie. La formula interna (CLV = ((close-low)-(high-close))/range, ad += CLV*volumen, acumulado) es simple asi que la reimplemente directo para tener la serie completa. Sin offset/lookback, arranca desde la primera vela. Verificado en vivo con regresion de los 10 indicadores, cero errores. Commit: "Add dedicated chart to Acumulacion/Distribucion indicator..."
+
+10. Siguiente: Heikin Ashi Semanal
+11. (resto — Patrones de velas, Fuerza relativa, Setup Beardo, Soportes/Resistencias)
 
 Cada uno se hace y se verifica en vivo con datos reales antes de pasar al siguiente.
