@@ -666,6 +666,12 @@
     <div class="module-body-wrap">
     <div id="rel-body"></div>
     <div class="module-score" id="score-rel"></div>
+    <div class="chart-fs-wrap" id="chartFsWrap-rel">
+    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-rel" title="Pantalla completa">⛶</button>
+    <div id="chartSvg-rel"></div>
+    <div id="oscSvg-rel" style="margin-top:6px;"></div>
+    </div>
+    <div class="mov-legend" id="chartLegend-rel"></div>
   </div>
   </div>
 
@@ -4274,6 +4280,72 @@
     drawPatternsChart(result);
   }
 
+  function drawRelChart(result){
+    const svgWrapEl = $("chartSvg-rel"), oscWrapEl = $("oscSvg-rel"), legendEl = $("chartLegend-rel");
+    if(!svgWrapEl || !oscWrapEl) return;
+    const tickerFull = result.seriesByTf ? result.seriesByTf["1day"] : null;
+    const bench = result.benchmark;
+    if(!bench || !bench.symbol){
+      svgWrapEl.innerHTML = '<div class="hint" style="padding:12px;text-align:center;">Sin benchmark configurado.</div>';
+      oscWrapEl.innerHTML = "";
+      if(legendEl) legendEl.innerHTML = "";
+      return;
+    }
+    if(bench.error || !bench.series || !bench.series.length || !tickerFull || !tickerFull.length){
+      svgWrapEl.innerHTML = '<div class="hint" style="padding:12px;text-align:center;">Sin datos suficientes del benchmark ' + bench.symbol + '.</div>';
+      oscWrapEl.innerHTML = "";
+      if(legendEl) legendEl.innerHTML = "";
+      return;
+    }
+    const commonLen = Math.min(tickerFull.length, bench.series.length);
+    if(commonLen < 20){
+      svgWrapEl.innerHTML = '<div class="hint" style="padding:12px;text-align:center;">No hay datos suficientes para comparar.</div>';
+      oscWrapEl.innerHTML = "";
+      if(legendEl) legendEl.innerHTML = "";
+      return;
+    }
+    const tickerAligned = tickerFull.slice(-commonLen);
+    const benchAligned = bench.series.slice(-commonLen);
+    const hist = __axWindowSlice(tickerAligned, "rel", 120);
+    const benchHist = __axWindowSlice(benchAligned, "rel", 120);
+    const price = result.currentPrice;
+    const candleCtx = buildCandleSvg(hist, { height: 260 });
+    svgWrapEl.innerHTML = finishCandleSvg(candleCtx, hist, price);
+    const n = Math.min(hist.length, benchHist.length);
+    const rsSeries = [];
+    if(n > 0){
+      const t0 = hist[0].close, b0 = benchHist[0].close;
+      for(let i = 0; i < n; i++){
+        rsSeries.push((hist[i].close / t0) / (benchHist[i].close / b0) * 100);
+      }
+    }
+    if(rsSeries.length){
+      oscWrapEl.innerHTML = buildOscillatorSvg(hist, rsSeries, {
+        height: 120, color: "#4FD1C5",
+        refLines: [ { value: 100, color: "#8FA0AE", label: "100" } ]
+      });
+    } else {
+      oscWrapEl.innerHTML = "";
+    }
+    if(legendEl){
+      const last = rsSeries.length ? rsSeries[rsSeries.length-1] : null;
+      if(last !== null){
+        const excess = last - 100;
+        const label = excess >= 0 ? "superando a " : "por debajo de ";
+        legendEl.innerHTML = '<span><i style="background:#4FD1C5"></i> Fuerza relativa vs ' + bench.symbol + ': ' + label + bench.symbol + ' por ' + Math.abs(excess).toFixed(1) + '% en la ventana visible</span>' +
+          '<span style="opacity:.7;font-size:11px;"> Linea punteada = 100 (rendimiento igual al benchmark). Arriba = ticker mejor que ' + bench.symbol + ', abajo = peor.</span>';
+      } else {
+        legendEl.innerHTML = "";
+      }
+    }
+    __axAttachPanZoom(svgWrapEl, "rel", function(){ drawRelChart(lastChartResult); });
+    __axAttachPanZoom(oscWrapEl, "rel", function(){ drawRelChart(lastChartResult); });
+  }
+
+  function renderRelChart(result){
+    drawRelChart(result);
+  }
+
   function drawHeikinChart(result){
     const full = result.seriesByTf["1week"];
     const svgWrapEl = $("chartSvg-heikin"), oscWrapEl = $("oscSvg-heikin"), legendEl = $("chartLegend-heikin");
@@ -5241,6 +5313,7 @@
     renderAdChart(r);
     renderHeikinChart(r);
     renderPatternsChart(r);
+    renderRelChart(r);
     applyAllToggleUI();
     return overall;
   }
