@@ -393,12 +393,14 @@
   <div class="search-row">
     <input id="tickerInput" type="text" placeholder="Ticker, ej. AAPL, TSLA, MSFT" autocomplete="off" spellcheck="false">
     <button class="btn" id="analyzeBtn">Analizar</button>
+    <button class="btn" id="testModeBtn" type="button" title="Modo prueba: usa datos guardados de AAPL, no consume API">🧪 Modo prueba</button>
   </div>
   <div class="bench-row">
     <label for="benchInput">Comparar contra</label>
     <input id="benchInput" type="text" value="SPY" autocomplete="off" spellcheck="false">
     <span class="bench-hint">mercado general = SPY · o pon un ETF de sector, ej. XLK (tech), XLF (financiero), XLE (energía)</span>
   </div>
+  <div id="testModeBanner" style="display:none; margin:10px 0; padding:10px 14px; border-radius:8px; background:rgba(224,169,62,0.15); border:1px solid #E0A93E; color:#E0A93E; font-size:13px; font-weight:600;">🧪 MODO PRUEBA ACTIVO — datos de ejemplo (AAPL, congelados el <span id="testModeDate"></span>), no son precios en vivo. No uses esto para decisiones reales. <a href="#" id="testModeRefreshLink" style="color:#E0A93E; text-decoration:underline; margin-left:8px; cursor:pointer;">Actualizar datos ↻</a></div>
 
   <div class="port-form-card" id="scannerPortfolioChips" style="display:none">
     <div class="pslabel">Tu portafolio (caché automático cada 2h) — toca para ver al instante</div>
@@ -1282,6 +1284,7 @@
   const tickerInput = $("tickerInput");
   const benchInput = $("benchInput");
   const analyzeBtn = $("analyzeBtn");
+  const testModeBtn = $("testModeBtn");
   const statusLine = $("statusLine");
   const progressWrap = $("progressWrap");
   const progressBar = $("progressBar");
@@ -1660,6 +1663,13 @@
     const __ck = symbol + "|" + interval + "|" + outputsize;
     const __hit = __ax_seriesCache.get(__ck);
     if(__hit && (Date.now() - __hit.t) < __AX_SERIES_TTL_MS) return __hit.v;
+    if(__AX_TEST_MODE__ && !__AX_TEST_SEEDING__){
+      const td = await ensureTestModeData();
+      let base = [];
+      if(symbol === td.benchSymbol){ base = (interval === "1day") ? td.benchmarkDaily : []; }
+      else if(symbol === td.symbol){ base = td.seriesByTf[interval] || []; }
+      return base.slice(-outputsize).map(function(v){ return { datetime:v.datetime, open:v.open, high:v.high, low:v.low, close:v.close, volume:v.volume }; });
+    }
     const data = await tdFetch("/time_series", { symbol, interval, outputsize }, priority);
     if(!data.values || !Array.isArray(data.values)) throw new Error(`Sin datos para ${symbol} en ${interval}. Revisa el ticker.`);
     const __out = data.values.map(v => ({
@@ -1672,6 +1682,7 @@
   }
 
   async function fetchCurrentPrice(symbol){
+    if(__AX_TEST_MODE__ && !__AX_TEST_SEEDING__){ const td = await ensureTestModeData(); return td.price; }
     const data = await tdFetch("/price", { symbol });
     if(!data.price) throw new Error("No se pudo obtener el precio actual.");
     return parseFloat(data.price);
@@ -3673,6 +3684,35 @@
   // extra requests. Started with Williams %R; other indicators get the
   // same treatment next. ----
   let moduleChartTf = { williams: "4h", rsi: "4h", stoch: "4h", sma: "4h", ema: "4h", emacloud: "4h", bb: "4h", ichi: "4h", vwap: "4h", ad: "4h", patterns: "4h", sr: "4h" };
+
+  let __AX_TEST_MODE__ = false;
+  let __AX_TEST_SEEDING__ = false;
+  const AX_TEST_CACHE_KEY = "axTestModeDataV1";
+  const AX_TEST_SYMBOL = "AAPL";
+  const AX_TEST_BENCH = "SPY";
+  const AX_TEST_INTERVALS = [["5min",900],["30min",230],["1h",900],["2h",230],["4h",230],["1day",260],["1week",230],["1month",230]];
+  function loadTestModeDataSync(){
+    try { const raw = localStorage.getItem(AX_TEST_CACHE_KEY); return raw ? JSON.parse(raw) : null; } catch(e){ return null; }
+  }
+  async function ensureTestModeData(){
+    let td = loadTestModeDataSync();
+    if(td) return td;
+    __AX_TEST_SEEDING__ = true;
+    try {
+      setStatus("Preparando datos de prueba (una sola vez, no se repetira)...");
+      const seriesByTf = {};
+      for(const pair of AX_TEST_INTERVALS){ seriesByTf[pair[0]] = await fetchSeries(AX_TEST_SYMBOL, pair[0], pair[1]); }
+      const bench = await fetchSeries(AX_TEST_BENCH, "1day", 260);
+      const daily = seriesByTf["1day"];
+      const price = (daily && daily.length) ? daily[daily.length-1].close : null;
+      td = { symbol: AX_TEST_SYMBOL, benchSymbol: AX_TEST_BENCH, generatedAt: new Date().toISOString(), price: price, seriesByTf: seriesByTf, benchmarkDaily: bench };
+      try { localStorage.setItem(AX_TEST_CACHE_KEY, JSON.stringify(td)); } catch(e){}
+    } finally {
+      __AX_TEST_SEEDING__ = false;
+    }
+    return td;
+  }
+
 
   function buildModuleChartTfSelector(key, availableKeys, onSelect){
     const el = $("chartTf-" + key); if(!el) return;
@@ -5940,6 +5980,40 @@
   });
 
   analyzeBtn.addEventListener("click", analyze);
+  function applyTestModeUI(){
+    const banner = $("testModeBanner");
+    const dateSpan = $("testModeDate");
+    if(__AX_TEST_MODE__){
+      if(testModeBtn){ testModeBtn.textContent = "🧪 Modo prueba (ON)"; testModeBtn.classList.add("active"); }
+      if(banner) banner.style.display = "block";
+      tickerInput.value = AX_TEST_SYMBOL;
+      tickerInput.readOnly = true;
+      benchInput.value = AX_TEST_BENCH;
+      benchInput.readOnly = true;
+      const td = loadTestModeDataSync();
+      if(dateSpan) dateSpan.textContent = (td && td.generatedAt) ? new Date(td.generatedAt).toLocaleString("es-ES") : "pendiente";
+    } else {
+      if(testModeBtn){ testModeBtn.textContent = "🧪 Modo prueba"; testModeBtn.classList.remove("active"); }
+      if(banner) banner.style.display = "none";
+      tickerInput.readOnly = false;
+      benchInput.readOnly = false;
+    }
+  }
+  if(testModeBtn){
+    testModeBtn.addEventListener("click", function(){
+      __AX_TEST_MODE__ = !__AX_TEST_MODE__;
+      applyTestModeUI();
+    });
+  }
+  const testModeRefreshLink = $("testModeRefreshLink");
+  if(testModeRefreshLink){
+    testModeRefreshLink.addEventListener("click", function(e){
+      e.preventDefault();
+      try { localStorage.removeItem(AX_TEST_CACHE_KEY); } catch(err){}
+      setStatus("Actualizando datos de prueba...");
+      ensureTestModeData().then(function(){ applyTestModeUI(); setStatus("Datos de prueba actualizados."); }).catch(function(err){ setStatus("No se pudo actualizar: " + (err.message||err), true); });
+    });
+  }
   tickerInput.addEventListener("keydown", (e)=>{ if(e.key === "Enter") analyze(); });
 
   if("serviceWorker" in navigator && location.protocol.startsWith("http")){
