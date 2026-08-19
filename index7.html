@@ -512,6 +512,13 @@
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-bb"></div>
     <div class="module-score" id="score-bb"></div>
+    <div class="tf-selector" id="chartTf-bb"></div>
+    <div class="chart-fs-wrap" id="chartFsWrap-bb">
+    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-bb" title="Pantalla completa">⛶</button>
+    <div id="chartSvg-bb"></div>
+    <div id="oscSvg-bb" style="margin-top:6px;"></div>
+    </div>
+    <div class="mov-legend" id="chartLegend-bb"></div>
     <div class="module-alert" id="alert-bb"></div>
   </div>
   </div>
@@ -3612,7 +3619,7 @@
   // sub-pane), built from the same seriesByTf data already fetched — no
   // extra requests. Started with Williams %R; other indicators get the
   // same treatment next. ----
-  let moduleChartTf = { williams: "4h", rsi: "4h", stoch: "4h", sma: "4h", ema: "4h", emacloud: "4h" };
+  let moduleChartTf = { williams: "4h", rsi: "4h", stoch: "4h", sma: "4h", ema: "4h", emacloud: "4h", bb: "4h" };
 
   function buildModuleChartTfSelector(key, availableKeys, onSelect){
     const el = $("chartTf-" + key); if(!el) return;
@@ -3942,6 +3949,73 @@
     if(!availableKeys.has(moduleChartTf.emacloud)) moduleChartTf.emacloud = availableKeys.has("4h") ? "4h" : Array.from(availableKeys)[0];
     buildModuleChartTfSelector("emacloud", availableKeys, () => drawEmaCloudChart(lastChartResult));
     drawEmaCloudChart(result);
+  }
+
+  function drawBollingerChart(result){
+    const tfKey = moduleChartTf.bb;
+    const full = result.seriesByTf[tfKey];
+    const svgWrapEl = $("chartSvg-bb"), oscWrapEl = $("oscSvg-bb"), legendEl = $("chartLegend-bb");
+    if(!svgWrapEl || !oscWrapEl) return;
+    if(!full || !full.length){
+      svgWrapEl.innerHTML = '<div class="hint" style="padding:12px;text-align:center;">No hay datos suficientes para este marco temporal.</div>';
+      oscWrapEl.innerHTML = ""; if(legendEl) legendEl.innerHTML = "";
+      return;
+    }
+    const hist = __axWindowSlice(full, "bb", 180);
+    const price = result.currentPrice;
+    const candleCtx = buildCandleSvg(hist, { height: 260 });
+    svgWrapEl.innerHTML = finishCandleSvg(candleCtx, hist, price);
+
+    const period = 20, mult = 2;
+    const closes = hist.map(c => c.close);
+    const mids = [], ups = [], los = [];
+    for(let i=period-1;i<closes.length;i++){
+      const slice = closes.slice(i-period+1, i+1);
+      const mid = slice.reduce((a,b)=>a+b,0)/period;
+      const variance = slice.reduce((a,b)=>a+(b-mid)*(b-mid),0)/period;
+      const sd = Math.sqrt(variance);
+      mids.push(mid); ups.push(mid+mult*sd); los.push(mid-mult*sd);
+    }
+    if(mids.length){
+      const off = hist.length - mids.length;
+      const W=900, H=120, padL=8, padR=66, padT=10, padB=20;
+      const plotH = H-padT-padB, plotW = W-padL-padR;
+      const allVals = ups.concat(los);
+      const lo = Math.min(...allVals), hi = Math.max(...allVals);
+      const range = (hi-lo) || 1;
+      const xOf = i => padL + (i/(hist.length-1))*plotW;
+      const yOf = v => padT + (1-(v-lo)/range)*plotH;
+      let upPath="", loPath="", midPath="";
+      const topPts=[], botPts=[];
+      mids.forEach((v,idx) => {
+        const i = idx+off;
+        const x = xOf(i);
+        upPath += (idx===0?"M":"L")+x+","+yOf(ups[idx])+" ";
+        loPath += (idx===0?"M":"L")+x+","+yOf(los[idx])+" ";
+        midPath += (idx===0?"M":"L")+x+","+yOf(v)+" ";
+        topPts.push(x+","+yOf(ups[idx]));
+        botPts.push(x+","+yOf(los[idx]));
+      });
+      const fillPath = topPts.length>1 ? ("M"+topPts.join(" L")+" L"+botPts.slice().reverse().join(" L")+" Z") : "";
+      oscWrapEl.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;display:block;">' +
+        '<path d="' + fillPath + '" fill="#5BC0EB" opacity="0.10"></path>' +
+        '<path d="' + upPath.trim() + '" fill="none" stroke="#5BC0EB" stroke-width="1.3"></path>' +
+        '<path d="' + loPath.trim() + '" fill="none" stroke="#5BC0EB" stroke-width="1.3"></path>' +
+        '<path d="' + midPath.trim() + '" fill="none" stroke="#C77DFF" stroke-width="1" stroke-dasharray="3 2"></path>' +
+        '</svg>';
+    } else {
+      oscWrapEl.innerHTML = "";
+    }
+    if(legendEl) legendEl.innerHTML = '<span><i style="background:#5BC0EB"></i> Bandas (\u00b12\u03c3)</span><span><i style="background:#C77DFF"></i> Media (20)</span>';
+    __axAttachPanZoom(svgWrapEl, "bb", () => drawBollingerChart(lastChartResult));
+    __axAttachPanZoom(oscWrapEl, "bb", () => drawBollingerChart(lastChartResult));
+  }
+
+  function renderBollingerChart(result){
+    const availableKeys = new Set(Object.keys(result.seriesByTf).filter(k => result.seriesByTf[k] && result.seriesByTf[k].length));
+    if(!availableKeys.has(moduleChartTf.bb)) moduleChartTf.bb = availableKeys.has("4h") ? "4h" : Array.from(availableKeys)[0];
+    buildModuleChartTfSelector("bb", availableKeys, () => drawBollingerChart(lastChartResult));
+    drawBollingerChart(result);
   }
 
   // ---- Generic chart fullscreen (any .chart-fs-wrap with a matching .chart-fs-btn) ----
@@ -4877,6 +4951,7 @@
     renderSmaChart(r);
     renderEmaChart(r);
     renderEmaCloudChart(r);
+    renderBollingerChart(r);
     applyAllToggleUI();
     return overall;
   }
