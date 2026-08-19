@@ -4368,7 +4368,7 @@
     svgWrapEl.innerHTML = finishCandleSvg(candleCtx, hist, price);
     oscWrapEl.innerHTML = "";
     if(legendEl){
-      const conditions = setupChecklist(result.seriesByTf, price) || [];
+      const conditions = (setupChecklist(result.seriesByTf, price) || {}).conditions || [];
       const passCount = conditions.filter(function(c){ return c.pass === true; }).length;
       const items = conditions.map(function(c){
         const icon = c.pass === null ? "&middot;" : (c.pass ? "&#10003;" : "&#10007;");
