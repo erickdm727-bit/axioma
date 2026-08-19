@@ -745,6 +745,13 @@
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-sr"></div>
     <div class="module-score" id="score-sr"></div>
+    <div class="tf-selector" id="chartTf-sr"></div>
+    <div class="chart-fs-wrap" id="chartFsWrap-sr">
+    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-sr" title="Pantalla completa">⛶</button>
+    <div id="chartSvg-sr"></div>
+    <div id="oscSvg-sr" style="margin-top:6px;"></div>
+    </div>
+    <div class="mov-legend" id="chartLegend-sr"></div>
   </div>
   </div>
 
@@ -3665,7 +3672,7 @@
   // sub-pane), built from the same seriesByTf data already fetched — no
   // extra requests. Started with Williams %R; other indicators get the
   // same treatment next. ----
-  let moduleChartTf = { williams: "4h", rsi: "4h", stoch: "4h", sma: "4h", ema: "4h", emacloud: "4h", bb: "4h", ichi: "4h", vwap: "4h", ad: "4h", patterns: "4h" };
+  let moduleChartTf = { williams: "4h", rsi: "4h", stoch: "4h", sma: "4h", ema: "4h", emacloud: "4h", bb: "4h", ichi: "4h", vwap: "4h", ad: "4h", patterns: "4h", sr: "4h" };
 
   function buildModuleChartTfSelector(key, availableKeys, onSelect){
     const el = $("chartTf-" + key); if(!el) return;
@@ -4384,6 +4391,55 @@
     drawSetupChart(result);
   }
 
+  function drawSrChart(result){
+    const full = result.seriesByTf[moduleChartTf.sr];
+    const svgWrapEl = $("chartSvg-sr"), oscWrapEl = $("oscSvg-sr"), legendEl = $("chartLegend-sr");
+    if(!svgWrapEl || !oscWrapEl) return;
+    const hist = full ? __axWindowSlice(full, "sr", 120) : null;
+    if(!hist || hist.length < 10){
+      svgWrapEl.innerHTML = '<div class="chart-empty-hint">Datos insuficientes para calcular soportes y resistencias.</div>';
+      oscWrapEl.innerHTML = "";
+      if(legendEl) legendEl.innerHTML = "";
+      return;
+    }
+    const price = result.currentPrice;
+    const candleCtx = buildCandleSvg(hist, { height: 260 });
+    let svgStr = finishCandleSvg(candleCtx, hist, price);
+    const sr = computeSupportResistanceLevels(hist, price);
+    const typeLabel = { pivot: "Pivote", fib: "Fibonacci", qpivot: "Pivote trimestral", confluencia: "Confluencia" };
+    const x1 = candleCtx.padL, x2 = candleCtx.W - candleCtx.padR;
+    function levelLine(level, color){
+      const y = candleCtx.yOf(level.price);
+      const label = "$" + level.price.toFixed(2) + " · " + (typeLabel[level.type] || level.type);
+      return '<line x1="' + x1 + '" y1="' + y + '" x2="' + x2 + '" y2="' + y + '" stroke="' + color + '" stroke-width="1" stroke-dasharray="4,3" opacity="0.85"><title>' + label + '</title></line>' +
+        '<text x="' + (x2 - 4) + '" y="' + (y - 4) + '" text-anchor="end" font-size="10" fill="' + color + '">' + label + '</text>';
+    }
+    let linesSvg = "";
+    if(sr){
+      (sr.supports || []).forEach(function(l){ linesSvg += levelLine(l, "#3ECF8E"); });
+      (sr.resistances || []).forEach(function(l){ linesSvg += levelLine(l, "#FF5C5C"); });
+    }
+    if(linesSvg) svgStr = svgStr.slice(0, -6) + linesSvg + "</svg>";
+    svgWrapEl.innerHTML = svgStr;
+    oscWrapEl.innerHTML = "";
+    if(legendEl){
+      if(sr && (sr.support != null || sr.resistance != null)){
+        const parts = [];
+        if(sr.support != null) parts.push('<span style="color:#3ECF8E;">▲ Soporte más cercano: $' + sr.support.toFixed(2) + '</span>');
+        if(sr.resistance != null) parts.push('<span style="color:#FF5C5C;">▼ Resistencia más cercana: $' + sr.resistance.toFixed(2) + '</span>');
+        legendEl.innerHTML = parts.join(' &nbsp;·&nbsp; ');
+      } else {
+        legendEl.innerHTML = '<span style="opacity:0.7;">No se detectaron niveles claros de soporte/resistencia en este rango.</span>';
+      }
+    }
+    __axAttachPanZoom(svgWrapEl, "sr", function(){ drawSrChart(lastChartResult); });
+  }
+  function renderSrChart(result){
+    const availableKeys = new Set(Object.keys(result.seriesByTf).filter(function(k){ return result.seriesByTf[k] && result.seriesByTf[k].length; }));
+    if(!availableKeys.has(moduleChartTf.sr)) moduleChartTf.sr = availableKeys.has("4h") ? "4h" : Array.from(availableKeys)[0];
+    buildModuleChartTfSelector("sr", availableKeys, function(){ drawSrChart(lastChartResult); });
+    drawSrChart(result);
+  }
   function drawHeikinChart(result){
     const full = result.seriesByTf["1week"];
     const svgWrapEl = $("chartSvg-heikin"), oscWrapEl = $("oscSvg-heikin"), legendEl = $("chartLegend-heikin");
@@ -5353,6 +5409,7 @@
     renderPatternsChart(r);
     renderRelChart(r);
     renderSetupChart(r);
+    renderSrChart(r);
     applyAllToggleUI();
     return overall;
   }
