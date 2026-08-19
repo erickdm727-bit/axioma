@@ -41,7 +41,12 @@ Dato importante para el futuro: el drawChart() muerto tambien tiene un patron ya
 
 9. Acumulacion/Distribucion — HECHO. Encontre adLine(candlesAsc) ya en el codigo pero solo devuelve {rising, delta} (resumen), no la serie. La formula interna (CLV = ((close-low)-(high-close))/range, ad += CLV*volumen, acumulado) es simple asi que la reimplemente directo para tener la serie completa. Sin offset/lookback, arranca desde la primera vela. Verificado en vivo con regresion de los 10 indicadores, cero errores. Commit: "Add dedicated chart to Acumulacion/Distribucion indicator..."
 
-10. Siguiente: Heikin Ashi Semanal
-11. (resto — Patrones de velas, Fuerza relativa, Setup Beardo, Soportes/Resistencias)
+10. HECHO: Heikin Ashi Semanal. Se agrego drawHeikinChart/renderHeikinChart, reutilizando la funcion existente heikinAshi(candlesAsc) (ya devuelve la serie completa transformada {open,close,high,low,datetime}, no fue necesario reimplementar nada) alimentada directo a buildCandleSvg/finishCandleSvg como grafico PRINCIPAL (no tiene panel de oscilador propio, oscWrapEl.innerHTML se deja vacio). Fijo al timeframe semanal (result.seriesByTf["1week"]), sin selector de timeframe (a diferencia de todos los demas indicadores, esta tarjeta no incluye el div tf-selector).
+
+Bug encontrado y corregido en vivo: la primera version uso result.seriesByTf["1S"] (la ETIQUETA visible del selector) en lugar de result.seriesByTf["1week"] (la KEY real con la que se guarda la serie, confirmado revisando la config de timeframes: { key:"1week", label:"1S", kind:"direct", interval:"1week", outputsize:230 }). Esto hacia que el grafico SIEMPRE cayera en el estado vacio ("No hay datos suficientes en el marco semanal") sin importar el ticker, incluso con datos validos (verificado con la API de Twelve Data devolviendo 230 velas semanales OK para el ticker de prueba). Corregido cambiando la key a "1week". Verificado en vivo con ticker fresco (KO): el grafico ahora renderiza velas Heikin Ashi semanales reales, sin NaN, con leyenda visible. Regresion de los 10 indicadores anteriores (williams, rsi, stoch, sma, ema, emacloud, bb, ichi, vwap, ad) sigue limpia, cero errores de consola.
+Commits: "Add dedicated chart to Heikin Ashi Semanal indicator" + fix "Fix Heikin Ashi chart: correct seriesByTf key from \"1S\" to \"1week\"".
+
+11. Siguiente: Patrones de velas
+12. (resto — Fuerza relativa, Setup Beardo, Soportes/Resistencias)
 
 Cada uno se hace y se verifica en vivo con datos reales antes de pasar al siguiente.
