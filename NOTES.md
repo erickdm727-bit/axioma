@@ -28,7 +28,8 @@ Checklist de todo lo que tiene Williams %R que los demás indicadores "estándar
 Orden sugerido, empezando por los más parecidos a Williams (osciladores acotados 0-100):
 1. RSI — HECHO (gráfico agregado y verificado en vivo: candlestick + oscilador RSI(14) con líneas 30/70, pan/zoom, selector de marco temporal). Commit: "Add dedicated chart to RSI indicator..."
 2. Estocástico — HECHO (gráfico agregado y verificado en vivo: candlestick + oscilador %K(14) con líneas 20/80, pan/zoom, selector de marco temporal). Commit: "Add dedicated chart to Stochastic indicator..."
-3. Siguiente: Medias Móviles (SMA)
-4. (resto de indicadores "estándar" — EMA, EMA Cloud, Bollinger, Ichimoku, VWAP Anclado, Acum/Distrib., Heikin Ashi Semanal, Patrones de velas, Fuerza relativa, Setup Beardo, Soportes/Resistencias)
+3. SMA — HECHO, con una salvedad importante: SMA no es un oscilador acotado 0-100 como Williams/RSI/Stoch, es una media que normalmente se dibuja ENCIMA del precio (overlay), no en un panel separado. buildCandleSvg/finishCandleSvg (las funciones que dibujan las velas, compartidas por los 4 indicadores) NO tienen soporte para dibujar líneas overlay todavía. Por seguridad (no tocar el render compartido sin supervisión), hice SMA(20) como panel propio separado abajo (mismo patrón que los osciladores, pero con auto-escala en vez de 0-100), NO overlay sobre el precio. Funciona y está verificado en vivo, pero si quieres el look "de verdad" (línea de SMA encima de las velas), eso requiere extender buildCandleSvg con un parámetro opts.overlays — pendiente, decisión de diseño para revisar juntos. Commit: "Add dedicated chart to SMA indicator..."
+4. Siguiente candidato: EMA (mismo dilema que SMA — overlay vs panel propio)
+5. (resto — EMA Cloud, Bollinger, Ichimoku, VWAP Anclado, Acum/Distrib., Heikin Ashi Semanal, Patrones de velas, Fuerza relativa, Setup Beardo, Soportes/Resistencias)
 
 Cada uno se hace y se verifica en vivo con datos reales antes de pasar al siguiente.
