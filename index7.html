@@ -717,7 +717,14 @@
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-emacloud2050"></div>
     <div class="module-score" id="score-emacloud2050"></div>
-  </div>
+    <div class="tf-selector" id="chartTf-emacloud2050"></div>
+    <div class="chart-fs-wrap" id="chartFsWrap-emacloud2050">
+    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-emacloud2050" title="Pantalla completa">⛶</button>
+    <div id="chartSvg-emacloud2050"></div>
+    <div id="oscSvg-emacloud2050" style="margin-top:6px;"></div>
+    </div>
+    <div class="mov-legend" id="chartLegend-emacloud2050"></div>
+    </div>
   </div>
 
   <!-- 17. EMA Cloud 50/100 -->
@@ -729,7 +736,14 @@
     <div class="module-body-wrap">
     <div class="chiprow" id="chip-emacloud50100"></div>
     <div class="module-score" id="score-emacloud50100"></div>
-  </div>
+    <div class="tf-selector" id="chartTf-emacloud50100"></div>
+    <div class="chart-fs-wrap" id="chartFsWrap-emacloud50100">
+    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-emacloud50100" title="Pantalla completa">⛶</button>
+    <div id="chartSvg-emacloud50100"></div>
+    <div id="oscSvg-emacloud50100" style="margin-top:6px;"></div>
+    </div>
+    <div class="mov-legend" id="chartLegend-emacloud50100"></div>
+    </div>
   </div>
 
   <!-- 18. Soportes/Resistencias -->
@@ -3677,7 +3691,7 @@
   // sub-pane), built from the same seriesByTf data already fetched — no
   // extra requests. Started with Williams %R; other indicators get the
   // same treatment next. ----
-  let moduleChartTf = { williams: "4h", rsi: "4h", stoch: "4h", sma: "4h", ema: "4h", emacloud: "4h", bb: "4h", ichi: "4h", vwap: "4h", ad: "4h", patterns: "4h", sr: "4h" };
+  let moduleChartTf = { williams: "4h", rsi: "4h", stoch: "4h", sma: "4h", ema: "4h", emacloud: "4h", bb: "4h", ichi: "4h", vwap: "4h", ad: "4h", patterns: "4h", sr: "4h", emacloud2050: "4h", emacloud50100: "4h" };
 
   let __AX_TEST_MODE__ = false;
   let __AX_TEST_SEEDING__ = false;
@@ -4036,6 +4050,118 @@
     if(!availableKeys.has(moduleChartTf.emacloud)) moduleChartTf.emacloud = availableKeys.has("4h") ? "4h" : Array.from(availableKeys)[0];
     buildModuleChartTfSelector("emacloud", availableKeys, () => drawEmaCloudChart(lastChartResult));
     drawEmaCloudChart(result);
+  }
+
+  function drawEmaCloud2050Chart(result){
+    const tfKey = moduleChartTf.emacloud2050;
+    const full = result.seriesByTf[tfKey];
+    const svgWrapEl = $("chartSvg-emacloud2050"), oscWrapEl = $("oscSvg-emacloud2050"), legendEl = $("chartLegend-emacloud2050");
+    if(!svgWrapEl || !oscWrapEl) return;
+    if(!full || !full.length){
+      svgWrapEl.innerHTML = '<div class="hint" style="padding:12px;text-align:center;">No hay datos suficientes para este marco temporal.</div>';
+      oscWrapEl.innerHTML = ""; if(legendEl) legendEl.innerHTML = "";
+      return;
+    }
+    const hist = __axWindowSlice(full, "emacloud2050", 180);
+    const price = result.currentPrice;
+    const candleCtx = buildCandleSvg(hist, { height: 260 });
+    svgWrapEl.innerHTML = finishCandleSvg(candleCtx, hist, price);
+
+    const closes = hist.map(c => c.close);
+    const s20 = __emaCalc(closes, 20);
+    const s50 = __emaCalc(closes, 50);
+    if(s20.length && s50.length){
+      const off20 = hist.length - s20.length;
+      const off50 = hist.length - s50.length;
+      const W=900, H=120, padL=8, padR=66, padT=10, padB=20;
+      const plotH = H-padT-padB, plotW = W-padL-padR;
+      const allVals = s20.concat(s50);
+      const lo = Math.min(...allVals), hi = Math.max(...allVals);
+      const range = (hi-lo) || 1;
+      const xOf = i => padL + (i/(hist.length-1))*plotW;
+      const yOf = v => padT + (1-(v-lo)/range)*plotH;
+      let path20 = "", path50 = "";
+      s20.forEach((v,idx) => { const i=idx+off20; path20 += (idx===0?"M":"L")+xOf(i)+","+yOf(v)+" "; });
+      s50.forEach((v,idx) => { const i=idx+off50; path50 += (idx===0?"M":"L")+xOf(i)+","+yOf(v)+" "; });
+      const startI = Math.max(off20, off50);
+      let topPts = [], botPts = [];
+      for(let i=startI;i<hist.length;i++){
+        topPts.push(xOf(i)+","+yOf(s20[i-off20]));
+        botPts.push(xOf(i)+","+yOf(s50[i-off50]));
+      }
+      const cloudPath = topPts.length>1 ? ("M"+topPts.join(" L")+" L"+botPts.reverse().join(" L")+" Z") : "";
+      const bullish = s20[s20.length-1] >= s50[s50.length-1];
+      const cloudColor = bullish ? "#3ECF8E" : "#FF5C5C";
+      oscWrapEl.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;display:block;">' + '<path d="' + cloudPath + '" fill="' + cloudColor + '" opacity="0.18"></path>' + '<path d="' + path20.trim() + '" fill="none" stroke="#5BC0EB" stroke-width="1.4"></path>' + '<path d="' + path50.trim() + '" fill="none" stroke="#C77DFF" stroke-width="1.4"></path>' + '</svg>';
+    } else {
+      oscWrapEl.innerHTML = "";
+    }
+    if(legendEl) legendEl.innerHTML = '<span><i style="background:#5BC0EB"></i> EMA(20)</span><span><i style="background:#C77DFF"></i> EMA(50)</span><span><i style="background:#3ECF8E"></i> Nube alcista</span><span><i style="background:#FF5C5C"></i> Nube bajista</span>';
+    __axAttachPanZoom(svgWrapEl, "emacloud2050", () => drawEmaCloud2050Chart(lastChartResult));
+    __axAttachPanZoom(oscWrapEl, "emacloud2050", () => drawEmaCloud2050Chart(lastChartResult));
+  }
+
+  function renderEmaCloud2050Chart(result){
+    const availableKeys = new Set(Object.keys(result.seriesByTf).filter(k => result.seriesByTf[k] && result.seriesByTf[k].length));
+    if(!availableKeys.has(moduleChartTf.emacloud2050)) moduleChartTf.emacloud2050 = availableKeys.has("4h") ? "4h" : Array.from(availableKeys)[0];
+    buildModuleChartTfSelector("emacloud2050", availableKeys, () => drawEmaCloud2050Chart(lastChartResult));
+    drawEmaCloud2050Chart(result);
+  }
+
+  function drawEmaCloud50100Chart(result){
+    const tfKey = moduleChartTf.emacloud50100;
+    const full = result.seriesByTf[tfKey];
+    const svgWrapEl = $("chartSvg-emacloud50100"), oscWrapEl = $("oscSvg-emacloud50100"), legendEl = $("chartLegend-emacloud50100");
+    if(!svgWrapEl || !oscWrapEl) return;
+    if(!full || !full.length){
+      svgWrapEl.innerHTML = '<div class="hint" style="padding:12px;text-align:center;">No hay datos suficientes para este marco temporal.</div>';
+      oscWrapEl.innerHTML = ""; if(legendEl) legendEl.innerHTML = "";
+      return;
+    }
+    const hist = __axWindowSlice(full, "emacloud50100", 180);
+    const price = result.currentPrice;
+    const candleCtx = buildCandleSvg(hist, { height: 260 });
+    svgWrapEl.innerHTML = finishCandleSvg(candleCtx, hist, price);
+
+    const closes = hist.map(c => c.close);
+    const s50 = __emaCalc(closes, 50);
+    const s100 = __emaCalc(closes, 100);
+    if(s50.length && s100.length){
+      const off50 = hist.length - s50.length;
+      const off100 = hist.length - s100.length;
+      const W=900, H=120, padL=8, padR=66, padT=10, padB=20;
+      const plotH = H-padT-padB, plotW = W-padL-padR;
+      const allVals = s50.concat(s100);
+      const lo = Math.min(...allVals), hi = Math.max(...allVals);
+      const range = (hi-lo) || 1;
+      const xOf = i => padL + (i/(hist.length-1))*plotW;
+      const yOf = v => padT + (1-(v-lo)/range)*plotH;
+      let path50 = "", path100 = "";
+      s50.forEach((v,idx) => { const i=idx+off50; path50 += (idx===0?"M":"L")+xOf(i)+","+yOf(v)+" "; });
+      s100.forEach((v,idx) => { const i=idx+off100; path100 += (idx===0?"M":"L")+xOf(i)+","+yOf(v)+" "; });
+      const startI = Math.max(off50, off100);
+      let topPts = [], botPts = [];
+      for(let i=startI;i<hist.length;i++){
+        topPts.push(xOf(i)+","+yOf(s50[i-off50]));
+        botPts.push(xOf(i)+","+yOf(s100[i-off100]));
+      }
+      const cloudPath = topPts.length>1 ? ("M"+topPts.join(" L")+" L"+botPts.reverse().join(" L")+" Z") : "";
+      const bullish = s50[s50.length-1] >= s100[s100.length-1];
+      const cloudColor = bullish ? "#3ECF8E" : "#FF5C5C";
+      oscWrapEl.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;display:block;">' + '<path d="' + cloudPath + '" fill="' + cloudColor + '" opacity="0.18"></path>' + '<path d="' + path50.trim() + '" fill="none" stroke="#5BC0EB" stroke-width="1.4"></path>' + '<path d="' + path100.trim() + '" fill="none" stroke="#C77DFF" stroke-width="1.4"></path>' + '</svg>';
+    } else {
+      oscWrapEl.innerHTML = "";
+    }
+    if(legendEl) legendEl.innerHTML = '<span><i style="background:#5BC0EB"></i> EMA(50)</span><span><i style="background:#C77DFF"></i> EMA(100)</span><span><i style="background:#3ECF8E"></i> Nube alcista</span><span><i style="background:#FF5C5C"></i> Nube bajista</span>';
+    __axAttachPanZoom(svgWrapEl, "emacloud50100", () => drawEmaCloud50100Chart(lastChartResult));
+    __axAttachPanZoom(oscWrapEl, "emacloud50100", () => drawEmaCloud50100Chart(lastChartResult));
+  }
+
+  function renderEmaCloud50100Chart(result){
+    const availableKeys = new Set(Object.keys(result.seriesByTf).filter(k => result.seriesByTf[k] && result.seriesByTf[k].length));
+    if(!availableKeys.has(moduleChartTf.emacloud50100)) moduleChartTf.emacloud50100 = availableKeys.has("4h") ? "4h" : Array.from(availableKeys)[0];
+    buildModuleChartTfSelector("emacloud50100", availableKeys, () => drawEmaCloud50100Chart(lastChartResult));
+    drawEmaCloud50100Chart(result);
   }
 
   function drawBollingerChart(result){
@@ -5403,6 +5529,8 @@
     renderSmaChart(r);
     renderEmaChart(r);
     renderEmaCloudChart(r);
+    renderEmaCloud2050Chart(r);
+    renderEmaCloud50100Chart(r);
     renderBollingerChart(r);
     renderIchimokuChart(r);
     renderVwapChart(r);
