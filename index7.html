@@ -3736,6 +3736,7 @@
     if(!__axTestGenericCache__) return;
     __axTestGenericCache__.lastSavedAt = new Date().toISOString();
     try { localStorage.setItem(AX_TEST_GENERIC_CACHE_KEY, JSON.stringify(__axTestGenericCache__)); } catch(e){}
+    try { if(typeof applyTestModeUI === "function") applyTestModeUI(); } catch(e){}
   }
 
 function buildModuleChartTfSelector(key, availableKeys, onSelect){
