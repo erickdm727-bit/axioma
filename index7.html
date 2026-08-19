@@ -3767,7 +3767,8 @@ function buildModuleChartTfSelector(key, availableKeys, onSelect){
     const vals = hist.flatMap(c=>[c.high,c.low]);
     const minV = Math.min(...vals) * 0.985, maxV = Math.max(...vals) * 1.015;
     const logMin = Math.log(minV), logMax = Math.log(maxV);
-    const xOf = i => padL + (i/(hist.length-1)) * plotW;
+    const futureSlots = opts.futureSlots || 0;
+    const xOf = i => padL + (i/(hist.length-1+futureSlots)) * plotW;
     const yOf = v => padT + (1 - (Math.log(v)-logMin)/(logMax-logMin)) * plotH;
     let svg = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">`;
     for(let t=0;t<=3;t++){
@@ -4228,37 +4229,75 @@ __axAttachPanZoom(svgWrapEl, "bb", () => drawBollingerChart(lastChartResult));
     }
     const hist = __axWindowSlice(full, "ichi", 180);
     const price = result.currentPrice;
-    const candleCtx = buildCandleSvg(hist, { height: 260 });
+    const disp = 26;
+    const candleCtx = buildCandleSvg(hist, { height: 260, futureSlots: disp });
     svgWrapEl.innerHTML = finishCandleSvg(candleCtx, hist, price);
 
-    const highs = hist.map(c => c.high), lows = hist.map(c => c.low);
-    const tkP = 9, kjP = 26;
+    const highs = hist.map(c => c.high), lows = hist.map(c => c.low), closes = hist.map(c => c.close);
+    const tkP = 9, kjP = 26, spanBP = 52;
     const tkSeries = [], kjSeries = [];
     for(let i=kjP-1;i<hist.length;i++){
       const tk = windowHHLL(highs, lows, i+1, tkP);
       const kj = windowHHLL(highs, lows, i+1, kjP);
       if(tk && kj){ tkSeries.push((tk.h+tk.l)/2); kjSeries.push((kj.h+kj.l)/2); }
     }
-    if(tkSeries.length){
-      const off = hist.length - tkSeries.length;
-      const W=900, H=120, padL=8, padR=66, padT=10, padB=20;
-      const plotH = H-padT-padB, plotW = W-padL-padR;
-      const allVals = tkSeries.concat(kjSeries);
-      const lo = Math.min(...allVals), hi = Math.max(...allVals);
-      const range = (hi-lo) || 1;
-      const xOf = i => padL + (i/(hist.length-1))*plotW;
-      const yOf = v => padT + (1-(v-lo)/range)*plotH;
-      let tkPath="", kjPath="";
-      tkSeries.forEach((v,idx) => { const i=idx+off; tkPath += (idx===0?"M":"L")+xOf(i)+","+yOf(v)+" "; });
-      kjSeries.forEach((v,idx) => { const i=idx+off; kjPath += (idx===0?"M":"L")+xOf(i)+","+yOf(v)+" "; });
-      oscWrapEl.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;display:block;">' +
-        '<path d="' + tkPath.trim() + '" fill="none" stroke="#5BC0EB" stroke-width="1.4"></path>' +
-        '<path d="' + kjPath.trim() + '" fill="none" stroke="#FF5C5C" stroke-width="1.4"></path>' +
-        '</svg>';
-    } else {
-      oscWrapEl.innerHTML = "";
+    const spanBSeries = [];
+    for(let i=spanBP-1;i<hist.length;i++){
+      const sb = windowHHLL(highs, lows, i+1, spanBP);
+      if(sb) spanBSeries.push((sb.h+sb.l)/2);
     }
-    if(legendEl) legendEl.innerHTML = '<span><i style="background:#5BC0EB"></i> Tenkan-sen (9)</span><span><i style="background:#FF5C5C"></i> Kijun-sen (26)</span><span style="opacity:.7;font-size:11px;"> Nube Kumo y Chikou: pendiente</span>';
+
+    let overlayPaths = "";
+    if(tkSeries.length){
+      const offTk = hist.length - tkSeries.length;
+      let tkPath = "", kjPath = "";
+      tkSeries.forEach((v,idx) => { const i=idx+offTk; tkPath += (idx===0?"M":"L")+candleCtx.xOf(i)+","+candleCtx.yOf(v)+" "; });
+      kjSeries.forEach((v,idx) => { const i=idx+offTk; kjPath += (idx===0?"M":"L")+candleCtx.xOf(i)+","+candleCtx.yOf(v)+" "; });
+      overlayPaths += '<path d="' + tkPath.trim() + '" fill="none" stroke="#5BC0EB" stroke-width="1.3"></path>';
+      overlayPaths += '<path d="' + kjPath.trim() + '" fill="none" stroke="#FF5C5C" stroke-width="1.3"></path>';
+
+      const senkouA = tkSeries.map((v,idx) => (v + kjSeries[idx]) / 2);
+      let saPath = "";
+      senkouA.forEach((v,idx) => { const i=idx+offTk+disp; saPath += (idx===0?"M":"L")+candleCtx.xOf(i)+","+candleCtx.yOf(v)+" "; });
+      overlayPaths += '<path d="' + saPath.trim() + '" fill="none" stroke="#3ECF8E" stroke-width="1.2" stroke-dasharray="3,2"></path>';
+
+      if(spanBSeries.length){
+        const offSb = hist.length - spanBSeries.length;
+        let sbPath = "";
+        spanBSeries.forEach((v,idx) => { const i=idx+offSb+disp; sbPath += (idx===0?"M":"L")+candleCtx.xOf(i)+","+candleCtx.yOf(v)+" "; });
+        overlayPaths += '<path d="' + sbPath.trim() + '" fill="none" stroke="#FFA45C" stroke-width="1.2" stroke-dasharray="3,2"></path>';
+
+        const cloudStart = Math.max(offTk, offSb);
+        const aMap = {}; senkouA.forEach((v,idx) => { aMap[idx+offTk] = v; });
+        const bMap = {}; spanBSeries.forEach((v,idx) => { bMap[idx+offSb] = v; });
+        const topPts = [], botPts = [];
+        for(let i=cloudStart; i<hist.length; i++){
+          if(aMap[i] !== undefined && bMap[i] !== undefined){
+            const x = candleCtx.xOf(i+disp);
+            topPts.push(x+","+candleCtx.yOf(aMap[i]));
+            botPts.push(x+","+candleCtx.yOf(bMap[i]));
+          }
+        }
+        if(topPts.length > 1){
+          const lastA = aMap[hist.length-1], lastB = bMap[hist.length-1];
+          const bullish = (lastA !== undefined && lastB !== undefined) ? (lastA >= lastB) : true;
+          const cloudColor = bullish ? "#3ECF8E" : "#FF5C5C";
+          const cloudPoly = topPts.join(" ") + " " + botPts.slice().reverse().join(" ");
+          overlayPaths = '<polygon points="' + cloudPoly + '" fill="' + cloudColor + '" opacity="0.15"></polygon>' + overlayPaths;
+        }
+      }
+    }
+    let chikouPath = "";
+    closes.forEach((v,i) => {
+      const xi = i - disp;
+      chikouPath += (i===0?"M":"L")+candleCtx.xOf(xi)+","+candleCtx.yOf(v)+" ";
+    });
+    overlayPaths += '<path d="' + chikouPath.trim() + '" fill="none" stroke="#C77DFF" stroke-width="1.2"></path>';
+
+    svgWrapEl.innerHTML = svgWrapEl.innerHTML.slice(0, -6) + overlayPaths + "</svg>";
+
+    oscWrapEl.innerHTML = "";
+    if(legendEl) legendEl.innerHTML = '<span><i style="background:#5BC0EB"></i> Tenkan-sen (9)</span><span><i style="background:#FF5C5C"></i> Kijun-sen (26)</span><span><i style="background:#3ECF8E"></i> Senkou A</span><span><i style="background:#FFA45C"></i> Senkou B</span><span><i style="background:#C77DFF"></i> Chikou (26)</span>';
     __axAttachPanZoom(svgWrapEl, "ichi", () => drawIchimokuChart(lastChartResult));
     __axAttachPanZoom(oscWrapEl, "ichi", () => drawIchimokuChart(lastChartResult));
   }
