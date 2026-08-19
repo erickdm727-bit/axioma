@@ -55,7 +55,14 @@ Los 13 tipos de patron que reconoce detectPatterns (sin cambios): Doji, Martillo
 Verificado en vivo con ticker fresco (PFE): el grafico muestra velas reales con marcadores de patrones correctos (Doji y Envolvente Alcista detectados en fechas reales), leyenda con texto correcto, sin NaN. Regresion de los 11 indicadores anteriores (williams, rsi, stoch, sma, ema, emacloud, bb, ichi, vwap, ad, heikin) sigue limpia, cero errores de consola.
 Commit: "Add dedicated chart to Candlestick Patterns indicator".
 
-12. Siguiente: Fuerza relativa
-13. (resto — Setup Beardo, Soportes/Resistencias)
+12. HECHO: Fuerza Relativa vs Mercado. Se agrego drawRelChart/renderRelChart. La funcion existente computeRelativeStrength(tickerDaily, benchmarkDaily, lookback) tampoco sirve para un grafico: solo devuelve un resumen escalar (retorno del ticker, retorno del benchmark, exceso) sobre un lookback fijo, no una serie. El grafico nuevo reimplementa la logica como serie completa: alinea el historial diario del ticker (result.seriesByTf["1day"]) con el historial diario del benchmark (result.benchmark.series) recortando ambos al mismo largo por la cola (mismo criterio de alineacion por indice que ya usaba computeRelativeStrength), les aplica la misma ventana de pan/zoom (__axWindowSlice con la key "rel" aplicada a ambos arrays ya alineados, lo que garantiza que devuelvan el mismo rango), y calcula un ratio normalizado RS[i] = (ticker.close[i]/ticker.close[0]) / (bench.close[i]/bench.close[0]) * 100 para cada barra visible. El grafico principal (velas) muestra el precio del ticker via buildCandleSvg; el panel de abajo muestra la linea de fuerza relativa via buildOscillatorSvg con una linea de referencia punteada en 100 (rendimiento igual al benchmark). Sin selector de timeframe (a diferencia de la mayoria) porque el benchmark solo se descarga en diario, igual que Heikin Ashi.
+
+Hallazgo importante durante la verificacion: el modulo "Fuerza relativa" tiene su propio toggle/checkbox independiente de los "metodos" (chips como "Método Williams R%"), y ese toggle estaba apagado en la configuracion de prueba usada durante esta sesion — por eso la app nunca llamaba a la API del benchmark (SPY) y el grafico caia siempre en "Sin datos suficientes del benchmark SPY", incluso con datos reales disponibles. No es un bug del grafico: es el comportamiento esperado cuando el modulo esta desactivado. Se activo el toggle "Fuerza relativa" manualmente para poder verificar. Erick: si este modulo aparece vacio en uso normal, revisa que el checkbox "Fuerza relativa" este activado en la configuracion "Personalizado" (o que el metodo elegido lo incluya).
+
+Verificado en vivo con ticker fresco (HON, benchmark SPY): el grafico muestra velas reales de HON + linea de fuerza relativa mostrando "por debajo de SPY por 15.1%", sin NaN. Regresion de los 12 indicadores anteriores sigue limpia, cero errores de consola.
+Commit: "Add dedicated chart to Fuerza Relativa vs Mercado indicator".
+
+13. Siguiente: Setup Beardo
+14. (resto — Soportes/Resistencias)
 
 Cada uno se hace y se verifica en vivo con datos reales antes de pasar al siguiente.
