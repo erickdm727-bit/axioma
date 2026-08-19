@@ -630,6 +630,12 @@
     <div class="module-body-wrap">
     <div id="heikin-body"></div>
     <div class="module-score" id="score-heikin"></div>
+    <div class="chart-fs-wrap" id="chartFsWrap-heikin">
+    <button class="chart-fs-btn" type="button" data-fs-target="chartFsWrap-heikin" title="Pantalla completa">⛶</button>
+    <div id="chartSvg-heikin"></div>
+    <div id="oscSvg-heikin" style="margin-top:6px;"></div>
+    </div>
+    <div class="mov-legend" id="chartLegend-heikin"></div>
     </div>
   </div>
 
@@ -4200,6 +4206,34 @@
     drawAdChart(result);
   }
 
+  function drawHeikinChart(result){
+    const full = result.seriesByTf["1S"];
+    const svgWrapEl = $("chartSvg-heikin"), oscWrapEl = $("oscSvg-heikin"), legendEl = $("chartLegend-heikin");
+    if(!svgWrapEl || !oscWrapEl) return;
+    if(!full || !full.length){
+      svgWrapEl.innerHTML = '<div class="hint" style="padding:12px;text-align:center;">No hay datos suficientes en el marco semanal.</div>';
+      oscWrapEl.innerHTML = ""; if(legendEl) legendEl.innerHTML = "";
+      return;
+    }
+    const hist = __axWindowSlice(full, "heikin", 120);
+    const ha = heikinAshi(hist);
+    if(!ha || !ha.length){
+      svgWrapEl.innerHTML = '<div class="hint" style="padding:12px;text-align:center;">No hay datos suficientes en el marco semanal.</div>';
+      oscWrapEl.innerHTML = ""; if(legendEl) legendEl.innerHTML = "";
+      return;
+    }
+    const price = result.currentPrice;
+    const candleCtx = buildCandleSvg(ha, { height: 260 });
+    svgWrapEl.innerHTML = finishCandleSvg(candleCtx, ha, price);
+    oscWrapEl.innerHTML = "";
+    if(legendEl) legendEl.innerHTML = '<span><i style="background:#3ECF8E"></i> Vela Heikin Ashi alcista</span><span><i style="background:#FF5C5C"></i> Vela Heikin Ashi bajista</span><span style="opacity:.7;font-size:11px;"> Marco temporal fijo: semanal</span>';
+    __axAttachPanZoom(svgWrapEl, "heikin", () => drawHeikinChart(lastChartResult));
+  }
+
+  function renderHeikinChart(result){
+    drawHeikinChart(result);
+  }
+
   // ---- Generic chart fullscreen (any .chart-fs-wrap with a matching .chart-fs-btn) ----
   document.addEventListener("click", (e) => {
     const btn = e.target.closest(".chart-fs-btn");
@@ -5137,6 +5171,7 @@
     renderIchimokuChart(r);
     renderVwapChart(r);
     renderAdChart(r);
+    renderHeikinChart(r);
     applyAllToggleUI();
     return overall;
   }
