@@ -62,7 +62,16 @@ Hallazgo importante durante la verificacion: el modulo "Fuerza relativa" tiene s
 Verificado en vivo con ticker fresco (HON, benchmark SPY): el grafico muestra velas reales de HON + linea de fuerza relativa mostrando "por debajo de SPY por 15.1%", sin NaN. Regresion de los 12 indicadores anteriores sigue limpia, cero errores de consola.
 Commit: "Add dedicated chart to Fuerza Relativa vs Mercado indicator".
 
-13. Siguiente: Setup Beardo
-14. (resto — Soportes/Resistencias)
+13. HECHO: Setup Beardo
+Grafico dedicado: velas diarias (1day) como grafico principal, SIN panel de oscilador (este indicador es un checklist compuesto multi-timeframe, no una serie continua — no tiene sentido graficarlo como linea historica). En vez de reimplementar el checklist, se reutiliza setupChecklist(seriesByTf, currentPrice) tal cual, y se muestra el resultado como leyenda de texto con iconos de color (verde = cumple, gris = no cumple), formato "X/5 condiciones cumplidas" + detalle de cada condicion.
+
+BUG encontrado y corregido: la primera version asumia que setupChecklist() devolvia un array de condiciones directamente (igual que detectPatterns). En realidad devuelve un objeto envoltorio { conditions, passCount, total, score } — el array real esta en .conditions. Como el codigo original hacia `setupChecklist(...) || []`, el fallback `[]` nunca se activaba (el objeto es truthy), asi que `conditions.filter(...)` fallaba con "conditions.filter is not a function". Este error no aparecia en la consola ni en window.onerror porque analyze() tiene un try/catch de nivel superior que lo capturaba silenciosamente y solo lo mostraba en el texto de #statusLine (con clase "err") — la leyenda del grafico se quedaba vacia sin ninguna pista visible del problema. Diagnosticado revisando el contenido de #statusLine tras el analisis. Corregido cambiando la linea a:
+`const conditions = (setupChecklist(result.seriesByTf, price) || {}).conditions || [];`
+
+Verificado en vivo con ticker fresco (MMM): el grafico muestra velas diarias reales de MMM sin NaN, y la leyenda ahora muestra el checklist real: "2/5 condiciones cumplidas" con el detalle de cada condicion (vela semanal Heikin Ashi verde ✓, VWAP anclado ✓, media de 10 dias ✗, nube EMA 4h ✗, ruptura de tendencia bajista ✗). #statusLine sin clase de error, texto normal de "Listo". Regresion de los 13 indicadores anteriores (williams, rsi, stoch, sma, ema, emacloud, bb, ichi, vwap, ad, heikin, patterns, rel) sigue limpia — todos con SVG real y cero NaN. Cero errores de consola.
+Commit grafico: "Add dedicated chart to Setup Beardo indicator".
+Commit fix bug: "Fix Setup Beardo checklist: setupChecklist returns wrapper object, not bare array".
+
+14. Siguiente y ultimo indicador estandar: Soportes/Resistencias (sr)
 
 Cada uno se hace y se verifica en vivo con datos reales antes de pasar al siguiente.
