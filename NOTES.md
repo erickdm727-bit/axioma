@@ -27,7 +27,8 @@ Checklist de todo lo que tiene Williams %R que los demás indicadores "estándar
 
 Orden sugerido, empezando por los más parecidos a Williams (osciladores acotados 0-100):
 1. RSI — HECHO (gráfico agregado y verificado en vivo: candlestick + oscilador RSI(14) con líneas 30/70, pan/zoom, selector de marco temporal). Commit: "Add dedicated chart to RSI indicator..."
-2. Estocástico — siguiente
-3. (resto de indicadores "estándar" — Medias Móviles, EMA, EMA Cloud, Bollinger, Ichimoku, VWAP Anclado, Acum/Distrib., Heikin Ashi Semanal, Patrones de velas, Fuerza relativa, Setup Beardo, Soportes/Resistencias)
+2. Estocástico — HECHO (gráfico agregado y verificado en vivo: candlestick + oscilador %K(14) con líneas 20/80, pan/zoom, selector de marco temporal). Commit: "Add dedicated chart to Stochastic indicator..."
+3. Siguiente: Medias Móviles (SMA)
+4. (resto de indicadores "estándar" — EMA, EMA Cloud, Bollinger, Ichimoku, VWAP Anclado, Acum/Distrib., Heikin Ashi Semanal, Patrones de velas, Fuerza relativa, Setup Beardo, Soportes/Resistencias)
 
 Cada uno se hace y se verifica en vivo con datos reales antes de pasar al siguiente.
