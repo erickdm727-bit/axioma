@@ -3102,7 +3102,38 @@
 
   // ---- New module renderers (inspired by @BeardoTrader's thread) ----
 
-  function renderMarketContext(marketSeries, marketErrors){
+  function marketCtxChartHtml(hist, label){
+    if(!hist || hist.length < 10) return "";
+    const win = hist.slice(-120);
+    const price = win[win.length-1].close;
+    const candleCtx = buildCandleSvg(win, { height: 220 });
+    let svgHtml = finishCandleSvg(candleCtx, win, price);
+    const closes = win.map(function(c){ return c.close; });
+    const sFast = __emaCalc(closes, 8);
+    const sSlow = __emaCalc(closes, 21);
+    if(sFast.length && sSlow.length){
+      const offFast = win.length - sFast.length, offSlow = win.length - sSlow.length;
+      let pathFast = "", pathSlow = "";
+      sFast.forEach(function(v,idx){ const i=idx+offFast; const x=candleCtx.xOf(i), y=candleCtx.yOf(v); pathFast += (idx===0?"M":"L")+x+","+y+" "; });
+      sSlow.forEach(function(v,idx){ const i=idx+offSlow; const x=candleCtx.xOf(i), y=candleCtx.yOf(v); pathSlow += (idx===0?"M":"L")+x+","+y+" "; });
+      const startI = Math.max(offFast, offSlow);
+      let topPts = [], botPts = [];
+      for(let i=startI;i<win.length;i++){
+        topPts.push(candleCtx.xOf(i)+","+candleCtx.yOf(sFast[i-offFast]));
+        botPts.push(candleCtx.xOf(i)+","+candleCtx.yOf(sSlow[i-offSlow]));
+      }
+      const cloudPath = topPts.length>1 ? ("M"+topPts.join(" L")+" L"+botPts.slice().reverse().join(" L")+" Z") : "";
+      const bullish = sFast[sFast.length-1] >= sSlow[sSlow.length-1];
+      const cloudColor = bullish ? "#3ECF8E" : "#FF5C5C";
+      svgHtml = svgHtml.slice(0, -6) + '<path d="' + cloudPath + '" fill="' + cloudColor + '" opacity="0.15"></path>' + '<path d="' + pathFast.trim() + '" fill="none" stroke="#5BC0EB" stroke-width="1.6" opacity="0.95"></path>' + '<path d="' + pathSlow.trim() + '" fill="none" stroke="#C77DFF" stroke-width="1.6" opacity="0.95"></path>' + "</svg>";
+    }
+    return '<div class="mc-chart-block" style="margin-top:14px;">' +
+      '<div class="mc-chart-label mono" style="font-weight:600;opacity:0.85;margin-bottom:4px;">' + label + '</div>' +
+      '<div class="chart-fs-wrap">' + svgHtml + '</div>' +
+      '<div class="mov-legend"><span><i style="background:#5BC0EB"></i> EMA(8)</span><span><i style="background:#C77DFF"></i> EMA(21)</span><span><i style="background:#3ECF8E"></i> Nube alcista</span><span><i style="background:#FF5C5C"></i> Nube bajista</span></div>' +
+    '</div>';
+  }
+function renderMarketContext(marketSeries, marketErrors){
     const el = $("marketctx-body");
     marketErrors = marketErrors || {};
     const spy = marketSeries.SPY, qqq = marketSeries.QQQ;
@@ -3126,6 +3157,7 @@
       html += chipHtml(r.label, r.cloud.bullish ? "▲ Nube alcista" : "▼ Nube bajista", r.cloud.bullish ? "up":"down");
     });
     html += `</div>`;
+        html += '<div class="mc-charts-wrap">' + marketCtxChartHtml(spy, "SPY") + marketCtxChartHtml(qqq, "QQQ") + '</div>';
     const partialErrors = rows.filter(r=>r.error).map(r=>r.label+": "+r.error);
     if(partialErrors.length) html += `<div class="rel-excess">⚠ ${partialErrors.join(' · ')}</div>`;
     const bullCount = rows.filter(r=>r.cloud && r.cloud.bullish).length;
