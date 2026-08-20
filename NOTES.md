@@ -200,3 +200,17 @@ Verificado en vivo (modo prueba, AAPL, 4h): los 5 graficos muestran 1 path cada 
 Con esto termina el pendiente de "overlay real" para todos los indicadores del scanner, salvo Williams que ya iba mas adelantado.
 
 Commit: "RSI/Estocastico/VWAP/AD/Fuerza relativa: overlay real sobre velas" (sha 94f89760).
+
+## 2026-08-20 — Revertido: RSI, Estocastico, Acum/Distrib y Fuerza relativa vuelven a panel separado
+
+Erick pidio explicitamente que los indicadores que NO comparten escala con el precio vuelvan a tener su propio modulo/panel separado, en vez de estar fusionados en un solo SVG junto con las velas (lo que se habia hecho unas horas antes en el commit "RSI/Estocastico/VWAP/AD/Fuerza relativa: overlay real sobre velas").
+
+Se revirtio exactamente a como estaban antes: RSI, Estocastico y Acum/Distrib vuelven a usar oscWrapEl con su propio <svg> independiente (RSI y Estocastico via buildOscillatorSvg, Acum/Distrib con su dibujo local propio), y Fuerza relativa vuelve a usar buildOscillatorSvg tambien. Se elimino la funcion mergeOscPanel por quedar sin ningun uso.
+
+VWAP no se toco: SI comparte escala con el precio (es un promedio de precio ponderado por volumen), asi que se queda con el overlay real literal sobre las velas, igual que SMA/EMA/Bollinger/Ichimoku/EMA Cloud.
+
+Regla que queda establecida para el futuro: "overlay real" (dibujar directamente sobre las velas, eje de precio compartido) solo aplica a indicadores que SI estan en escala de precio (SMA, EMA, EMA Cloud, Bollinger, Ichimoku, VWAP). Los que no comparten esa escala (RSI, Estocastico, Williams %R, Acum/Distrib, Fuerza relativa) se quedan con su panel propio separado.
+
+Verificado en vivo (modo prueba, AAPL): chartSvg-rsi/stoch/ad vuelven a su tamano original (viewBox 260, sin paths de overlay en las velas), oscSvg-rsi/stoch/ad vuelven a tener su propio <svg> poblado. Regresion completa de los 13 modulos sin NaN y sin errores de consola. mergeOscPanel confirmado ausente del código fuente desplegado.
+
+Commit: "Revert RSI/Estocastico/AD/Fuerza relativa a panel separado (no comparten escala con precio)" (sha b2991087).
