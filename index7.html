@@ -3837,38 +3837,7 @@ function buildModuleChartTfSelector(key, availableKeys, onSelect){
   let lastChartResult = null;
 
 
-  function mergeOscPanel(svg, hist, xOf, seriesValues, opts){
-    opts = opts || {};
-    const panelH = opts.height || 110;
-    const gap = 14;
-    const W = 900, padL = 8, padR = 66, padTp = 14, padBp = 18;
-    const plotHp = panelH - padTp - padBp;
-    const mVB = svg.match(/viewBox="0 0 900 ([0-9.]+)"/);
-    const oldH = mVB ? parseFloat(mVB[1]) : 260;
-    const newH = oldH + gap + panelH;
-    svg = svg.replace('viewBox="0 0 900 ' + oldH + '"', 'viewBox="0 0 900 ' + newH + '"');
-    svg = svg.replace('height="' + oldH + '"', 'height="' + newH + '"');
-    const baseY = oldH + gap;
-    const offset = hist.length - seriesValues.length;
-    const lo = opts.min !== undefined ? opts.min : Math.min(...seriesValues);
-    const hi = opts.max !== undefined ? opts.max : Math.max(...seriesValues);
-    const range = (hi - lo) || 1;
-    const yOfP = v => baseY + padTp + (1 - (v-lo)/range) * plotHp;
-    let extra = '<line x1="' + padL + '" y1="' + baseY + '" x2="' + (W-padR) + '" y2="' + baseY + '" stroke="#232D39" stroke-width="1"/>';
-    (opts.refLines||[]).forEach(rl => {
-      const y = yOfP(rl.value);
-      extra += '<line x1="' + padL + '" y1="' + y + '" x2="' + (W-padR) + '" y2="' + y + '" stroke="' + rl.color + '" stroke-width="1" stroke-dasharray="2,2" opacity="0.6"/>';
-      extra += '<text x="' + (W-padR+4) + '" y="' + (y+3) + '" fill="' + rl.color + '" font-size="9">' + rl.label + '</text>';
-    });
-    let path = "";
-    seriesValues.forEach((v,idx) => {
-      const i = idx + offset;
-      path += (idx===0?"M":"L") + xOf(i) + "," + yOfP(v) + " ";
-    });
-    extra += '<path d="' + path.trim() + '" fill="none" stroke="' + (opts.color||"#5B8DEF") + '" stroke-width="1.4"/>';
-    if(opts.label) extra += '<text x="' + padL + '" y="' + (baseY+11) + '" fill="#8B98A8" font-size="10">' + opts.label + '</text>';
-    return svg.slice(0, -6) + extra + "</svg>";
-  }
+  
   function renderWilliamsChart(result){
     lastChartResult = result;
     const availableKeys = new Set(Object.keys(result.seriesByTf).filter(k => result.seriesByTf[k] && result.seriesByTf[k].length));
@@ -3891,18 +3860,18 @@ function buildModuleChartTfSelector(key, availableKeys, onSelect){
     const hist = __axWindowSlice(full, "rsi", 180);
     const price = result.currentPrice;
     const candleCtx = buildCandleSvg(hist, { height: 260 });
-    let svgHtml = finishCandleSvg(candleCtx, hist, price);
+    svgWrapEl.innerHTML = finishCandleSvg(candleCtx, hist, price);
 
     const closes = hist.map(c => c.close);
     const series = rsiSeries(closes, 14);
     if(series.length){
-      svgHtml = mergeOscPanel(svgHtml, hist, candleCtx.xOf, series, {
-        height: 110, min: 0, max: 100, color: "#5B8DEF", label: "RSI (14)",
+      oscWrapEl.innerHTML = buildOscillatorSvg(hist, series, {
+        height: 120, min: 0, max: 100, color: "#5B8DEF",
         refLines: [ { value: 70, color: "#FF5C5C", label: "70" }, { value: 30, color: "#3ECF8E", label: "30" } ]
       });
+    } else {
+      oscWrapEl.innerHTML = "";
     }
-    svgWrapEl.innerHTML = svgHtml;
-    oscWrapEl.innerHTML = "";
     if(legendEl) legendEl.innerHTML = '<span><i style="background:#3ECF8E"></i> Sobreventa (&lt;30)</span><span><i style="background:#FF5C5C"></i> Sobrecompra (&gt;70)</span><span><i style="background:#5B8DEF"></i> RSI (14)</span>';
     __axAttachPanZoom(svgWrapEl, "rsi", () => drawRsiChart(lastChartResult));
     __axAttachPanZoom(oscWrapEl, "rsi", () => drawRsiChart(lastChartResult));
@@ -3927,17 +3896,17 @@ function buildModuleChartTfSelector(key, availableKeys, onSelect){
     const hist = __axWindowSlice(full, "stoch", 180);
     const price = result.currentPrice;
     const candleCtx = buildCandleSvg(hist, { height: 260 });
-    let svgHtml = finishCandleSvg(candleCtx, hist, price);
+    svgWrapEl.innerHTML = finishCandleSvg(candleCtx, hist, price);
 
     const series = stochKSeries(hist, 14);
     if(series.length){
-      svgHtml = mergeOscPanel(svgHtml, hist, candleCtx.xOf, series, {
-        height: 110, min: 0, max: 100, color: "#E0A93E", label: "%K (14)",
+      oscWrapEl.innerHTML = buildOscillatorSvg(hist, series, {
+        height: 120, min: 0, max: 100, color: "#E0A93E",
         refLines: [ { value: 80, color: "#FF5C5C", label: "80" }, { value: 20, color: "#3ECF8E", label: "20" } ]
       });
+    } else {
+      oscWrapEl.innerHTML = "";
     }
-    svgWrapEl.innerHTML = svgHtml;
-    oscWrapEl.innerHTML = "";
     if(legendEl) legendEl.innerHTML = '<span><i style="background:#3ECF8E"></i> Sobreventa (&lt;20)</span><span><i style="background:#FF5C5C"></i> Sobrecompra (&gt;80)</span><span><i style="background:#E0A93E"></i> %K (14)</span>';
     __axAttachPanZoom(svgWrapEl, "stoch", () => drawStochChart(lastChartResult));
     __axAttachPanZoom(oscWrapEl, "stoch", () => drawStochChart(lastChartResult));
@@ -4401,7 +4370,7 @@ __axAttachPanZoom(svgWrapEl, "bb", () => drawBollingerChart(lastChartResult));
     const hist = __axWindowSlice(full, "ad", 180);
     const price = result.currentPrice;
     const candleCtx = buildCandleSvg(hist, { height: 260 });
-    let svgHtml = finishCandleSvg(candleCtx, hist, price);
+    svgWrapEl.innerHTML = finishCandleSvg(candleCtx, hist, price);
 
     let ad = 0;
     const series = [];
@@ -4412,12 +4381,20 @@ __axAttachPanZoom(svgWrapEl, "bb", () => drawBollingerChart(lastChartResult));
       series.push(ad);
     });
     if(series.length){
-      svgHtml = mergeOscPanel(svgHtml, hist, candleCtx.xOf, series, {
-        height: 110, color: "#9B8AFB", label: "Acum/Distrib"
-      });
+      const W=900, H=120, padL=8, padR=66, padT=10, padB=20;
+      const plotH = H-padT-padB, plotW = W-padL-padR;
+      const lo = Math.min(...series), hi = Math.max(...series);
+      const range2 = (hi-lo) || 1;
+      const xOf = i => padL + (i/(hist.length-1))*plotW;
+      const yOf = v => padT + (1-(v-lo)/range2)*plotH;
+      let adPath = "";
+      series.forEach((v,idx) => { adPath += (idx===0?"M":"L")+xOf(idx)+","+yOf(v)+" "; });
+      oscWrapEl.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;display:block;">' +
+        '<path d="' + adPath.trim() + '" fill="none" stroke="#9B8AFB" stroke-width="1.4"></path>' +
+        '</svg>';
+    } else {
+      oscWrapEl.innerHTML = "";
     }
-    svgWrapEl.innerHTML = svgHtml;
-    oscWrapEl.innerHTML = "";
     if(legendEl) legendEl.innerHTML = '<span><i style="background:#9B8AFB"></i> Linea Acum/Distrib (CLV x volumen, acumulado)</span>';
     __axAttachPanZoom(svgWrapEl, "ad", () => drawAdChart(lastChartResult));
     __axAttachPanZoom(oscWrapEl, "ad", () => drawAdChart(lastChartResult));
@@ -4520,7 +4497,7 @@ __axAttachPanZoom(svgWrapEl, "bb", () => drawBollingerChart(lastChartResult));
     const benchHist = __axWindowSlice(benchAligned, "rel", 120);
     const price = result.currentPrice;
     const candleCtx = buildCandleSvg(hist, { height: 260 });
-    let svgHtml = finishCandleSvg(candleCtx, hist, price);
+    svgWrapEl.innerHTML = finishCandleSvg(candleCtx, hist, price);
     const n = Math.min(hist.length, benchHist.length);
     const rsSeries = [];
     if(n > 0){
@@ -4530,13 +4507,13 @@ __axAttachPanZoom(svgWrapEl, "bb", () => drawBollingerChart(lastChartResult));
       }
     }
     if(rsSeries.length){
-      svgHtml = mergeOscPanel(svgHtml, hist, candleCtx.xOf, rsSeries, {
-        height: 110, color: "#4FD1C5", label: "Fuerza relativa",
+      oscWrapEl.innerHTML = buildOscillatorSvg(hist, rsSeries, {
+        height: 120, color: "#4FD1C5",
         refLines: [ { value: 100, color: "#8FA0AE", label: "100" } ]
       });
+    } else {
+      oscWrapEl.innerHTML = "";
     }
-    svgWrapEl.innerHTML = svgHtml;
-    oscWrapEl.innerHTML = "";
     if(legendEl){
       const last = rsSeries.length ? rsSeries[rsSeries.length-1] : null;
       if(last !== null){
