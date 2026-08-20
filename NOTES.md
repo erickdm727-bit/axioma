@@ -226,3 +226,11 @@ Se agregó una función nueva `marketCtxChartHtml(hist, label)` que construye, p
 Es una gráfica estática (sin pan/zoom ni selector de marco temporal), ya que este módulo no sigue la arquitectura estándar de un solo ticker (chartSvg-X/oscSvg-X) sino que renderiza todo dentro de un único contenedor (`marketctx-body`) para dos símbolos a la vez.
 
 Verificado en vivo (modo prueba, AAPL): 2 SVG, 200 rects cada uno (velas+volumen), 6 paths (cloud fill + 2 líneas EMA por símbolo), sin NaN, sin errores de consola.
+
+## 2026-08-20 — VWAP anclado: fix del punto de inicio (ahora pinea en el mínimo real)
+
+Erick notó que la línea de VWAP anclado (drawVwapChart) no arrancaba visualmente en el mínimo de la vela ancla, sino a media altura de esa vela. Causa: el primer punto de la serie usaba el precio típico (H+L+C)/3 de la vela ancla (definición estándar de VWAP), no su mínimo — y como esa vela suele tener mecha inferior larga, el típico queda notablemente por encima del low.
+
+Fix en `drawVwapChart`: se antepone un punto inicial explícito en `(candleCtx.xOf(anchorOff), candleCtx.yOf(hist[anchorOff].low))` antes de recorrer la serie acumulada normal. La línea ahora nace exactamente en la punta de la mecha inferior de la vela ancla (el "pin" visual de "anclado desde el mínimo") y de ahí en adelante sigue el cálculo VWAP acumulado sin cambios.
+
+Verificado en vivo (modo prueba, AAPL, 4h): el primer punto del path (y~150.39) coincide exactamente (pixel-perfect) con el extremo inferior de la línea de mecha (wick) de la vela ancla.
