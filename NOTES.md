@@ -214,3 +214,15 @@ Regla que queda establecida para el futuro: "overlay real" (dibujar directamente
 Verificado en vivo (modo prueba, AAPL): chartSvg-rsi/stoch/ad vuelven a su tamano original (viewBox 260, sin paths de overlay en las velas), oscSvg-rsi/stoch/ad vuelven a tener su propio <svg> poblado. Regresion completa de los 13 modulos sin NaN y sin errores de consola. mergeOscPanel confirmado ausente del código fuente desplegado.
 
 Commit: "Revert RSI/Estocastico/AD/Fuerza relativa a panel separado (no comparten escala con precio)" (sha b2991087).
+
+## 2026-08-20 — Contexto de Mercado: gráfica + EMA Cloud (SPY/QQQ)
+
+El módulo "Contexto de Mercado" (marketctx) solo mostraba chips de texto (▲/▼ Nube alcista/bajista) para SPY y QQQ, sin ninguna gráfica visual.
+
+Se agregó una función nueva `marketCtxChartHtml(hist, label)` que construye, para cada símbolo (SPY y QQQ), una gráfica de velas real (`buildCandleSvg` + `finishCandleSvg`, últimas 120 velas) con overlay de EMA Cloud (EMA8 vs EMA21, igual que describe el texto explicativo del módulo) dibujado directamente sobre las velas — mismo patrón que `drawEmaCloudChart` (nube de color según EMA rápida >= EMA lenta, líneas EMA8 en #5BC0EB y EMA21 en #C77DFF).
+
+`renderMarketContext` ahora inserta ambas gráficas (`mc-charts-wrap`) justo debajo de la fila de chips, antes del veredicto agregado. El resto de la lógica (chips, cálculo de score, manejo de errores parciales) no se tocó.
+
+Es una gráfica estática (sin pan/zoom ni selector de marco temporal), ya que este módulo no sigue la arquitectura estándar de un solo ticker (chartSvg-X/oscSvg-X) sino que renderiza todo dentro de un único contenedor (`marketctx-body`) para dos símbolos a la vez.
+
+Verificado en vivo (modo prueba, AAPL): 2 SVG, 200 rects cada uno (velas+volumen), 6 paths (cloud fill + 2 líneas EMA por símbolo), sin NaN, sin errores de consola.
