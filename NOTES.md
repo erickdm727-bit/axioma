@@ -246,3 +246,22 @@ Hay un fallback de una sola vez al cargar la app (`missing = Object.keys(groupLo
 Fix aplicado ahora (independiente, no requiere info de Erick): `syncExtendedHoursAutoTickers()` solo agregaba tickers de portafolio ausentes de la lista de Horario extendido, pero nunca promovía una entrada existente con `source:"manual"` a `source:"portfolio"` aunque el ticker ya estuviera en `groupLotsByTicker()` — por eso un ticker agregado manualmente a Horario extendido ANTES de comprarlo se quedaba marcado "manual" para siempre. Ahora la función recorre la lista completa y promueve cualquier entrada cuyo ticker esté en el portafolio real.
 
 Pendiente: actualizar `data/watchlist.json` con la lista completa y actual de tickers en portafolio de Erick (se le pidió la lista) y disparar manualmente el workflow `refresh-data.yml` para refrescar el cache de inmediato en vez de esperar el próximo cron de 2h.
+
+## 2026-08-21 — Portafolio auto-actualizado desde Firestore (fix definitivo, no manual)
+
+Siguiendo el diagnóstico de la entrada anterior, se automatizó por completo la fuente de tickers para el refresh de portafolio: ya no depende de que yo edite `data/watchlist.json` a mano.
+
+**Infraestructura nueva:**
+- Se generó una llave de cuenta de servicio de Firebase (Firebase console > Configuración del proyecto > Cuentas de servicio) y se guardó como secreto de GitHub `FIREBASE_SERVICE_ACCOUNT_KEY` (Settings > Secrets and variables > Actions). Nunca queda expuesta en el código — solo el workflow la puede leer.
+- `scripts/refresh-cache.mjs` ahora tiene `fetchPortfolioTickersFromFirestore()`: firma un JWT con la llave de servicio (Node `crypto`, sin dependencias nuevas), lo cambia por un access token OAuth2 vía `oauth2.googleapis.com/token`, y lee `users/{UID}` de Firestore vía la REST API (`firestore.googleapis.com/v1/...`). `FIRESTORE_USER_UID` está hardcodeado (`xvvl1v1KBPgSSJHn6EVwywmo24y2`, tu UID de Firebase Authentication — la app solo tiene un usuario real).
+- El campo `ta_scanner_portfolio_lots` del documento (la misma clave que ya sincronizaba tu portafolio a la nube) se parsea para extraer los tickers únicos de tus lotes reales.
+- Si Firestore responde bien, esa lista de tickers PISA `data/watchlist.json` (se reescribe con el resultado) y se usa para el refresh de ese run. Si algo falla (red, permisos, formato), se cae de vuelta a leer `data/watchlist.json` tal como estaba — el refresh nunca se rompe por esto, en el peor caso simplemente no se actualiza la lista de tickers.
+- `refresh-data.yml`: se agregó el secreto como env var, se agregó `data/watchlist.json` al `git add` del commit automático, y se agregó un input manual `force` (`workflow_dispatch.inputs.force`) que salta el filtro de horario de mercado — útil para pruebas o para forzar un refresh inmediato sin esperar la ventana 9:30am-4:00pm ET.
+
+**Bug encontrado y corregido durante la prueba:** el primer intento usó el scope OAuth `https://www.googleapis.com/auth/datastore.readonly`, que no existe para la API de Firestore — dio `403 ACCESS_TOKEN_SCOPE_INSUFFICIENT`. El fallback a `watchlist.json` funcionó exactamente como debía (sin romper el refresh), lo cual confirmó que el diseño defensivo era correcto. Se corrigió al scope real: `https://www.googleapis.com/auth/datastore`.
+
+**Verificado en vivo (workflow #107, disparado manualmente con force=true):** Firestore devolvió la lista real de 6 tickers — CIFR, RIOT, SLV, SOFI, TSLA, XYZ — reemplazando el `watchlist.json` estático que solo tenía 5 (le faltaba CIFR). `data/watchlist.json` se reescribió automáticamente con la lista correcta y `data/portfolio-cache.json` se generó con precios frescos para los 6.
+
+De ahora en adelante: cada vez que se agregue o quite una posición en Portafolio, la siguiente corrida programada (cada 2h, mercado abierto) toma la lista actualizada sola — sin pedir que se edite nada a mano.
+
+⚠ Nota de seguridad: el JSON de la llave de servicio se descargó a Downloads durante la configuración — debe borrarse de ahí manualmente (ya quedó guardado, cifrado, como secreto de GitHub; no hace falta conservar el archivo).
