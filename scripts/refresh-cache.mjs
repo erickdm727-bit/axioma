@@ -205,7 +205,7 @@ async function getFirestoreAccessToken(serviceAccount){
   const header = { alg: "RS256", typ: "JWT" };
   const claims = {
     iss: serviceAccount.client_email,
-    scope: "https://www.googleapis.com/auth/datastore.readonly",
+    scope: "https://www.googleapis.com/auth/datastore",
     aud: "https://oauth2.googleapis.com/token",
     iat: now,
     exp: now + 3600
