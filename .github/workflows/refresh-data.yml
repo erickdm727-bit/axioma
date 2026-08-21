@@ -3,7 +3,12 @@ name: Refresh portfolio cache
 on:
   schedule:
       - cron: "0 */2 * * *"  # every 2 hours; script itself skips runs when the US market is closed
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Ignorar el filtro de horario de mercado (para pruebas)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -22,6 +27,7 @@ jobs:
         env:
           TWELVE_DATA_KEY: ${{ secrets.TWELVE_DATA_KEY }}
           FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+          FORCE_REFRESH: ${{ github.event.inputs.force }}
         run: node scripts/refresh-cache.mjs
 
       - name: Commit data/portfolio-cache.json if changed
