@@ -248,7 +248,7 @@ async function fetchPortfolioTickersFromFirestore(){
 }
 
 async function main(){
-  if(!isMarketOpenNowET()){
+  if(!isMarketOpenNowET() && process.env.FORCE_REFRESH !== "true"){
     console.log("Mercado cerrado (fuera de 9:30am-4:00pm hora de Nueva York, o fin de semana) — no se actualiza el cache.");
     return;
   }
