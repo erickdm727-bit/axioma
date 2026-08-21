@@ -234,3 +234,15 @@ Erick notó que la línea de VWAP anclado (drawVwapChart) no arrancaba visualmen
 Fix en `drawVwapChart`: se antepone un punto inicial explícito en `(candleCtx.xOf(anchorOff), candleCtx.yOf(hist[anchorOff].low))` antes de recorrer la serie acumulada normal. La línea ahora nace exactamente en la punta de la mecha inferior de la vela ancla (el "pin" visual de "anclado desde el mínimo") y de ahí en adelante sigue el cálculo VWAP acumulado sin cambios.
 
 Verificado en vivo (modo prueba, AAPL, 4h): el primer punto del path (y~150.39) coincide exactamente (pixel-perfect) con el extremo inferior de la línea de mecha (wick) de la vela ancla.
+
+## 2026-08-20 — Diagnóstico: portafolio no se actualiza solo (root cause: data/watchlist.json desactualizado)
+
+Erick reportó que de sus posiciones en Portafolio, solo SLV se actualiza sola — el resto no. Y en Horario extendido, muchos tickers que sí son compras reales aparecen con tag "manual" en vez de "portafolio".
+
+Causa raíz encontrada: los precios automáticos del portafolio NO se piden en vivo desde el dispositivo — vienen de `data/portfolio-cache.json`, que el workflow `refresh-data.yml` regenera cada 2h corriendo `scripts/refresh-cache.mjs`, el cual solo pide datos para los tickers listados en `data/watchlist.json`. Ese archivo es estático y se quedó con solo 5 tickers (SOFI, SLV, TSLA, XYZ, RIOT) — cualquier posición agregada después nunca entra al refresh automático de 2h. `startPortfolioAutoRefresh()` solo llama `refreshPortfolioFromSharedCacheOnly()`, que únicamente lee ese archivo — por eso solo los tickers que sí están ahí (aparentemente solo SLV coincide con las posiciones reales actuales) se ven frescos.
+
+Hay un fallback de una sola vez al cargar la app (`missing = Object.keys(groupLotsByTicker()).filter(t => !(t in shared.tickers))`) que hace fetch en vivo para tickers ausentes del cache — pero solo corre una vez al inicio, no se repite en el intervalo de 30 min, así que si son muchos tickers ausentes es fácil toparse con límites de la API y quedar con datos viejos o en error permanentemente.
+
+Fix aplicado ahora (independiente, no requiere info de Erick): `syncExtendedHoursAutoTickers()` solo agregaba tickers de portafolio ausentes de la lista de Horario extendido, pero nunca promovía una entrada existente con `source:"manual"` a `source:"portfolio"` aunque el ticker ya estuviera en `groupLotsByTicker()` — por eso un ticker agregado manualmente a Horario extendido ANTES de comprarlo se quedaba marcado "manual" para siempre. Ahora la función recorre la lista completa y promueve cualquier entrada cuyo ticker esté en el portafolio real.
+
+Pendiente: actualizar `data/watchlist.json` con la lista completa y actual de tickers en portafolio de Erick (se le pidió la lista) y disparar manualmente el workflow `refresh-data.yml` para refrescar el cache de inmediato en vez de esperar el próximo cron de 2h.
