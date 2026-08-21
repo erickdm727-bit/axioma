@@ -6789,6 +6789,7 @@ __axAttachPanZoom(svgWrapEl, "bb", () => drawBollingerChart(lastChartResult));
   function syncExtendedHoursAutoTickers(){
     const list = loadExtendedHoursTickers();
     const portfolioTickers = Object.keys(groupLotsByTicker());
+    const portfolioSet = new Set(portfolioTickers);
     let changed = false;
     for(const t of portfolioTickers){
       if(!list.some(e=>e.ticker===t)){
@@ -6798,6 +6799,15 @@ __axAttachPanZoom(svgWrapEl, "bb", () => drawBollingerChart(lastChartResult));
         }
       }
     }
+    // Promote entries added manually before you actually bought them — once a
+    // ticker shows up in your real lots, its Extended Hours tag should say
+    // "portfolio", not stay stuck on "manual" forever.
+    list.forEach(function(entry){
+      if(entry.source !== "portfolio" && portfolioSet.has(entry.ticker)){
+        entry.source = "portfolio";
+        changed = true;
+      }
+    });
     if(changed) saveExtendedHoursTickers(list);
     return list;
   }
