@@ -12,6 +12,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import crypto from "node:crypto";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
@@ -187,16 +188,94 @@ function isMarketOpenNowET(){
   return minutesNow >= marketOpen && minutesNow < marketClose;
 }
 
+// ---- Portfolio tickers live from Firestore (Axioma cloud sync) instead of a
+// manually-maintained data/watchlist.json — so a new position added on any
+// device gets picked up by the very next scheduled refresh, automatically.
+// FIRESTORE_USER_UID is Erick's Firebase Authentication UID (Firebase console >
+// Authentication > Users). data/watchlist.json is still written on every
+// successful Firestore read, so it stays a readable mirror/fallback.
+const FIRESTORE_USER_UID = "xvvl1v1KBPgSSJHn6EVwywmo24y2";
+
+function base64url(input){
+  return Buffer.from(input).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+async function getFirestoreAccessToken(serviceAccount){
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: "RS256", typ: "JWT" };
+  const claims = {
+    iss: serviceAccount.client_email,
+    scope: "https://www.googleapis.com/auth/datastore.readonly",
+    aud: "https://oauth2.googleapis.com/token",
+    iat: now,
+    exp: now + 3600
+  };
+  const unsigned = base64url(JSON.stringify(header)) + "." + base64url(JSON.stringify(claims));
+  const signer = crypto.createSign("RSA-SHA256");
+  signer.update(unsigned);
+  signer.end();
+  const signature = signer.sign(serviceAccount.private_key).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const jwt = unsigned + "." + signature;
+
+  const res = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+      assertion: jwt
+    })
+  });
+  if(!res.ok) throw new Error("OAuth token exchange failed: " + res.status + " " + await res.text());
+  const j = await res.json();
+  return j.access_token;
+}
+
+async function fetchPortfolioTickersFromFirestore(){
+  const raw = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+  if(!raw) throw new Error("FIREBASE_SERVICE_ACCOUNT_KEY no está configurado");
+  const serviceAccount = JSON.parse(raw);
+  const accessToken = await getFirestoreAccessToken(serviceAccount);
+  const url = `https://firestore.googleapis.com/v1/projects/${serviceAccount.project_id}/databases/(default)/documents/users/${FIRESTORE_USER_UID}`;
+  const res = await fetch(url, { headers: { Authorization: "Bearer " + accessToken } });
+  if(!res.ok) throw new Error("Firestore fetch failed: " + res.status + " " + await res.text());
+  const doc = await res.json();
+  const lotsRaw = doc.fields && doc.fields.ta_scanner_portfolio_lots && doc.fields.ta_scanner_portfolio_lots.stringValue;
+  if(!lotsRaw) throw new Error("El documento de Firestore no tiene ta_scanner_portfolio_lots");
+  const lots = JSON.parse(lotsRaw);
+  if(!Array.isArray(lots)) throw new Error("ta_scanner_portfolio_lots no es un array");
+  const tickers = Array.from(new Set(lots.map(l => (l.ticker || "").trim().toUpperCase()).filter(Boolean))).sort();
+  return tickers;
+}
+
 async function main(){
   if(!isMarketOpenNowET()){
     console.log("Mercado cerrado (fuera de 9:30am-4:00pm hora de Nueva York, o fin de semana) — no se actualiza el cache.");
     return;
   }
   const watchlistPath = path.join(ROOT, "data", "watchlist.json");
-  const raw = await fs.readFile(watchlistPath, "utf8");
-  const tickers = JSON.parse(raw);
+  let tickers = null;
+  try {
+    const fsTickers = await fetchPortfolioTickersFromFirestore();
+    if(fsTickers && fsTickers.length){
+      tickers = fsTickers;
+      console.log(`Tickers desde Firestore (${tickers.length}): ${tickers.join(", ")}`);
+      try {
+        await fs.writeFile(watchlistPath, JSON.stringify(tickers, null, 2) + "\n", "utf8");
+      } catch(writeErr) {
+        console.log("No se pudo actualizar data/watchlist.json con la lista de Firestore: " + writeErr.message);
+      }
+    } else {
+      console.log("Firestore no devolvió tickers de portafolio; usando data/watchlist.json como respaldo.");
+    }
+  } catch (e) {
+    console.log("No se pudo leer el portafolio desde Firestore (" + e.message + "); usando data/watchlist.json como respaldo.");
+  }
+  if(!tickers){
+    const raw = await fs.readFile(watchlistPath, "utf8");
+    tickers = JSON.parse(raw);
+  }
   if(!Array.isArray(tickers) || !tickers.length){
-    console.log("data/watchlist.json está vacío o no es un array; nada que hacer.");
+    console.log("No hay tickers para actualizar (ni en Firestore ni en data/watchlist.json).");
     return;
   }
 
