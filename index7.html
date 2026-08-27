@@ -856,6 +856,17 @@
     <div id="movCalResults" class="bt-results"></div>
   </div>
 
+  <!-- Live forward-test journal for the movement guide -->
+  <div class="backtest-card" id="predLogCard">
+    <div class="bt-head">
+      <h3>📊 Historial de aciertos (bitácora en vivo)</h3>
+    </div>
+    <div class="bt-desc">A diferencia de la calibración de arriba (retrospectiva, calculada al instante con datos ya descargados), esto es un registro <strong>prospectivo</strong>: cada día hábil se guarda una predicción concreta para cada ticker de tu portafolio (precio, dirección y bandas de confianza a 130 velas, ~6 meses), y se resuelve sola contra el precio real cuando llega la fecha — sin poder hacer trampa con retrospectiva. Tomará varios meses acumular resultados resueltos.</div>
+    <button class="btn" id="predLogRefreshBtn" type="button">🔄 Actualizar historial</button>
+    <div id="predLogStatus" class="bt-status"></div>
+    <div id="predLogResults" class="bt-results"></div>
+  </div>
+
   <div class="disclaimer">
     Todos los cálculos (SMA, EMA, Bollinger, RSI, Estocástico, Ichimoku, A/D, patrones de velas) se hacen en tu navegador a partir de datos históricos de mercado. Es un conjunto de indicadores técnicos y no considera fundamentales, noticias ni el libro de órdenes. Ninguna combinación de indicadores garantiza el movimiento futuro del precio. No constituye recomendación de inversión.
   </div>
@@ -6952,6 +6963,122 @@ __axAttachPanZoom(svgWrapEl, "bb", () => drawBollingerChart(lastChartResult));
     // Scanner ticker chips are no longer bulk-live-fetched here — that was silently
     // re-analyzing the whole portfolio (and burning API credits) on every single
     // open/reload. Chips populate from scannerCache as you tap them or run analyses.
+  // ---- Predictions journal (live forward-test of the movement guide) ----
+  async function loadPredictionsLog(){
+    try {
+      const res = await fetch("data/predictions-log.json", { cache: "no-store" });
+      if(!res.ok) return null;
+      return await res.json();
+    } catch(e){
+      return null;
+    }
+  }
+
+  function predLogAggFor(recs){
+    const resolved = recs.filter(r => r.resolved && r.resolution);
+    const withDir = resolved.filter(r => r.resolution.own && r.resolution.own.dirCorrect !== null);
+    const dirHits = withDir.filter(r => r.resolution.own.dirCorrect).length;
+    const within1 = resolved.filter(r => r.resolution.own && r.resolution.own.within1).length;
+    const within2 = resolved.filter(r => r.resolution.own && r.resolution.own.within2).length;
+    return {
+      total: recs.length,
+      resolved: resolved.length,
+      dirPct: withDir.length ? (100*dirHits/withDir.length) : null,
+      dirN: withDir.length,
+      within1Pct: resolved.length ? (100*within1/resolved.length) : null,
+      within2Pct: resolved.length ? (100*within2/resolved.length) : null,
+    };
+  }
+
+  function renderPredictionsLog(log){
+    const statusEl = $("predLogStatus");
+    const resultsEl = $("predLogResults");
+    if(!statusEl || !resultsEl) return;
+    if(!log || !Array.isArray(log.records) || !log.records.length){
+      statusEl.textContent = "Todavía no hay predicciones registradas — la bitácora corre automáticamente cada día hábil.";
+      resultsEl.innerHTML = "";
+      return;
+    }
+    const records = log.records;
+    const agg = predLogAggFor(records);
+    statusEl.textContent = `Actualizado: ${new Date(log.generatedAt).toLocaleString("es-MX")}`;
+
+    const dirTxt = agg.dirPct!=null ? agg.dirPct.toFixed(0)+"%" : "—";
+    const dirSub = agg.dirN ? `${agg.dirN} predicción(es) direccional(es) resuelta(s)` : "todavía sin resolver";
+    const w1Txt = agg.within1Pct!=null ? agg.within1Pct.toFixed(0)+"%" : "—";
+    const w2Txt = agg.within2Pct!=null ? agg.within2Pct.toFixed(0)+"%" : "—";
+
+    let html = `<div class="bt-metrics">
+      <div class="bt-metric"><div class="btm-label">Predicciones</div><div class="btm-value">${agg.total}</div><div class="btm-sub">${agg.resolved} resuelta(s) · ${agg.total-agg.resolved} pendiente(s)</div></div>
+      <div class="bt-metric"><div class="btm-label">Acierto direccional</div><div class="btm-value">${dirTxt}</div><div class="btm-sub">${dirSub}</div></div>
+      <div class="bt-metric"><div class="btm-label">Cobertura ±1σ</div><div class="btm-value">${w1Txt}</div><div class="btm-sub">ideal ≈ 68%</div></div>
+      <div class="bt-metric"><div class="btm-label">Cobertura ±2σ</div><div class="btm-value">${w2Txt}</div><div class="btm-sub">ideal ≈ 95%</div></div>
+    </div>`;
+
+    const byTicker = {};
+    records.forEach(r => { (byTicker[r.ticker] = byTicker[r.ticker] || []).push(r); });
+    const tickers = Object.keys(byTicker).sort();
+
+    html += '<div style="margin-top:16px; font-weight:700; font-size:13px; color:var(--text-dim);">Por ticker</div>';
+    tickers.forEach(tk => {
+      const recs = byTicker[tk];
+      const a = predLogAggFor(recs);
+      const dt = a.dirPct!=null ? a.dirPct.toFixed(0)+"% ("+a.dirN+")" : "—";
+      html += `<div class="port-row">
+        <div class="port-row-head">
+          <span class="port-ticker mono">${tk}</span>
+          <span class="port-shares">${a.total} predicción(es) · ${a.resolved} resuelta(s)</span>
+        </div>
+        <div class="port-row-body">
+          <div class="port-stat"><div class="pslabel">Dirección OK</div><div class="psval">${dt}</div></div>
+          <div class="port-stat"><div class="pslabel">Dentro ±1σ</div><div class="psval">${a.within1Pct!=null?a.within1Pct.toFixed(0)+"%":"—"}</div></div>
+          <div class="port-stat"><div class="pslabel">Dentro ±2σ</div><div class="psval">${a.within2Pct!=null?a.within2Pct.toFixed(0)+"%":"—"}</div></div>
+        </div>
+      </div>`;
+    });
+
+    html += '<div style="margin-top:16px; font-weight:700; font-size:13px; color:var(--text-dim);">Predicciones individuales</div>';
+    const sorted = records.slice().sort((a,b) => (b.calledAtTs||0) - (a.calledAtTs||0));
+    sorted.forEach(r => {
+      const own = r.methods && r.methods.own;
+      const dirLabel = own ? ({bullish:"Alcista", bearish:"Bajista", neutral:"Neutral"}[own.direction] || own.direction) : "—";
+      let bodyHtml;
+      if(r.resolved && r.resolution && r.resolution.own){
+        const ro = r.resolution.own;
+        const errPct = (ro.errPct*100);
+        const errTxt = (errPct>=0?"+":"") + errPct.toFixed(1) + "%";
+        const dirColor = ro.dirCorrect===true ? "var(--up)" : ro.dirCorrect===false ? "var(--down)" : "var(--text-dim)";
+        const dirIcon = ro.dirCorrect===true ? "✅" : ro.dirCorrect===false ? "❌" : "—";
+        const bandTxt = ro.within1 ? "dentro de ±1σ" : (ro.within2 ? "dentro de ±2σ" : "fuera de ±2σ");
+        bodyHtml = `<div class="port-stat"><div class="pslabel">Resuelta (${r.resolution.actualDate})</div><div class="psval" style="color:${dirColor}">${dirIcon} ${errTxt}</div></div>
+          <div class="port-stat"><div class="pslabel">Precio real</div><div class="psval">${r.resolution.actualPrice.toFixed(2)}</div></div>
+          <div class="port-stat"><div class="pslabel">Bandas</div><div class="psval">${bandTxt}</div></div>`;
+      } else {
+        bodyHtml = `<div class="port-stat"><div class="pslabel">Estado</div><div class="psval">Pendiente</div></div>
+          <div class="port-stat"><div class="pslabel">Se resuelve</div><div class="psval">${r.horizonBars||130} velas después</div></div>`;
+      }
+      html += `<div class="port-row">
+        <div class="port-row-head">
+          <span class="port-ticker mono">${r.ticker}</span>
+          <span class="port-shares">Llamada ${r.calledAt} @ ${(r.priceAtCall||0).toFixed(2)} · ${dirLabel}</span>
+        </div>
+        <div class="port-row-body">${bodyHtml}</div>
+      </div>`;
+    });
+
+    resultsEl.innerHTML = html;
+  }
+
+  const predLogRefreshBtn = $("predLogRefreshBtn");
+  if(predLogRefreshBtn){
+    predLogRefreshBtn.addEventListener("click", async () => {
+      $("predLogStatus").textContent = "Cargando…";
+      const log = await loadPredictionsLog();
+      renderPredictionsLog(log);
+    });
+  }
+  loadPredictionsLog().then(renderPredictionsLog);
+
   })();
 })();
 </script>
