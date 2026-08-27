@@ -286,3 +286,6 @@ Se agregó un registro prospectivo de predicciones para poder medir, con el tiem
 - Panel "Historial de aciertos" dentro de la app (index7.html) que lea `data/predictions-log.json` y muestre, por ticker y por método, cuántas predicciones se han resuelto y con qué precisión — todavía no construido.
 
 Con 130 velas de horizonte, la primera predicción no se resuelve hasta dentro de varios meses — es un proceso lento por diseño, para que la muestra sea real y no retrospectiva.
+
+
+Agregado el mismo día: panel **📊 Historial de aciertos (bitácora en vivo)** dentro de la sección del Mapa de movimiento, justo debajo de la Calibración. Lee `data/predictions-log.json` (mismo patrón de fetch que `portfolio-cache.json`, sin gastar API), muestra métricas agregadas (acierto direccional, cobertura ±1σ/±2σ), desglose por ticker, y el detalle de cada predicción individual (resuelta o pendiente). Se actualiza sola al cargar la página y también con el botón "🔄 Actualizar historial". Verificado en vivo en la página desplegada (erickdm727-bit.github.io/axioma/index7.html) con los 5 registros reales ya generados.
