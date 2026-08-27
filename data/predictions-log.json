@@ -1,4 +1,150 @@
 {
-  "generatedAt": 1787824281432,
-  "records": []
+  "generatedAt": 1787824411967,
+  "records": [
+    {
+      "id": "CIFR_2026-08-26",
+      "ticker": "CIFR",
+      "timeframe": "1day",
+      "horizonBars": 130,
+      "calledAt": "2026-08-26",
+      "calledAtDatetime": "2026-08-26",
+      "calledAtTs": 1787824370552,
+      "priceAtCall": 16.02,
+      "methods": {
+        "own": {
+          "method": "analog",
+          "trainingSize": 330,
+          "n": 40,
+          "meanRet": 0.6695867183208051,
+          "pctPositive": 0.975,
+          "direction": "bullish",
+          "centralFinal": 31.293945989142202,
+          "upper1Final": 61.739044730601286,
+          "lower1Final": 15.862102496800514,
+          "upper2Final": 121.80341991929375,
+          "lower2Final": 8.040094902263295
+        },
+        "market": null,
+        "fusion": null
+      },
+      "resolved": false,
+      "resolution": null
+    },
+    {
+      "id": "RIOT_2026-08-26",
+      "ticker": "RIOT",
+      "timeframe": "1day",
+      "horizonBars": 130,
+      "calledAt": "2026-08-26",
+      "calledAtDatetime": "2026-08-26",
+      "calledAtTs": 1787824378816,
+      "priceAtCall": 20.61,
+      "methods": {
+        "own": {
+          "method": "analog",
+          "trainingSize": 330,
+          "n": 40,
+          "meanRet": 0.31026513400099115,
+          "pctPositive": 0.85,
+          "direction": "bullish",
+          "centralFinal": 28.10764290624568,
+          "upper1Final": 37.20885823621081,
+          "lower1Final": 21.232567383004906,
+          "upper2Final": 49.25703431840559,
+          "lower2Final": 16.039122141176364
+        },
+        "market": null,
+        "fusion": null
+      },
+      "resolved": false,
+      "resolution": null
+    },
+    {
+      "id": "SOFI_2026-08-26",
+      "ticker": "SOFI",
+      "timeframe": "1day",
+      "horizonBars": 130,
+      "calledAt": "2026-08-26",
+      "calledAtDatetime": "2026-08-26",
+      "calledAtTs": 1787824387308,
+      "priceAtCall": 18.84,
+      "methods": {
+        "own": {
+          "method": "analog",
+          "trainingSize": 330,
+          "n": 40,
+          "meanRet": -0.1248368928790979,
+          "pctPositive": 0.325,
+          "direction": "bearish",
+          "centralFinal": 16.6289537242736,
+          "upper1Final": 28.09561949774579,
+          "lower1Final": 9.842178492850786,
+          "upper2Final": 47.46924238593941,
+          "lower2Final": 5.825289978631297
+        },
+        "market": null,
+        "fusion": null
+      },
+      "resolved": false,
+      "resolution": null
+    },
+    {
+      "id": "TSLA_2026-08-26",
+      "ticker": "TSLA",
+      "timeframe": "1day",
+      "horizonBars": 130,
+      "calledAt": "2026-08-26",
+      "calledAtDatetime": "2026-08-26",
+      "calledAtTs": 1787824395716,
+      "priceAtCall": 345.82001,
+      "methods": {
+        "own": {
+          "method": "analog",
+          "trainingSize": 330,
+          "n": 40,
+          "meanRet": 0.1583232124884612,
+          "pctPositive": 0.6,
+          "direction": "bullish",
+          "centralFinal": 405.1436314871345,
+          "upper1Final": 560.2063658754214,
+          "lower1Final": 293.0016010762091,
+          "upper2Final": 774.6170690512565,
+          "lower2Final": 211.90000671637893
+        },
+        "market": null,
+        "fusion": null
+      },
+      "resolved": false,
+      "resolution": null
+    },
+    {
+      "id": "XYZ_2026-08-26",
+      "ticker": "XYZ",
+      "timeframe": "1day",
+      "horizonBars": 130,
+      "calledAt": "2026-08-26",
+      "calledAtDatetime": "2026-08-26",
+      "calledAtTs": 1787824403962,
+      "priceAtCall": 83.099998,
+      "methods": {
+        "own": {
+          "method": "analog",
+          "trainingSize": 330,
+          "n": 40,
+          "meanRet": -0.07078410328558461,
+          "pctPositive": 0.325,
+          "direction": "bearish",
+          "centralFinal": 77.42119455018367,
+          "upper1Final": 91.13624544344474,
+          "lower1Final": 65.77011524242609,
+          "upper2Final": 107.28089745688506,
+          "lower2Final": 55.87240140292754
+        },
+        "market": null,
+        "fusion": null
+      },
+      "resolved": false,
+      "resolution": null
+    }
+  ]
 }
