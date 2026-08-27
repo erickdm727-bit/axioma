@@ -265,3 +265,24 @@ Siguiendo el diagnóstico de la entrada anterior, se automatizó por completo la
 De ahora en adelante: cada vez que se agregue o quite una posición en Portafolio, la siguiente corrida programada (cada 2h, mercado abierto) toma la lista actualizada sola — sin pedir que se edite nada a mano.
 
 ⚠ Nota de seguridad: el JSON de la llave de servicio se descargó a Downloads durante la configuración — debe borrarse de ahí manualmente (ya quedó guardado, cifrado, como secreto de GitHub; no hace falta conservar el archivo).
+
+
+## 2026-08-27 — Bitácora de predicciones del Mapa de movimiento probable (Fase 1: Método propio)
+
+Se agregó un registro prospectivo de predicciones para poder medir, con el tiempo, si el "Mapa de movimiento probable" de verdad acierta. Hasta ahora ese módulo solo mostraba una proyección visual y un backtest sintético (`runMovementCalibration`, ya existente); no había forma de comprobar en vivo si acertaba con acciones reales.
+
+**Cómo funciona (Fase 1 — "Método propio"):**
+- Cada día hábil (después del cierre, ~4:30pm ET, de lunes a viernes), `scripts/log-predictions.mjs` corre vía GitHub Actions (`.github/workflows/log-predictions.yml`).
+- Toma el mismo universo de tickers que el portafolio real (Firestore, con fallback a `data/watchlist.json` si Firestore falla — mismo patrón que `refresh-cache.mjs`).
+- Para cada ticker, si todavía no hay una predicción registrada para la vela diaria más reciente, corre el motor de análogos histórico (idéntico al de `index7.html`: `computeProjectionAnalog`/`buildAnalogSamples`, k-NN sobre pendiente/RSI/estocástico/tendencia de SMA) con horizonte de 130 velas diarias (~6 meses, igual que `MOVEMENT_PARAMS["1day"].proj`) y guarda el precio de llamada, la dirección (alcista/bajista/neutral según `pctPositive`) y las bandas ±1σ/±2σ en `data/predictions-log.json`.
+- Cada corrida también revisa las predicciones pendientes: si ya pasaron 130 velas desde que se hizo una llamada, la resuelve contra el precio real de esa fecha y guarda si acertó la dirección, si el precio cayó dentro de ±1σ/±2σ, y el error porcentual — usando la misma metodología de puntaje que el backtest sintético para que ambos sean comparables.
+- Es un registro **prospectivo**: la predicción se guarda antes de saber el resultado, así que no hay forma de "hacer trampa" con retrospectiva.
+
+**Primera corrida real (workflow #1, disparada manualmente para probar):** Firestore devolvió 5 tickers (CIFR, RIOT, SOFI, TSLA, XYZ — SLV ya no está en el portafolio real, por eso no aparece; el sistema tomó la lista correcta y actual). Se registraron 5 predicciones nuevas con 330 velas de entrenamiento cada una. Confirma que la tubería completa funciona: Firestore → Twelve Data → motor de análogos → `data/predictions-log.json` → commit automático.
+
+**Pendiente (Fase 2, todavía no implementado):**
+- "Método comparado": la misma idea pero entrenando con datos de todo el universo S&P 500 en vez de solo el historial propio del ticker (para detectar si una acción se mueve más por su cuenta o más correlacionada con el mercado — ej. Tesla vs. una acción más "de manada").
+- "Método fusión": combinar Método propio + Método comparado — mayor confianza cuando coinciden en dirección, "señal mixta" cuando no. Los campos `methods.market` y `methods.fusion` ya existen en cada registro de `data/predictions-log.json` (en `null` por ahora), listos para llenarse.
+- Panel "Historial de aciertos" dentro de la app (index7.html) que lea `data/predictions-log.json` y muestre, por ticker y por método, cuántas predicciones se han resuelto y con qué precisión — todavía no construido.
+
+Con 130 velas de horizonte, la primera predicción no se resuelve hasta dentro de varios meses — es un proceso lento por diseño, para que la muestra sea real y no retrospectiva.
