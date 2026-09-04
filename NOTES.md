@@ -311,3 +311,23 @@ Nota técnica (para futuros parches grandes vía CodeMirror): el primer intento 
 También se confirmó que la página en producción tiene un Service Worker (sw.js) que sirve index7.html cacheado — después de cada commit hay que desregistrar el service worker y borrar caches (o esperar a que rote) antes de verificar cambios en vivo, si no la verificación puede dar falsos negativos: el fetch() directo con cache:"no-store" sí ve el archivo fresco, pero la navegación normal del navegador puede seguir sirviendo la versión vieja del SW.
 
 Pendiente: ajustar el criterio de puntaje con el feedback real de Erick sobre qué tan bien reflejan estos 40 resultados sus propias ideas de "buena oportunidad"; considerar si el universo debería ampliarse más allá de los 40 tickers de Horario extendido.
+
+## 2026-09-04 (2) - Backtest walk-forward movido a su propia pestana
+
+A pedido de Erick (vamos a dividir las cosas, el backtest de walk forward, la vamos a mandar a un nuevo espacio, una vineta para el solo), se saco la tarjeta Backtest de Estrategia (Walk-Forward) (id backtestCard, con el analizador de umbrales de Williams adentro - wOptimizeBtn, wOptResults, etc.) de la pestana Scanner y se le dio su propia pestana nueva en la barra principal: Backtest.
+
+Cambios en index7.html:
+- Nuevo boton de pestana: id tabBtnBacktest, agregado despues de Horario extendido en la tabbar.
+- Nuevo panel: id tabpanel-backtest, agregado como hermano de tabpanel-scanner/portfolio/extended (antes de </main>). Contiene backtestCard completo tal cual estaba, mas una nota aclaratoria arriba: Usa el ticker que tengas cargado en la pestana Scanner. Si cambias de ticker ahi, volve a correr el backtest aca.
+- switchTab() actualizado para el cuarto caso (toggle de clase active en tabBtnBacktest y de display en tabpanel-backtest).
+- Listener nuevo: tabBtnBacktest -> switchTab("backtest").
+
+El backtestCard no se duplico ni se reescribio - se extrajo el bloque completo (contando profundidad de div/div para encontrar el cierre exacto, no a mano) y se reinserto intacto en el nuevo panel, asi que toda su logica (runBacktestBtn, el optimizador de Williams, SL/TP, etc.) sigue funcionando igual, solo que ahora vive en otro lugar del DOM. Como esos elementos se referencian por id (no por posicion), no hizo falta tocar el JS que los usa.
+
+Verificado en vivo en la pagina desplegada: tabBtnBacktest y tabpanel-backtest existen, backtestCard quedo dentro de tabpanel-backtest (ya no esta en tabpanel-scanner), y al clickear el boton el panel se muestra y el de Scanner se oculta correctamente.
+
+Nota: el backtest sigue usando el ticker cargado en tickerInput (el mismo input de la pestana Scanner) - no se le agrego un selector de ticker propio. Si eso molesta al usarlo, es la proxima mejora obvia.
+
+Pendiente (retomar con la frase "Retomemos el buscador de oportunidades"): ajustar el criterio de puntaje del buscador de oportunidades v1 con feedback real de Erick.
+
+Pendiente (sin frase de retomo asignada aun): el optimizador multi-ticker para Williams %R - correr "Optimizar parametros" sobre una lista de tickers en vez de uno a la vez, y mostrar una tabla comparativa (ticker, umbral compra, umbral venta, win rate). Quedo en preguntar a Erick si el universo por defecto es el de Horario extendido y si corre on-demand o automatico; no llego a contestar antes de pedir el cambio de pestana del backtest.
