@@ -387,6 +387,7 @@
     <button class="tabbtn active" id="tabBtnScanner" type="button">Scanner</button>
     <button class="tabbtn" id="tabBtnPortfolio" type="button">Portafolio</button>
     <button class="tabbtn" id="tabBtnExtended" type="button">Horario extendido</button>
+    <button class="tabbtn" id="tabBtnBacktest" type="button">Backtest</button>
   </div>
 
   <div id="tabpanel-scanner" class="tabpanel">
@@ -802,50 +803,7 @@
   </div></div>
 
   <!-- Walk-forward strategy backtest -->
-  <div class="backtest-card" id="backtestCard">
-    <div class="bt-head">
-      <h3>🤖 Backtest de Estrategia (Walk-Forward)</h3>
-      <button class="btn-bt" id="runBacktestBtn" type="button">▶ Correr backtest</button>
-    </div>
-    <div class="bt-desc">Simula día por día, con datos diarios, qué habría dicho el veredicto general de esta app en el pasado — usando <strong>solo información disponible hasta ese día</strong>, sin ver el futuro — y qué le habría pasado a tu dinero siguiéndolo (solo largos: comprado cuando el veredicto es alcista, en efectivo cuando deja de serlo). Usa exactamente los indicadores que tengas prendidos ahora mismo (los del método/pestaña activa) — apaga o cambia de método antes de correrlo para probar esa combinación específica. Solo cuentan los calculables desde velas diarias; corre sobre todo el historial que Twelve Data tenga disponible para el ticker.</div>
-    <div class="bt-desc" style="margin-top:0;">⚙ Configuración de indicadores (opcional) — ajusta los umbrales que usa el backtest para calcular la señal de cada indicador. Por defecto Williams %R compra cuando cruza por encima de -95 y vende cuando cruza por encima de -2; cambia los valores si prefieres otra interpretación.</div>
-    <div class="bt-startdate-row">
-      <label for="btWilliamsBuy">Williams %R — compra al cruzar sobre</label>
-      <input type="number" id="btWilliamsBuy" step="0.1" min="-100" max="0" value="-95">
-      <label for="btWilliamsSell" style="margin-left:12px;">vende al cruzar sobre</label>
-      <input type="number" id="btWilliamsSell" step="0.1" min="-100" max="0" value="-2">
-    </div>
-    <div class="bt-startdate-row">
-      <button class="btn-bt" id="wOptimizeBtn" type="button" style="font-size:12px; padding:6px 12px;">🔍 Optimizar parámetros para este ticker</button>
-      <span class="bt-startdate-hint" id="wOptStatus"></span>
-    </div>
-    <div id="wOptResults"></div>
-    <div class="bt-startdate-row">
-      <label class="bt-checklabel"><input type="checkbox" id="btUseSl"> Usar Stop Loss</label>
-      <input type="number" id="btSlPct" step="0.5" min="0.5" max="50" value="5" style="width:60px;">%
-      <label class="bt-checklabel" style="margin-left:16px;"><input type="checkbox" id="btUseTp"> Usar Take Profit</label>
-      <input type="number" id="btTpPct" step="0.5" min="0.5" max="100" value="10" style="width:60px;">%
-    </div>
-    <div class="bt-startdate-row">
-      <label for="btTfRestrict">Operar solo en marco temporal</label>
-      <select id="btTfRestrict">
-        <option value="daily" selected>Diario (como ahora — decide cada día)</option>
-        <option value="weekly">Semanal (solo decide en cierres semanales)</option>
-        <option value="4h" disabled>4 horas (no disponible — poco historial)</option>
-      </select>
-    </div>
-    <div class="bt-startdate-row">
-      <label for="btStartDate">Empezar a operar desde</label>
-      <input type="date" id="btStartDate">
-      <span class="bt-startdate-hint">opcional — vacío usa todo el historial disponible. Los indicadores igual usan datos de antes de esta fecha para "calentar" (medias de 200, etc.), pero las operaciones no empiezan hasta aquí.</span>
-    </div>
-    <div class="bt-caveats">
-      ⚠ Simplificación honesta: usa cierres diarios (no intradía), <strong>no incluye comisiones ni slippage</strong>, y la condición del "Setup Beardo" que originalmente mira la nube EMA de 4 horas aquí se aproxima con una nube EMA rápida en diario (no hay tantos años de historial en 4h como en diario). Esto es un ejercicio educativo sobre la lógica del analizador, no una simulación de ejecución real de bróker.
-    </div>
-    <div id="btStatus" class="bt-status"></div>
-    <div id="btResults" class="bt-results"></div>
-    <div id="wfResults" class="bt-results"></div>
-  </div>
+  
 
   <!-- Movement guide calibration backtest -->
   <div class="backtest-card" id="movCalCard">
@@ -958,6 +916,55 @@
       <div id="extTickerChips" class="ext-ticker-chips"></div>
     </div>
   </div>
+
+  <div id="tabpanel-backtest" class="tabpanel" style="display:none">
+  <div class="bt-desc" style="margin:0 0 14px;">Usa el ticker que tengas cargado en la pestaña Scanner. Si cambiás de ticker ahí, volvé a correr el backtest acá.</div>
+  <div class="backtest-card" id="backtestCard">
+    <div class="bt-head">
+      <h3>🤖 Backtest de Estrategia (Walk-Forward)</h3>
+      <button class="btn-bt" id="runBacktestBtn" type="button">▶ Correr backtest</button>
+    </div>
+    <div class="bt-desc">Simula día por día, con datos diarios, qué habría dicho el veredicto general de esta app en el pasado — usando <strong>solo información disponible hasta ese día</strong>, sin ver el futuro — y qué le habría pasado a tu dinero siguiéndolo (solo largos: comprado cuando el veredicto es alcista, en efectivo cuando deja de serlo). Usa exactamente los indicadores que tengas prendidos ahora mismo (los del método/pestaña activa) — apaga o cambia de método antes de correrlo para probar esa combinación específica. Solo cuentan los calculables desde velas diarias; corre sobre todo el historial que Twelve Data tenga disponible para el ticker.</div>
+    <div class="bt-desc" style="margin-top:0;">⚙ Configuración de indicadores (opcional) — ajusta los umbrales que usa el backtest para calcular la señal de cada indicador. Por defecto Williams %R compra cuando cruza por encima de -95 y vende cuando cruza por encima de -2; cambia los valores si prefieres otra interpretación.</div>
+    <div class="bt-startdate-row">
+      <label for="btWilliamsBuy">Williams %R — compra al cruzar sobre</label>
+      <input type="number" id="btWilliamsBuy" step="0.1" min="-100" max="0" value="-95">
+      <label for="btWilliamsSell" style="margin-left:12px;">vende al cruzar sobre</label>
+      <input type="number" id="btWilliamsSell" step="0.1" min="-100" max="0" value="-2">
+    </div>
+    <div class="bt-startdate-row">
+      <button class="btn-bt" id="wOptimizeBtn" type="button" style="font-size:12px; padding:6px 12px;">🔍 Optimizar parámetros para este ticker</button>
+      <span class="bt-startdate-hint" id="wOptStatus"></span>
+    </div>
+    <div id="wOptResults"></div>
+    <div class="bt-startdate-row">
+      <label class="bt-checklabel"><input type="checkbox" id="btUseSl"> Usar Stop Loss</label>
+      <input type="number" id="btSlPct" step="0.5" min="0.5" max="50" value="5" style="width:60px;">%
+      <label class="bt-checklabel" style="margin-left:16px;"><input type="checkbox" id="btUseTp"> Usar Take Profit</label>
+      <input type="number" id="btTpPct" step="0.5" min="0.5" max="100" value="10" style="width:60px;">%
+    </div>
+    <div class="bt-startdate-row">
+      <label for="btTfRestrict">Operar solo en marco temporal</label>
+      <select id="btTfRestrict">
+        <option value="daily" selected>Diario (como ahora — decide cada día)</option>
+        <option value="weekly">Semanal (solo decide en cierres semanales)</option>
+        <option value="4h" disabled>4 horas (no disponible — poco historial)</option>
+      </select>
+    </div>
+    <div class="bt-startdate-row">
+      <label for="btStartDate">Empezar a operar desde</label>
+      <input type="date" id="btStartDate">
+      <span class="bt-startdate-hint">opcional — vacío usa todo el historial disponible. Los indicadores igual usan datos de antes de esta fecha para "calentar" (medias de 200, etc.), pero las operaciones no empiezan hasta aquí.</span>
+    </div>
+    <div class="bt-caveats">
+      ⚠ Simplificación honesta: usa cierres diarios (no intradía), <strong>no incluye comisiones ni slippage</strong>, y la condición del "Setup Beardo" que originalmente mira la nube EMA de 4 horas aquí se aproxima con una nube EMA rápida en diario (no hay tantos años de historial en 4h como en diario). Esto es un ejercicio educativo sobre la lógica del analizador, no una simulación de ejecución real de bróker.
+    </div>
+    <div id="btStatus" class="bt-status"></div>
+    <div id="btResults" class="bt-results"></div>
+    <div id="wfResults" class="bt-results"></div>
+  </div>
+  </div>
+
 </main>
 
 <div class="overlay" id="overlay">
@@ -6761,9 +6768,11 @@ __axAttachPanZoom(svgWrapEl, "bb", () => drawBollingerChart(lastChartResult));
     $("tabBtnScanner").classList.toggle("active", tab==="scanner");
     $("tabBtnPortfolio").classList.toggle("active", tab==="portfolio");
     $("tabBtnExtended").classList.toggle("active", tab==="extended");
+    $("tabBtnBacktest").classList.toggle("active", tab==="backtest");
     $("tabpanel-scanner").style.display = tab==="scanner" ? "" : "none";
     $("tabpanel-portfolio").style.display = tab==="portfolio" ? "" : "none";
     $("tabpanel-extended").style.display = tab==="extended" ? "" : "none";
+    $("tabpanel-backtest").style.display = tab==="backtest" ? "" : "none";
     try {
     if(tab === "scanner"){
       moveAnalysisSectionTo("scannerAnalysisHost");
@@ -6791,6 +6800,7 @@ __axAttachPanZoom(svgWrapEl, "bb", () => drawBollingerChart(lastChartResult));
   $("tabBtnScanner").addEventListener("click", ()=>switchTab("scanner"));
   $("tabBtnPortfolio").addEventListener("click", ()=>switchTab("portfolio"));
   $("tabBtnExtended").addEventListener("click", ()=>switchTab("extended"));
+  $("tabBtnBacktest").addEventListener("click", ()=>switchTab("backtest"));
 
   // ---- Extended-hours archiving: portfolio tickers are auto-added
   // (subject to a hard cap of EXTENDED_HOURS_CAP), plus any tickers the
