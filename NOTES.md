@@ -331,3 +331,13 @@ Nota: el backtest sigue usando el ticker cargado en tickerInput (el mismo input 
 Pendiente (retomar con la frase "Retomemos el buscador de oportunidades"): ajustar el criterio de puntaje del buscador de oportunidades v1 con feedback real de Erick.
 
 Pendiente (sin frase de retomo asignada aun): el optimizador multi-ticker para Williams %R - correr "Optimizar parametros" sobre una lista de tickers en vez de uno a la vez, y mostrar una tabla comparativa (ticker, umbral compra, umbral venta, win rate). Quedo en preguntar a Erick si el universo por defecto es el de Horario extendido y si corre on-demand o automatico; no llego a contestar antes de pedir el cambio de pestana del backtest.
+
+## 2026-09-04 (3) - Oportunidades de compra movido a su propia pestana
+
+Mismo patron que el backtest walk-forward, a pedido de Erick (oportunidades de compra tambien en su propia pestana). Se saco la tarjeta oppsCard (Oportunidades de compra) de tabpanel-scanner y se le dio su propia pestana "Oportunidades" en la tabbar, despues de "Backtest".
+
+Mismo mecanismo: tabBtnOpps + tabpanel-opportunities, switchTab() actualizado para el quinto caso, listener nuevo. oppsCard se extrajo completo (conteo de profundidad de div, no a mano) y se reinserto intacto - loadOpportunities/renderOpportunities siguen funcionando igual porque referencian por id.
+
+Verificado en vivo: al clickear tabBtnOpps, tabpanel-opportunities se muestra, tabpanel-scanner se oculta, y oppsCard quedo con parentElement.id === "tabpanel-opportunities".
+
+La tabbar ahora tiene 5 pestanas: Scanner, Portafolio, Horario extendido, Backtest, Oportunidades.
