@@ -289,3 +289,25 @@ Con 130 velas de horizonte, la primera predicción no se resuelve hasta dentro d
 
 
 Agregado el mismo día: panel **📊 Historial de aciertos (bitácora en vivo)** dentro de la sección del Mapa de movimiento, justo debajo de la Calibración. Lee `data/predictions-log.json` (mismo patrón de fetch que `portfolio-cache.json`, sin gastar API), muestra métricas agregadas (acierto direccional, cobertura ±1σ/±2σ), desglose por ticker, y el detalle de cada predicción individual (resuelta o pendiente). Se actualiza sola al cargar la página y también con el botón "🔄 Actualizar historial". Verificado en vivo en la página desplegada (erickdm727-bit.github.io/axioma/index7.html) con los 5 registros reales ya generados.
+
+## 2026-09-04 — Buscador de oportunidades de compra (v1)
+
+A pedido de Erick ("empieza a crear una herramienta, la cual busque buenas oportunidades de compra"), se construyó un buscador automático que rankea el universo de ~40 tickers de "Horario extendido" (data/extended-hours-tickers.json) por qué tan buena oportunidad de compra representa cada uno, todos los días hábiles después del cierre.
+
+Criterio v1 (provisional, pendiente de afinar con feedback de Erick):
+- Hasta 4 puntos: cercanía del precio a un soporte fuerte (Soporte 1 de computeSupportResistanceLevels, mismo cálculo que refresh-cache.mjs), sin haberlo roto.
+- Hasta 3 puntos: RSI(14) bajo, con más peso en la zona 20-45 (sin premiar RSI muy extremo tipo caída libre).
+- Hasta 3 puntos: el motor de análogos (mismo k-NN que el Mapa de movimiento y la bitácora de predicciones) apunta alcista (pctPositive >= 0.55), escalado por qué tan fuerte es esa mayoría.
+- Solo se listan tickers con puntaje > 0.
+
+Archivos nuevos:
+- scripts/find-opportunities.mjs: para cada ticker del universo, trae velas diarias (fetchSeries(ticker,"1day",500)), calcula soportes/resistencias, RSI(14) y la proyección de análogos, combina todo en el puntaje, y escribe data/opportunities.json con el ranking (razones en texto plano por ticker).
+- .github/workflows/find-opportunities.yml: corre lunes a viernes a las 22:00 UTC (~5pm ET, después del cierre) y hace commit de data/opportunities.json si cambió. Probado con un disparo manual real (workflow_dispatch) — corrió sobre los 40 tickers en ~6 minutos y devolvió 40 oportunidades con puntaje > 0 (ej.: AVGO 7.8, CSCO 7.4, GE 7.3).
+
+Panel en la app: se agregó la tarjeta "Oportunidades de compra" en index7.html, justo antes de la bitácora de predicciones, con el mismo patrón (loadOpportunities/renderOpportunities, botón de refresco, carga automática al abrir la página). Cada fila muestra ticker, precio, puntaje, RSI, soporte/resistencia, dirección del motor de análogos y las razones del puntaje. Verificado en vivo en la página desplegada con los 40 resultados reales de la primera corrida.
+
+Nota técnica (para futuros parches grandes vía CodeMirror): el primer intento de reemplazar texto con .replace(anchor, textoNuevo) infló el archivo de más, porque el texto de reemplazo contenía la secuencia literal dólar-comilla-simple dentro de un string de concatenación, que String.prototype.replace interpreta como patrón especial ("todo lo que sigue al match"). Se corrigió usando .replace(anchor, () => textoNuevo) — reemplazo por función, que no interpreta patrones de $ — y evitando esa concatenación en particular. Conviene usar siempre función de reemplazo cuando el texto nuevo pueda contener $ seguido de comilla, backtick o &.
+
+También se confirmó que la página en producción tiene un Service Worker (sw.js) que sirve index7.html cacheado — después de cada commit hay que desregistrar el service worker y borrar caches (o esperar a que rote) antes de verificar cambios en vivo, si no la verificación puede dar falsos negativos: el fetch() directo con cache:"no-store" sí ve el archivo fresco, pero la navegación normal del navegador puede seguir sirviendo la versión vieja del SW.
+
+Pendiente: ajustar el criterio de puntaje con el feedback real de Erick sobre qué tan bien reflejan estos 40 resultados sus propias ideas de "buena oportunidad"; considerar si el universo debería ampliarse más allá de los 40 tickers de Horario extendido.
