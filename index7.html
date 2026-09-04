@@ -856,6 +856,17 @@
     <div id="movCalResults" class="bt-results"></div>
   </div>
 
+  <!-- Buscador de oportunidades de compra -->
+  <div class="backtest-card" id="oppsCard">
+    <div class="bt-head">
+      <h3>🎯 Oportunidades de compra</h3>
+    </div>
+    <div class="bt-desc">Ranking automático de tu universo de "Horario extendido" (corre después del cierre, días hábiles), combinando cercanía a un soporte fuerte, RSI y el motor de análogos. Puntaje 0-10. Criterio v1, provisional — se irá afinando con el tiempo.</div>
+    <button class="btn" id="oppsRefreshBtn" type="button">🔄 Actualizar oportunidades</button>
+    <div id="oppsStatus" class="bt-status"></div>
+    <div id="oppsResults" class="bt-results"></div>
+  </div>
+
   <!-- Live forward-test journal for the movement guide -->
   <div class="backtest-card" id="predLogCard">
     <div class="bt-head">
@@ -6964,6 +6975,68 @@ __axAttachPanZoom(svgWrapEl, "bb", () => drawBollingerChart(lastChartResult));
     // re-analyzing the whole portfolio (and burning API credits) on every single
     // open/reload. Chips populate from scannerCache as you tap them or run analyses.
   // ---- Predictions journal (live forward-test of the movement guide) ----
+  async function loadOpportunities(){
+    try {
+      const res = await fetch("data/opportunities.json", { cache: "no-store" });
+      if(!res.ok) return null;
+      return await res.json();
+    } catch(e){
+      return null;
+    }
+  }
+
+  function renderOpportunities(data){
+    const statusEl = $("oppsStatus");
+    const resultsEl = $("oppsResults");
+    if(!resultsEl) return;
+    if(!data || !Array.isArray(data.results)){
+      if(statusEl) statusEl.textContent = "Sin datos todavía (corre después del cierre, días hábiles).";
+      resultsEl.innerHTML = "";
+      return;
+    }
+    const results = data.results;
+    if(statusEl){
+      const genDate = data.generatedAt ? new Date(data.generatedAt) : null;
+      statusEl.textContent = genDate ? ("Actualizado: " + genDate.toLocaleString()) : "";
+    }
+    if(!results.length){
+      resultsEl.innerHTML = '<div class="bt-desc">Ninguna oportunidad clara con el criterio actual.</div>';
+      return;
+    }
+    let html = '<div class="bt-metrics">'
+      + '<div class="bt-metric"><div class="btm-label">Tickers con oportunidad</div><div class="btm-value">' + results.length + '</div></div>'
+      + '<div class="bt-metric"><div class="btm-label">Mejor puntaje</div><div class="btm-value">' + results[0].score.toFixed(1) + '/10</div></div>'
+      + '</div>';
+    results.forEach(function(r){
+      const rsiTxt = (r.rsi!=null) ? r.rsi.toFixed(1) : "—";
+      const supTxt = (r.support!=null) ? ("$" + r.support.toFixed(2)) : "—";
+      const resTxt = (r.resistance!=null) ? ("$" + r.resistance.toFixed(2)) : "—";
+      const dirTxt = r.analogDirection === "bullish" ? "Alcista" : (r.analogDirection === "bearish" ? "Bajista" : "—");
+      const dirCls = r.analogDirection === "bullish" ? "pos" : (r.analogDirection === "bearish" ? "neg" : "");
+      html += '<div class="port-row">'
+        + '<div class="port-row-head"><span class="port-ticker">' + r.ticker + '</span><span class="port-shares">' + "$" + r.price.toFixed(2) + '</span><span class="port-shares" style="margin-left:auto">Puntaje ' + r.score.toFixed(1) + '/10</span></div>'
+        + '<div class="port-row-body">'
+        + '<div class="port-stat"><div class="pslabel">RSI(14)</div><div class="psval">' + rsiTxt + '</div></div>'
+        + '<div class="port-stat"><div class="pslabel">Soporte</div><div class="psval">' + supTxt + '</div></div>'
+        + '<div class="port-stat"><div class="pslabel">Resistencia</div><div class="psval">' + resTxt + '</div></div>'
+        + '<div class="port-stat"><div class="pslabel">Análogos</div><div class="psval ' + dirCls + '">' + dirTxt + '</div></div>'
+        + '</div>'
+        + '<div class="bt-desc">' + r.reasons.join(" · ") + '</div>'
+        + '</div>';
+    });
+    resultsEl.innerHTML = html;
+  }
+
+  const oppsRefreshBtn = $("oppsRefreshBtn");
+  if(oppsRefreshBtn){
+    oppsRefreshBtn.addEventListener("click", async () => {
+      $("oppsStatus").textContent = "Cargando…";
+      const data = await loadOpportunities();
+      renderOpportunities(data);
+    });
+  }
+  loadOpportunities().then(renderOpportunities);
+
   async function loadPredictionsLog(){
     try {
       const res = await fetch("data/predictions-log.json", { cache: "no-store" });
