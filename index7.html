@@ -388,6 +388,7 @@
     <button class="tabbtn" id="tabBtnPortfolio" type="button">Portafolio</button>
     <button class="tabbtn" id="tabBtnExtended" type="button">Horario extendido</button>
     <button class="tabbtn" id="tabBtnBacktest" type="button">Backtest</button>
+    <button class="tabbtn" id="tabBtnOpps" type="button">Oportunidades</button>
   </div>
 
   <div id="tabpanel-scanner" class="tabpanel">
@@ -815,15 +816,7 @@
   </div>
 
   <!-- Buscador de oportunidades de compra -->
-  <div class="backtest-card" id="oppsCard">
-    <div class="bt-head">
-      <h3>🎯 Oportunidades de compra</h3>
-    </div>
-    <div class="bt-desc">Ranking automático de tu universo de "Horario extendido" (corre después del cierre, días hábiles), combinando cercanía a un soporte fuerte, RSI y el motor de análogos. Puntaje 0-10. Criterio v1, provisional — se irá afinando con el tiempo.</div>
-    <button class="btn" id="oppsRefreshBtn" type="button">🔄 Actualizar oportunidades</button>
-    <div id="oppsStatus" class="bt-status"></div>
-    <div id="oppsResults" class="bt-results"></div>
-  </div>
+  
 
   <!-- Live forward-test journal for the movement guide -->
   <div class="backtest-card" id="predLogCard">
@@ -962,6 +955,19 @@
     <div id="btStatus" class="bt-status"></div>
     <div id="btResults" class="bt-results"></div>
     <div id="wfResults" class="bt-results"></div>
+  </div>
+  </div>
+
+
+  <div id="tabpanel-opportunities" class="tabpanel" style="display:none">
+  <div class="backtest-card" id="oppsCard">
+    <div class="bt-head">
+      <h3>🎯 Oportunidades de compra</h3>
+    </div>
+    <div class="bt-desc">Ranking automático de tu universo de "Horario extendido" (corre después del cierre, días hábiles), combinando cercanía a un soporte fuerte, RSI y el motor de análogos. Puntaje 0-10. Criterio v1, provisional — se irá afinando con el tiempo.</div>
+    <button class="btn" id="oppsRefreshBtn" type="button">🔄 Actualizar oportunidades</button>
+    <div id="oppsStatus" class="bt-status"></div>
+    <div id="oppsResults" class="bt-results"></div>
   </div>
   </div>
 
@@ -6769,10 +6775,12 @@ __axAttachPanZoom(svgWrapEl, "bb", () => drawBollingerChart(lastChartResult));
     $("tabBtnPortfolio").classList.toggle("active", tab==="portfolio");
     $("tabBtnExtended").classList.toggle("active", tab==="extended");
     $("tabBtnBacktest").classList.toggle("active", tab==="backtest");
+    $("tabBtnOpps").classList.toggle("active", tab==="opportunities");
     $("tabpanel-scanner").style.display = tab==="scanner" ? "" : "none";
     $("tabpanel-portfolio").style.display = tab==="portfolio" ? "" : "none";
     $("tabpanel-extended").style.display = tab==="extended" ? "" : "none";
     $("tabpanel-backtest").style.display = tab==="backtest" ? "" : "none";
+    $("tabpanel-opportunities").style.display = tab==="opportunities" ? "" : "none";
     try {
     if(tab === "scanner"){
       moveAnalysisSectionTo("scannerAnalysisHost");
@@ -6801,6 +6809,7 @@ __axAttachPanZoom(svgWrapEl, "bb", () => drawBollingerChart(lastChartResult));
   $("tabBtnPortfolio").addEventListener("click", ()=>switchTab("portfolio"));
   $("tabBtnExtended").addEventListener("click", ()=>switchTab("extended"));
   $("tabBtnBacktest").addEventListener("click", ()=>switchTab("backtest"));
+  $("tabBtnOpps").addEventListener("click", ()=>switchTab("opportunities"));
 
   // ---- Extended-hours archiving: portfolio tickers are auto-added
   // (subject to a hard cap of EXTENDED_HOURS_CAP), plus any tickers the
