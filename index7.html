@@ -2472,6 +2472,49 @@
   function saveWilliamsOpt(map){
     try { localStorage.setItem(WILLIAMS_OPT_KEY, JSON.stringify(map)); } catch(e){}
   }
+  // Corre solo la primera vez que se analiza un ticker (o si nunca se optimizo):
+  // calcula los umbrales de Williams %R y los deja aplicados, sin el backtest de
+  // validacion (eso sigue siendo manual con el boton "Optimizar parametros" en la
+  // pestana Backtest, por si Erick quiere ver el win rate). No bloquea el analisis
+  // principal -- se llama sin await desde analyze().
+  async function autoOptimizeWilliamsIfNeeded(symbol){
+    try {
+      const map = loadWilliamsOpt();
+      const cached = map[symbol];
+      const wBuyEl = $("btWilliamsBuy"), wSellEl = $("btWilliamsSell");
+      if(cached && cached.buyThresh != null && cached.sellThresh != null){
+        BT_INDICATOR_CONFIG.williams = { buyThresh: cached.buyThresh, sellThresh: cached.sellThresh };
+        if(wBuyEl) wBuyEl.value = cached.buyThresh;
+        if(wSellEl) wSellEl.value = cached.sellThresh;
+        saveBtIndicatorConfig(BT_INDICATOR_CONFIG);
+        return;
+      }
+      const daily = await fetchSeries(symbol, "1day", 5000);
+      const series = williamsRSeries(daily, 14);
+      if(series.length < 30) return;
+      const { buy, sell } = analyzeWilliamsThresholds(series);
+      if(!buy.length || !sell.length) return;
+      const bestBuy = buy[0], bestSell = sell[0];
+      BT_INDICATOR_CONFIG.williams = { buyThresh: bestBuy.threshold, sellThresh: bestSell.threshold };
+      if(wBuyEl) wBuyEl.value = bestBuy.threshold;
+      if(wSellEl) wSellEl.value = bestSell.threshold;
+      saveBtIndicatorConfig(BT_INDICATOR_CONFIG);
+      map[symbol] = {
+        buyThresh: bestBuy.threshold, sellThresh: bestSell.threshold,
+        buyTouches: bestBuy.touches, buyReversalRate: bestBuy.reversalRate,
+        sellTouches: bestSell.touches, sellReversalRate: bestSell.reversalRate,
+        totalReturn: null, tradeCount: null,
+        optimizedAt: Date.now()
+      };
+      saveWilliamsOpt(map);
+      const wOptResultsEl = $("wOptResults");
+      if(wOptResultsEl) renderWilliamsOptResults(buy.slice(0,4), sell.slice(0,4), symbol, null);
+      const wOptStatusEl = $("wOptStatus");
+      if(wOptStatusEl) wOptStatusEl.textContent = `Auto-optimizado al analizar — compra ${bestBuy.threshold} / vende ${bestSell.threshold}.`;
+    } catch(e){
+      console.error("Auto-optimize Williams fallo para " + symbol + ":", e);
+    }
+  }
   // ---- Statistical Williams %R threshold finder ----
   // Instead of grid-searching backtest returns (integers only, and slow once
   // you add decimal precision since each candidate re-runs the full
@@ -5649,6 +5692,7 @@ __axAttachPanZoom(svgWrapEl, "bb", () => drawBollingerChart(lastChartResult));
       renderPrice(raw, r.currentPrice);
 
       recomputeAndRenderVerdictAndMovement(r);
+      autoOptimizeWilliamsIfNeeded(raw);
 
       const activeCount = MODULE_DEFS.filter(m=>moduleEnabled[m.key]).length;
       const tfFetched = Object.keys(r.seriesByTf).filter(k => r.seriesByTf[k] && r.seriesByTf[k].length).length;
