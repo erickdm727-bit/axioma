@@ -1,5 +1,5 @@
 {
-  "generatedAt": 1788790144417,
+  "generatedAt": 1788797318834,
   "tickers": {
     "CIFR": {
       "price": 17.74,
@@ -777,7 +777,7 @@
           "volume": 24991900
         }
       ],
-      "updatedAt": 1788790098544,
+      "updatedAt": 1788797275599,
       "error": null
     },
     "RIOT": {
@@ -1556,7 +1556,7 @@
           "volume": 15346600
         }
       ],
-      "updatedAt": 1788790107168,
+      "updatedAt": 1788797285276,
       "error": null
     },
     "SOFI": {
@@ -2335,7 +2335,7 @@
           "volume": 28920700
         }
       ],
-      "updatedAt": 1788790115800,
+      "updatedAt": 1788797294091,
       "error": null
     },
     "TSLA": {
@@ -3114,7 +3114,7 @@
           "volume": 64829000
         }
       ],
-      "updatedAt": 1788790127494,
+      "updatedAt": 1788797302325,
       "error": null
     },
     "XYZ": {
@@ -3888,7 +3888,7 @@
           "volume": 2456500
         }
       ],
-      "updatedAt": 1788790136413,
+      "updatedAt": 1788797310830,
       "error": null
     }
   }
