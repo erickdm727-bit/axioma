@@ -1,787 +1,8 @@
 {
-  "generatedAt": 1789757409714,
+  "generatedAt": 1790007000252,
   "tickers": {
-    "CIFR": {
-      "price": 17.92,
-      "sr": {
-        "support": 17.60772,
-        "resistance": 18.23,
-        "supports": [
-          {
-            "price": 17.60772,
-            "n": 1,
-            "type": "confluencia"
-          },
-          {
-            "price": 17.4535,
-            "n": 2,
-            "type": "pivot"
-          },
-          {
-            "price": 16.165,
-            "n": 3,
-            "type": "pivot"
-          }
-        ],
-        "resistances": [
-          {
-            "price": 18.23,
-            "n": 1,
-            "type": "pivot"
-          },
-          {
-            "price": 19.12,
-            "n": 2,
-            "type": "pivot"
-          },
-          {
-            "price": 19.4375,
-            "n": 3,
-            "type": "pivot"
-          }
-        ],
-        "quarterlyPivot": {
-          "pp": 22.179999999999996,
-          "r1": 32.459999999999994,
-          "s1": 14.219999999999992,
-          "quarter": 2,
-          "year": 2026
-        }
-      },
-      "alert": {
-        "urgent": true,
-        "icon": "⚠",
-        "cls": "mixed",
-        "title": "Cerca de un soporte — zona de riesgo",
-        "text": "Estás a 1.7% de tocar el Soporte 1 (17.61 USD). Si se rompe, el siguiente soporte está en 17.45 USD."
-      },
-      "daily": [
-        {
-          "datetime": "2026-05-12",
-          "open": 19.75,
-          "high": 20.555,
-          "low": 18.65,
-          "close": 20.059999,
-          "volume": 23458900
-        },
-        {
-          "datetime": "2026-05-13",
-          "open": 20.5,
-          "high": 21.61,
-          "low": 19.7,
-          "close": 21.24,
-          "volume": 30507900
-        },
-        {
-          "datetime": "2026-05-14",
-          "open": 21.51,
-          "high": 22.52,
-          "low": 20.665,
-          "close": 22.29,
-          "volume": 27530700
-        },
-        {
-          "datetime": "2026-05-15",
-          "open": 21.28,
-          "high": 21.32,
-          "low": 20.040001,
-          "close": 20.33,
-          "volume": 24257000
-        },
-        {
-          "datetime": "2026-05-18",
-          "open": 20.02,
-          "high": 20.059999,
-          "low": 17.85,
-          "close": 19.12,
-          "volume": 23021400
-        },
-        {
-          "datetime": "2026-05-19",
-          "open": 18.8,
-          "high": 19.125,
-          "low": 17.62,
-          "close": 18.8,
-          "volume": 19398500
-        },
-        {
-          "datetime": "2026-05-20",
-          "open": 19.295,
-          "high": 20.44,
-          "low": 19.059999,
-          "close": 19.48,
-          "volume": 21509700
-        },
-        {
-          "datetime": "2026-05-21",
-          "open": 19.82,
-          "high": 21.56,
-          "low": 19.7,
-          "close": 21.52,
-          "volume": 26727300
-        },
-        {
-          "datetime": "2026-05-22",
-          "open": 21.3,
-          "high": 22.35,
-          "low": 20.96,
-          "close": 21.97,
-          "volume": 19436000
-        },
-        {
-          "datetime": "2026-05-26",
-          "open": 23.26,
-          "high": 24.65,
-          "low": 22.535,
-          "close": 23.02,
-          "volume": 25430800
-        },
-        {
-          "datetime": "2026-05-27",
-          "open": 23.12,
-          "high": 25.56,
-          "low": 22.17,
-          "close": 25.16,
-          "volume": 34659600
-        },
-        {
-          "datetime": "2026-05-28",
-          "open": 24.83,
-          "high": 25.145,
-          "low": 23.93,
-          "close": 24.59,
-          "volume": 19156700
-        },
-        {
-          "datetime": "2026-05-29",
-          "open": 24.36,
-          "high": 24.38,
-          "low": 22.57,
-          "close": 23.65,
-          "volume": 17095500
-        },
-        {
-          "datetime": "2026-06-01",
-          "open": 23.1,
-          "high": 24.86,
-          "low": 22.301,
-          "close": 24.01,
-          "volume": 23373900
-        },
-        {
-          "datetime": "2026-06-02",
-          "open": 24.725,
-          "high": 26.6,
-          "low": 24.7,
-          "close": 26.29,
-          "volume": 29972500
-        },
-        {
-          "datetime": "2026-06-03",
-          "open": 27.169,
-          "high": 28.62,
-          "low": 25.812,
-          "close": 26.24,
-          "volume": 37902600
-        },
-        {
-          "datetime": "2026-06-04",
-          "open": 25.014999,
-          "high": 26.33,
-          "low": 24.17,
-          "close": 25.55,
-          "volume": 25965300
-        },
-        {
-          "datetime": "2026-06-05",
-          "open": 24.495,
-          "high": 24.58,
-          "low": 21.22,
-          "close": 22.45,
-          "volume": 25866900
-        },
-        {
-          "datetime": "2026-06-08",
-          "open": 23.315,
-          "high": 24.51,
-          "low": 22.75,
-          "close": 24.29,
-          "volume": 19407900
-        },
-        {
-          "datetime": "2026-06-09",
-          "open": 25,
-          "high": 25.58,
-          "low": 21.81,
-          "close": 23.035,
-          "volume": 23981700
-        },
-        {
-          "datetime": "2026-06-10",
-          "open": 22.689,
-          "high": 23.59,
-          "low": 20.93,
-          "close": 21.02,
-          "volume": 19874000
-        },
-        {
-          "datetime": "2026-06-11",
-          "open": 20.78,
-          "high": 22.85,
-          "low": 20.692,
-          "close": 22.63,
-          "volume": 22258200
-        },
-        {
-          "datetime": "2026-06-12",
-          "open": 23.3,
-          "high": 25.36,
-          "low": 22.9,
-          "close": 24.5,
-          "volume": 26160900
-        },
-        {
-          "datetime": "2026-06-15",
-          "open": 25.76,
-          "high": 26.89,
-          "low": 25.64,
-          "close": 26.030001,
-          "volume": 23514500
-        },
-        {
-          "datetime": "2026-06-16",
-          "open": 26,
-          "high": 27.39,
-          "low": 25.935,
-          "close": 26.21,
-          "volume": 19040500
-        },
-        {
-          "datetime": "2026-06-17",
-          "open": 26.23,
-          "high": 28.17,
-          "low": 26.122,
-          "close": 26.35,
-          "volume": 23494000
-        },
-        {
-          "datetime": "2026-06-18",
-          "open": 27.8,
-          "high": 30.01,
-          "low": 26.56,
-          "close": 29.18,
-          "volume": 39415700
-        },
-        {
-          "datetime": "2026-06-22",
-          "open": 29.215,
-          "high": 30.14,
-          "low": 27.87,
-          "close": 28.14,
-          "volume": 18875900
-        },
-        {
-          "datetime": "2026-06-23",
-          "open": 26.115,
-          "high": 28.96,
-          "low": 25.65,
-          "close": 27.64,
-          "volume": 18053600
-        },
-        {
-          "datetime": "2026-06-24",
-          "open": 27.54,
-          "high": 27.54,
-          "low": 24.95,
-          "close": 26.22,
-          "volume": 22885700
-        },
-        {
-          "datetime": "2026-06-25",
-          "open": 27.513,
-          "high": 28.08,
-          "low": 24.42,
-          "close": 25.68,
-          "volume": 22187600
-        },
-        {
-          "datetime": "2026-06-26",
-          "open": 24.94,
-          "high": 26.13,
-          "low": 23.8,
-          "close": 25.94,
-          "volume": 44844700
-        },
-        {
-          "datetime": "2026-06-29",
-          "open": 26.345,
-          "high": 26.88,
-          "low": 23.29,
-          "close": 24.83,
-          "volume": 20269500
-        },
-        {
-          "datetime": "2026-06-30",
-          "open": 24.42,
-          "high": 24.755,
-          "low": 23.705,
-          "close": 24.5,
-          "volume": 16524100
-        },
-        {
-          "datetime": "2026-07-01",
-          "open": 23.41,
-          "high": 23.479,
-          "low": 21.69,
-          "close": 22.84,
-          "volume": 26596800
-        },
-        {
-          "datetime": "2026-07-02",
-          "open": 22.83,
-          "high": 23.17,
-          "low": 19.385,
-          "close": 20.040001,
-          "volume": 31074900
-        },
-        {
-          "datetime": "2026-07-06",
-          "open": 21.455,
-          "high": 22.6,
-          "low": 21.049999,
-          "close": 21.73,
-          "volume": 28330500
-        },
-        {
-          "datetime": "2026-07-07",
-          "open": 20.8,
-          "high": 21.2,
-          "low": 19.505,
-          "close": 20.47,
-          "volume": 24783100
-        },
-        {
-          "datetime": "2026-07-08",
-          "open": 20.39,
-          "high": 21.865,
-          "low": 20.14,
-          "close": 21.85,
-          "volume": 22317000
-        },
-        {
-          "datetime": "2026-07-09",
-          "open": 22.62,
-          "high": 24.09,
-          "low": 22.42,
-          "close": 23.26,
-          "volume": 29106500
-        },
-        {
-          "datetime": "2026-07-10",
-          "open": 23.34,
-          "high": 23.54,
-          "low": 21.77,
-          "close": 22.11,
-          "volume": 16487900
-        },
-        {
-          "datetime": "2026-07-13",
-          "open": 21.5,
-          "high": 22.178,
-          "low": 19.652,
-          "close": 20.084999,
-          "volume": 18836900
-        },
-        {
-          "datetime": "2026-07-14",
-          "open": 20.88,
-          "high": 21.225,
-          "low": 19.040001,
-          "close": 19.87,
-          "volume": 18913800
-        },
-        {
-          "datetime": "2026-07-15",
-          "open": 19.9,
-          "high": 20.74,
-          "low": 18.691,
-          "close": 19.87,
-          "volume": 21655300
-        },
-        {
-          "datetime": "2026-07-16",
-          "open": 19.01,
-          "high": 19.27,
-          "low": 17.6,
-          "close": 17.72,
-          "volume": 18915800
-        },
-        {
-          "datetime": "2026-07-17",
-          "open": 17,
-          "high": 17.83,
-          "low": 16.13,
-          "close": 17.56,
-          "volume": 22952200
-        },
-        {
-          "datetime": "2026-07-20",
-          "open": 18.78,
-          "high": 21.014999,
-          "low": 18.78,
-          "close": 20.54,
-          "volume": 40939900
-        },
-        {
-          "datetime": "2026-07-21",
-          "open": 21.014999,
-          "high": 24.49,
-          "low": 20.98,
-          "close": 22.89,
-          "volume": 47445800
-        },
-        {
-          "datetime": "2026-07-22",
-          "open": 22.45,
-          "high": 24.63,
-          "low": 22.31,
-          "close": 24.46,
-          "volume": 24515400
-        },
-        {
-          "datetime": "2026-07-23",
-          "open": 24.165,
-          "high": 26.84,
-          "low": 23.94,
-          "close": 25.82,
-          "volume": 31634000
-        },
-        {
-          "datetime": "2026-07-24",
-          "open": 25.31,
-          "high": 25.8,
-          "low": 22.89,
-          "close": 23.15,
-          "volume": 21181700
-        },
-        {
-          "datetime": "2026-07-27",
-          "open": 23.815,
-          "high": 23.91,
-          "low": 20.762,
-          "close": 21.65,
-          "volume": 24720300
-        },
-        {
-          "datetime": "2026-07-28",
-          "open": 20.82,
-          "high": 20.82,
-          "low": 18.84,
-          "close": 20.42,
-          "volume": 23678400
-        },
-        {
-          "datetime": "2026-07-29",
-          "open": 20.58,
-          "high": 20.68,
-          "low": 17.442,
-          "close": 17.69,
-          "volume": 39794600
-        },
-        {
-          "datetime": "2026-07-30",
-          "open": 19.735,
-          "high": 22.96,
-          "low": 19.53,
-          "close": 22.655,
-          "volume": 36327200
-        },
-        {
-          "datetime": "2026-07-31",
-          "open": 24.18,
-          "high": 24.53,
-          "low": 21.81,
-          "close": 22.32,
-          "volume": 27799000
-        },
-        {
-          "datetime": "2026-08-03",
-          "open": 21.81,
-          "high": 25.22,
-          "low": 21.3,
-          "close": 24.16,
-          "volume": 35732300
-        },
-        {
-          "datetime": "2026-08-04",
-          "open": 20.25,
-          "high": 22.39,
-          "low": 20,
-          "close": 20.38,
-          "volume": 61484700
-        },
-        {
-          "datetime": "2026-08-05",
-          "open": 20.34,
-          "high": 21.12,
-          "low": 18.66,
-          "close": 18.71,
-          "volume": 35323300
-        },
-        {
-          "datetime": "2026-08-06",
-          "open": 18.065001,
-          "high": 19.595,
-          "low": 17.7,
-          "close": 18.21,
-          "volume": 31003300
-        },
-        {
-          "datetime": "2026-08-07",
-          "open": 18.73,
-          "high": 19.049999,
-          "low": 16.945,
-          "close": 17.18,
-          "volume": 45182300
-        },
-        {
-          "datetime": "2026-08-10",
-          "open": 17.51,
-          "high": 17.51,
-          "low": 16.2,
-          "close": 16.33,
-          "volume": 33634300
-        },
-        {
-          "datetime": "2026-08-11",
-          "open": 17.19,
-          "high": 18.245,
-          "low": 16.974,
-          "close": 17.21,
-          "volume": 32584400
-        },
-        {
-          "datetime": "2026-08-12",
-          "open": 18.575,
-          "high": 19.12,
-          "low": 17.48,
-          "close": 17.87,
-          "volume": 34008000
-        },
-        {
-          "datetime": "2026-08-13",
-          "open": 17.42,
-          "high": 18.08,
-          "low": 16.385,
-          "close": 16.62,
-          "volume": 35299900
-        },
-        {
-          "datetime": "2026-08-14",
-          "open": 16.47,
-          "high": 18.14,
-          "low": 16.23,
-          "close": 17.855,
-          "volume": 38127000
-        },
-        {
-          "datetime": "2026-08-17",
-          "open": 17.76,
-          "high": 18.735,
-          "low": 17.72,
-          "close": 18.5,
-          "volume": 26942000
-        },
-        {
-          "datetime": "2026-08-18",
-          "open": 17.53,
-          "high": 17.9,
-          "low": 15.77,
-          "close": 16.094999,
-          "volume": 53429100
-        },
-        {
-          "datetime": "2026-08-19",
-          "open": 16.049999,
-          "high": 16.325,
-          "low": 14.89,
-          "close": 15.89,
-          "volume": 44328000
-        },
-        {
-          "datetime": "2026-08-20",
-          "open": 16.2,
-          "high": 17.24,
-          "low": 15.58,
-          "close": 17.21,
-          "volume": 36042000
-        },
-        {
-          "datetime": "2026-08-21",
-          "open": 17.52,
-          "high": 18.23,
-          "low": 15.48,
-          "close": 15.765,
-          "volume": 55322000
-        },
-        {
-          "datetime": "2026-08-24",
-          "open": 15.5,
-          "high": 15.87,
-          "low": 14.96,
-          "close": 15.36,
-          "volume": 33539000
-        },
-        {
-          "datetime": "2026-08-25",
-          "open": 15.63,
-          "high": 16.38,
-          "low": 15.4,
-          "close": 16.31,
-          "volume": 29429800
-        },
-        {
-          "datetime": "2026-08-26",
-          "open": 16,
-          "high": 16.42,
-          "low": 15.721,
-          "close": 16.02,
-          "volume": 24944600
-        },
-        {
-          "datetime": "2026-08-27",
-          "open": 16.52,
-          "high": 17.465,
-          "low": 16.38,
-          "close": 16.77,
-          "volume": 35794800
-        },
-        {
-          "datetime": "2026-08-28",
-          "open": 16.19,
-          "high": 16.47,
-          "low": 15.11,
-          "close": 15.17,
-          "volume": 30897800
-        },
-        {
-          "datetime": "2026-08-31",
-          "open": 15.12,
-          "high": 15.59,
-          "low": 14.79,
-          "close": 15.5,
-          "volume": 19235800
-        },
-        {
-          "datetime": "2026-09-01",
-          "open": 14.885,
-          "high": 15.1,
-          "low": 14.47,
-          "close": 14.61,
-          "volume": 20048400
-        },
-        {
-          "datetime": "2026-09-02",
-          "open": 14.33,
-          "high": 15.33,
-          "low": 14.18,
-          "close": 15.18,
-          "volume": 21544000
-        },
-        {
-          "datetime": "2026-09-03",
-          "open": 15.11,
-          "high": 17.57,
-          "low": 15.02,
-          "close": 17.37,
-          "volume": 37199400
-        },
-        {
-          "datetime": "2026-09-04",
-          "open": 17.325,
-          "high": 17.92,
-          "low": 17.27,
-          "close": 17.74,
-          "volume": 25036700
-        },
-        {
-          "datetime": "2026-09-08",
-          "open": 17.95,
-          "high": 19.49,
-          "low": 17.57,
-          "close": 18.51,
-          "volume": 39893500
-        },
-        {
-          "datetime": "2026-09-09",
-          "open": 18.59,
-          "high": 18.69,
-          "low": 16.85,
-          "close": 16.9,
-          "volume": 42443800
-        },
-        {
-          "datetime": "2026-09-10",
-          "open": 16.049999,
-          "high": 16.46,
-          "low": 15.28,
-          "close": 15.94,
-          "volume": 47161400
-        },
-        {
-          "datetime": "2026-09-11",
-          "open": 16.12,
-          "high": 17.51,
-          "low": 15.89,
-          "close": 16.85,
-          "volume": 34342900
-        },
-        {
-          "datetime": "2026-09-14",
-          "open": 15.55,
-          "high": 16.46,
-          "low": 15.4,
-          "close": 15.635,
-          "volume": 34901800
-        },
-        {
-          "datetime": "2026-09-15",
-          "open": 15.525,
-          "high": 15.645,
-          "low": 14.85,
-          "close": 15.09,
-          "volume": 25931400
-        },
-        {
-          "datetime": "2026-09-16",
-          "open": 15.92,
-          "high": 17.58,
-          "low": 15.83,
-          "close": 16.72,
-          "volume": 62825600
-        },
-        {
-          "datetime": "2026-09-17",
-          "open": 18.035,
-          "high": 18.438,
-          "low": 16.57,
-          "close": 16.94,
-          "volume": 41244100
-        },
-        {
-          "datetime": "2026-09-18",
-          "open": 17.665,
-          "high": 18.18,
-          "low": 17.045,
-          "close": 17.92,
-          "volume": 1713417
-        }
-      ],
-      "updatedAt": 1789757377582,
-      "error": null
-    },
     "SOFI": {
-      "price": 16.985,
+      "price": 17.035,
       "sr": {
         "support": 16.925,
         "resistance": 17.08,
@@ -797,7 +18,7 @@
             "type": "confluencia"
           },
           {
-            "price": 16.47,
+            "price": 16.5,
             "n": 3,
             "type": "pivot"
           }
@@ -832,17 +53,9 @@
         "icon": "⚠",
         "cls": "mixed",
         "title": "Cerca de un soporte — zona de riesgo",
-        "text": "Estás a 0.4% de tocar el Soporte 1 (16.93 USD). Si se rompe, el siguiente soporte está en 16.73 USD."
+        "text": "Estás a 0.6% de tocar el Soporte 1 (16.93 USD). Si se rompe, el siguiente soporte está en 16.73 USD."
       },
       "daily": [
-        {
-          "datetime": "2026-05-12",
-          "open": 16.07,
-          "high": 16.33,
-          "low": 15.55,
-          "close": 15.9,
-          "volume": 62891600
-        },
         {
           "datetime": "2026-05-13",
           "open": 15.71,
@@ -1545,55 +758,63 @@
           "high": 17.37,
           "low": 16.7,
           "close": 16.73,
-          "volume": 43088100
+          "volume": 43224700
         },
         {
           "datetime": "2026-09-18",
-          "open": 16.84,
-          "high": 17.06,
-          "low": 16.67,
-          "close": 16.985,
-          "volume": 802034
+          "open": 16.83,
+          "high": 17.059999,
+          "low": 16.66,
+          "close": 16.96,
+          "volume": 44112200
+        },
+        {
+          "datetime": "2026-09-21",
+          "open": 17.48,
+          "high": 17.51,
+          "low": 16.835,
+          "close": 17.035,
+          "volume": 769004
         }
       ],
-      "updatedAt": 1789757385628,
+      "updatedAt": 1790006976156,
       "error": null
     },
     "TSLA": {
-      "price": 363.5,
+      "price": 375.29,
       "sr": {
-        "support": 356.97963618,
-        "resistance": 367.550005,
+        "support": 367.550005,
+        "resistance": 375.389995,
         "supports": [
-          {
-            "price": 356.97963618,
-            "n": 1,
-            "type": "fib"
-          },
-          {
-            "price": 354.07166233333334,
-            "n": 2,
-            "type": "confluencia"
-          },
-          {
-            "price": 342.53,
-            "n": 3,
-            "type": "pivot"
-          }
-        ],
-        "resistances": [
           {
             "price": 367.550005,
             "n": 1,
             "type": "pivot"
           },
           {
-            "price": 375.389995,
+            "price": 356.97963618,
             "n": 2,
             "type": "fib"
           },
           {
+            "price": 354.07166233333334,
+            "n": 3,
+            "type": "confluencia"
+          }
+        ],
+        "resistances": [
+          {
+            "price": 375.389995,
+            "n": 1,
+            "type": "fib"
+          },
+          {
             "price": 380.14999,
+            "n": 2,
+            "type": "pivot"
+          },
+          {
+            "price": 384.040009,
             "n": 3,
             "type": "pivot"
           }
@@ -1608,20 +829,12 @@
       },
       "alert": {
         "urgent": true,
-        "icon": "⚠",
+        "icon": "◆",
         "cls": "mixed",
-        "title": "Cerca de un soporte — zona de riesgo",
-        "text": "Estás a 1.8% de tocar el Soporte 1 (356.98 USD). Si se rompe, el siguiente soporte está en 354.07 USD."
+        "title": "Cerca de una resistencia",
+        "text": "Estás a 0.0% de la Resistencia 1 (375.39 USD). Si la rompe, la siguiente resistencia está en 380.15 USD."
       },
       "daily": [
-        {
-          "datetime": "2026-05-12",
-          "open": 441.41,
-          "high": 447.79999,
-          "low": 422.26001,
-          "close": 433.45001,
-          "volume": 60569300
-        },
         {
           "datetime": "2026-05-13",
           "open": 436.67001,
@@ -2324,57 +1537,65 @@
           "high": 374.12,
           "low": 363.22,
           "close": 366.20001,
-          "volume": 38828500
+          "volume": 38924100
         },
         {
           "datetime": "2026-09-18",
-          "open": 369.28,
-          "high": 370.9,
-          "low": 360.805,
-          "close": 363.5,
-          "volume": 666338
+          "open": 369,
+          "high": 370.89999,
+          "low": 360.75,
+          "close": 364.26999,
+          "volume": 51819200
+        },
+        {
+          "datetime": "2026-09-21",
+          "open": 371.71,
+          "high": 378.3,
+          "low": 371.27,
+          "close": 375.29,
+          "volume": 487101
         }
       ],
-      "updatedAt": 1789757393667,
+      "updatedAt": 1790006984197,
       "error": null
     },
     "XYZ": {
-      "price": 76.48,
+      "price": 77.99,
       "sr": {
-        "support": 76.12375,
-        "resistance": 77.095,
+        "support": 77.662,
+        "resistance": 78.72228,
         "supports": [
           {
-            "price": 76.12375,
+            "price": 77.662,
             "n": 1,
-            "type": "confluencia"
+            "type": "pivot"
           },
           {
-            "price": 74.761,
+            "price": 77.095,
             "n": 2,
             "type": "pivot"
           },
           {
-            "price": 73.65772,
+            "price": 76.05499999999999,
             "n": 3,
-            "type": "fib"
+            "type": "confluencia"
           }
         ],
         "resistances": [
           {
-            "price": 77.095,
+            "price": 78.72228,
             "n": 1,
-            "type": "pivot"
+            "type": "fib"
           },
           {
-            "price": 77.662,
+            "price": 80.465,
             "n": 2,
             "type": "pivot"
           },
           {
-            "price": 78.72228,
+            "price": 81.040001,
             "n": 3,
-            "type": "fib"
+            "type": "pivot"
           }
         ],
         "quarterlyPivot": {
@@ -2390,17 +1611,9 @@
         "icon": "⚠",
         "cls": "mixed",
         "title": "Cerca de un soporte — zona de riesgo",
-        "text": "Estás a 0.5% de tocar el Soporte 1 (76.12 USD). Si se rompe, el siguiente soporte está en 74.76 USD."
+        "text": "Estás a 0.4% de tocar el Soporte 1 (77.66 USD). Si se rompe, el siguiente soporte está en 77.09 USD."
       },
       "daily": [
-        {
-          "datetime": "2026-05-12",
-          "open": 72.07,
-          "high": 72.88,
-          "low": 71.4,
-          "close": 72.12,
-          "volume": 6222300
-        },
         {
           "datetime": "2026-05-13",
           "open": 71.2,
@@ -3103,18 +2316,26 @@
           "high": 78.035004,
           "low": 76.46,
           "close": 76.47,
-          "volume": 2819215
+          "volume": 2819700
         },
         {
           "datetime": "2026-09-18",
-          "open": 76.47,
-          "high": 76.89,
-          "low": 75.855,
-          "close": 76.48,
-          "volume": 100126
+          "open": 76.55,
+          "high": 76.899,
+          "low": 75.86,
+          "close": 76.28,
+          "volume": 5969700
+        },
+        {
+          "datetime": "2026-09-21",
+          "open": 77.54,
+          "high": 78.04,
+          "low": 76.41,
+          "close": 77.99,
+          "volume": 72217
         }
       ],
-      "updatedAt": 1789757401709,
+      "updatedAt": 1790006992248,
       "error": null
     }
   }
