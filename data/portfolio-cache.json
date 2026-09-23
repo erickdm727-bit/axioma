@@ -1,43 +1,43 @@
 {
-  "generatedAt": 1790174276073,
+  "generatedAt": 1790191506541,
   "tickers": {
     "SOFI": {
-      "price": 16.925,
+      "price": 16.665,
       "sr": {
-        "support": 16.72826,
-        "resistance": 17.08,
+        "support": 16.5,
+        "resistance": 16.72826,
         "supports": [
+          {
+            "price": 16.5,
+            "n": 1,
+            "type": "pivot"
+          },
+          {
+            "price": 15.92004,
+            "n": 2,
+            "type": "fib"
+          },
+          {
+            "price": 15.651,
+            "n": 3,
+            "type": "pivot"
+          }
+        ],
+        "resistances": [
           {
             "price": 16.72826,
             "n": 1,
             "type": "confluencia"
           },
           {
-            "price": 16.5,
+            "price": 16.925,
             "n": 2,
             "type": "pivot"
           },
-          {
-            "price": 15.92004,
-            "n": 3,
-            "type": "fib"
-          }
-        ],
-        "resistances": [
           {
             "price": 17.08,
-            "n": 1,
-            "type": "pivot"
-          },
-          {
-            "price": 17.31,
-            "n": 2,
-            "type": "fib"
-          },
-          {
-            "price": 17.650000000000002,
             "n": 3,
-            "type": "confluencia"
+            "type": "pivot"
           }
         ],
         "quarterlyPivot": {
@@ -53,7 +53,7 @@
         "icon": "⚠",
         "cls": "mixed",
         "title": "Cerca de un soporte — zona de riesgo",
-        "text": "Estás a 1.2% de tocar el Soporte 1 (16.73 USD). Si se rompe, el siguiente soporte está en 16.50 USD."
+        "text": "Estás a 1.0% de tocar el Soporte 1 (16.50 USD). Si se rompe, el siguiente soporte está en 15.92 USD."
       },
       "daily": [
         {
@@ -772,51 +772,51 @@
           "datetime": "2026-09-23",
           "open": 17.02,
           "high": 17.12,
-          "low": 16.82,
-          "close": 16.925,
-          "volume": 588150
+          "low": 16.645,
+          "close": 16.665,
+          "volume": 1805792
         }
       ],
-      "updatedAt": 1790174251825,
+      "updatedAt": 1790191482253,
       "error": null
     },
     "TSLA": {
-      "price": 379.63,
+      "price": 380.19,
       "sr": {
-        "support": 371.490005,
-        "resistance": 380.14999,
+        "support": 380.14999,
+        "resistance": 384.040009,
         "supports": [
-          {
-            "price": 371.490005,
-            "n": 1,
-            "type": "fib"
-          },
-          {
-            "price": 367.550005,
-            "n": 2,
-            "type": "pivot"
-          },
-          {
-            "price": 354.0477894955555,
-            "n": 3,
-            "type": "confluencia"
-          }
-        ],
-        "resistances": [
           {
             "price": 380.14999,
             "n": 1,
             "type": "pivot"
           },
           {
-            "price": 384.040009,
+            "price": 371.490005,
             "n": 2,
+            "type": "fib"
+          },
+          {
+            "price": 367.550005,
+            "n": 3,
+            "type": "pivot"
+          }
+        ],
+        "resistances": [
+          {
+            "price": 384.040009,
+            "n": 1,
             "type": "pivot"
           },
           {
             "price": 388.97996618,
-            "n": 3,
+            "n": 2,
             "type": "fib"
+          },
+          {
+            "price": 403.74666333333334,
+            "n": 3,
+            "type": "qpivot"
           }
         ],
         "quarterlyPivot": {
@@ -829,10 +829,10 @@
       },
       "alert": {
         "urgent": true,
-        "icon": "◆",
+        "icon": "⚠",
         "cls": "mixed",
-        "title": "Cerca de una resistencia",
-        "text": "Estás a 0.1% de la Resistencia 1 (380.15 USD). Si la rompe, la siguiente resistencia está en 384.04 USD."
+        "title": "Cerca de un soporte — zona de riesgo",
+        "text": "Estás a 0.0% de tocar el Soporte 1 (380.15 USD). Si se rompe, el siguiente soporte está en 371.49 USD."
       },
       "daily": [
         {
@@ -1551,49 +1551,49 @@
           "datetime": "2026-09-23",
           "open": 379.99,
           "high": 386.66,
-          "low": 378.58,
-          "close": 379.63,
-          "volume": 248306
+          "low": 377.62,
+          "close": 380.19,
+          "volume": 498686
         }
       ],
-      "updatedAt": 1790174259945,
+      "updatedAt": 1790191490403,
       "error": null
     },
     "XYZ": {
-      "price": 74.72,
+      "price": 74.82,
       "sr": {
-        "support": 73.65772,
-        "resistance": 74.761,
+        "support": 74.761,
+        "resistance": 76.05499999999999,
         "supports": [
-          {
-            "price": 73.65772,
-            "n": 1,
-            "type": "fib"
-          },
-          {
-            "price": 71.5,
-            "n": 2,
-            "type": "pivot"
-          },
-          {
-            "price": 70.58666733333332,
-            "n": 3,
-            "type": "qpivot"
-          }
-        ],
-        "resistances": [
           {
             "price": 74.761,
             "n": 1,
             "type": "pivot"
           },
           {
-            "price": 76.05499999999999,
+            "price": 73.65772,
             "n": 2,
+            "type": "fib"
+          },
+          {
+            "price": 71.5,
+            "n": 3,
+            "type": "pivot"
+          }
+        ],
+        "resistances": [
+          {
+            "price": 76.05499999999999,
+            "n": 1,
             "type": "confluencia"
           },
           {
             "price": 77.095,
+            "n": 2,
+            "type": "pivot"
+          },
+          {
+            "price": 77.662,
             "n": 3,
             "type": "pivot"
           }
@@ -1611,7 +1611,7 @@
         "icon": "⚠",
         "cls": "mixed",
         "title": "Cerca de un soporte — zona de riesgo",
-        "text": "Estás a 1.4% de tocar el Soporte 1 (73.66 USD). Si se rompe, el siguiente soporte está en 71.50 USD."
+        "text": "Estás a 0.1% de tocar el Soporte 1 (74.76 USD). Si se rompe, el siguiente soporte está en 73.66 USD."
       },
       "daily": [
         {
@@ -2330,12 +2330,12 @@
           "datetime": "2026-09-23",
           "open": 76.78,
           "high": 76.8,
-          "low": 74.37,
-          "close": 74.72,
-          "volume": 55293
+          "low": 74.36,
+          "close": 74.82,
+          "volume": 187074
         }
       ],
-      "updatedAt": 1790174268069,
+      "updatedAt": 1790191498536,
       "error": null
     }
   }
