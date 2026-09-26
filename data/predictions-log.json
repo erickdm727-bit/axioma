@@ -1,5 +1,5 @@
 {
-  "generatedAt": 1790294246612,
+  "generatedAt": 1790380830626,
   "records": [
     {
       "id": "CIFR_2026-08-26",
@@ -2372,6 +2372,93 @@
           "lower1Final": 65.0664332718086,
           "upper2Final": 126.429555975479,
           "lower2Final": 52.14265372167544
+        },
+        "market": null,
+        "fusion": null
+      },
+      "resolved": false,
+      "resolution": null
+    },
+    {
+      "id": "SOFI_2026-09-25",
+      "ticker": "SOFI",
+      "timeframe": "1day",
+      "horizonBars": 130,
+      "calledAt": "2026-09-25",
+      "calledAtDatetime": "2026-09-25",
+      "calledAtTs": 1790380806347,
+      "priceAtCall": 16.58,
+      "methods": {
+        "own": {
+          "method": "analog",
+          "trainingSize": 330,
+          "n": 40,
+          "meanRet": 0.24189416808040357,
+          "pctPositive": 0.525,
+          "direction": "neutral",
+          "centralFinal": 21.117272717119143,
+          "upper1Final": 37.58152368156339,
+          "lower1Final": 11.865916102490324,
+          "upper2Final": 66.88225989916506,
+          "lower2Final": 6.667526002881841
+        },
+        "market": null,
+        "fusion": null
+      },
+      "resolved": false,
+      "resolution": null
+    },
+    {
+      "id": "TSLA_2026-09-25",
+      "ticker": "TSLA",
+      "timeframe": "1day",
+      "horizonBars": 130,
+      "calledAt": "2026-09-25",
+      "calledAtDatetime": "2026-09-25",
+      "calledAtTs": 1790380814499,
+      "priceAtCall": 372.10999,
+      "methods": {
+        "own": {
+          "method": "analog",
+          "trainingSize": 330,
+          "n": 40,
+          "meanRet": -0.03313541537030747,
+          "pctPositive": 0.4,
+          "direction": "bearish",
+          "centralFinal": 359.98201333494717,
+          "upper1Final": 455.7234914261149,
+          "lower1Final": 284.35455350164153,
+          "upper2Final": 576.9285490504983,
+          "lower2Final": 224.61542272081144
+        },
+        "market": null,
+        "fusion": null
+      },
+      "resolved": false,
+      "resolution": null
+    },
+    {
+      "id": "XYZ_2026-09-25",
+      "ticker": "XYZ",
+      "timeframe": "1day",
+      "horizonBars": 130,
+      "calledAt": "2026-09-25",
+      "calledAtDatetime": "2026-09-25",
+      "calledAtTs": 1790380822621,
+      "priceAtCall": 76.42,
+      "methods": {
+        "own": {
+          "method": "analog",
+          "trainingSize": 330,
+          "n": 40,
+          "meanRet": 0.056411208476389176,
+          "pctPositive": 0.45,
+          "direction": "neutral",
+          "centralFinal": 80.85485635840925,
+          "upper1Final": 100.89507803012258,
+          "lower1Final": 64.7951111627784,
+          "upper2Final": 125.90235428259194,
+          "lower2Final": 51.92522279659157
         },
         "market": null,
         "fusion": null
