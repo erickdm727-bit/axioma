@@ -1,47 +1,91 @@
 {
-  "generatedAt": 1790645083719,
+  "generatedAt": 1790729647829,
   "criteria": "v1: cercanía a soporte + RSI bajo + motor de análogos alcista (provisional)",
   "results": [
     {
-      "ticker": "IAU",
-      "price": 77.5,
-      "score": 7.9,
-      "reasons": [
-        "Precio a 0.1% del Soporte 1 (77.40) — +3.9",
-        "RSI(14) en 35.3 — +1.2",
-        "Motor de análogos: 83% de casos similares subieron a 130 velas — +2.8"
-      ],
-      "rsi": 35.31077566881149,
-      "support": 77.398059679,
-      "resistance": 78.47,
-      "analogDirection": "bullish",
-      "analogPctPositive": 0.825
-    },
-    {
       "ticker": "URNJ",
-      "price": 20.91,
+      "price": 20.92,
       "score": 7.4,
       "reasons": [
-        "Precio a 0.0% del Soporte 1 (20.90) — +4.0",
-        "RSI(14) en 34.2 — +1.3",
+        "Precio a 0.1% del Soporte 1 (20.90) — +4.0",
+        "RSI(14) en 34.3 — +1.3",
         "Motor de análogos: 75% de casos similares subieron a 130 velas — +2.1"
       ],
-      "rsi": 34.193053819509615,
+      "rsi": 34.27741940905197,
       "support": 20.9,
       "resistance": 21.42,
       "analogDirection": "bullish",
       "analogPctPositive": 0.75
     },
     {
-      "ticker": "AMZN",
-      "price": 246.14999,
+      "ticker": "IAU",
+      "price": 78.52,
+      "score": 7.2,
+      "reasons": [
+        "Precio a 0.1% del Soporte 1 (78.47) — +4.0",
+        "RSI(14) en 39.9 — +0.6",
+        "Motor de análogos: 80% de casos similares subieron a 130 velas — +2.6"
+      ],
+      "rsi": 39.8933509254539,
+      "support": 78.47,
+      "resistance": 79.61877942699999,
+      "analogDirection": "bullish",
+      "analogPctPositive": 0.8
+    },
+    {
+      "ticker": "GE",
+      "price": 317.89001,
       "score": 7.1,
       "reasons": [
-        "Precio a 0.8% del Soporte 1 (244.30) — +3.6",
-        "RSI(14) en 41.2 — +0.5",
+        "Precio a 0.9% del Soporte 1 (314.89) — +3.5",
+        "RSI(14) en 40.4 — +0.6",
         "Motor de análogos: 100% de casos similares subieron a 130 velas — +3.0"
       ],
-      "rsi": 41.24380943290431,
+      "rsi": 40.359680887619255,
+      "support": 314.88526,
+      "resistance": 318.25,
+      "analogDirection": "bullish",
+      "analogPctPositive": 1
+    },
+    {
+      "ticker": "KO",
+      "price": 86.84,
+      "score": 7,
+      "reasons": [
+        "Precio a 0.4% del Soporte 1 (86.50) — +3.8",
+        "RSI(14) en 43.2 — +0.2",
+        "Motor de análogos: 95% de casos similares subieron a 130 velas — +3.0"
+      ],
+      "rsi": 43.224886298041426,
+      "support": 86.50023999999999,
+      "resistance": 87.265,
+      "analogDirection": "bullish",
+      "analogPctPositive": 0.95
+    },
+    {
+      "ticker": "AAPL",
+      "price": 329.39999,
+      "score": 6.9,
+      "reasons": [
+        "Precio a 0.3% del Soporte 1 (328.44) — +3.9",
+        "Motor de análogos: 88% de casos similares subieron a 130 velas — +3.0"
+      ],
+      "rsi": 50.87808159572462,
+      "support": 328.44476,
+      "resistance": 330.81,
+      "analogDirection": "bullish",
+      "analogPctPositive": 0.875
+    },
+    {
+      "ticker": "AMZN",
+      "price": 246.67,
+      "score": 6.9,
+      "reasons": [
+        "Precio a 1.0% del Soporte 1 (244.30) — +3.5",
+        "RSI(14) en 41.9 — +0.4",
+        "Motor de análogos: 100% de casos similares subieron a 130 velas — +3.0"
+      ],
+      "rsi": 41.9267699137215,
       "support": 244.3,
       "resistance": 249.44010127333334,
       "analogDirection": "bullish",
@@ -49,518 +93,474 @@
     },
     {
       "ticker": "GOOGL",
-      "price": 342.75,
-      "score": 6.8,
+      "price": 340.92001,
+      "score": 6.7,
       "reasons": [
-        "Precio a 0.5% del Soporte 1 (341.12) — +3.8",
+        "Precio a 0.7% del Soporte 1 (338.57) — +3.7",
         "Motor de análogos: 100% de casos similares subieron a 130 velas — +3.0"
       ],
-      "rsi": 48.811944292635395,
-      "support": 341.119995,
-      "resistance": 345.3701112733333,
+      "rsi": 47.36087943983699,
+      "support": 338.57001,
+      "resistance": 341.119995,
       "analogDirection": "bullish",
       "analogPctPositive": 1
-    },
-    {
-      "ticker": "NVDA",
-      "price": 228.86,
-      "score": 6.8,
-      "reasons": [
-        "Precio a 0.4% del Soporte 1 (227.92) — +3.8",
-        "Motor de análogos: 98% de casos similares subieron a 130 velas — +3.0"
-      ],
-      "rsi": 58.64896780495114,
-      "support": 227.92,
-      "resistance": 230.225,
-      "analogDirection": "bullish",
-      "analogPctPositive": 0.975
     },
     {
       "ticker": "TSM",
-      "price": 452.88,
+      "price": 456.94,
       "score": 6.7,
       "reasons": [
-        "Precio a 0.6% del Soporte 1 (450.16) — +3.7",
+        "Precio a 0.7% del Soporte 1 (453.92) — +3.7",
         "Motor de análogos: 100% de casos similares subieron a 130 velas — +3.0"
       ],
-      "rsi": 63.193843432465314,
-      "support": 450.16,
-      "resistance": 453.91792,
+      "rsi": 65.03143113487191,
+      "support": 453.91792,
+      "resistance": 477.89500499999997,
       "analogDirection": "bullish",
       "analogPctPositive": 1
     },
     {
-      "ticker": "AAPL",
-      "price": 338.39999,
+      "ticker": "WMT",
+      "price": 106.8,
+      "score": 6.7,
+      "reasons": [
+        "Precio a 0.7% del Soporte 1 (106.08) — +3.7",
+        "Motor de análogos: 90% de casos similares subieron a 130 velas — +3.0"
+      ],
+      "rsi": 45.88234545651698,
+      "support": 106.080002,
+      "resistance": 107.08370000000001,
+      "analogDirection": "bullish",
+      "analogPctPositive": 0.9
+    },
+    {
+      "ticker": "ASML",
+      "price": 1834.39001,
       "score": 6.6,
       "reasons": [
-        "Precio a 0.8% del Soporte 1 (335.60) — +3.6",
+        "Precio a 0.7% del Soporte 1 (1820.68) — +3.6",
         "Motor de análogos: 93% de casos similares subieron a 130 velas — +3.0"
       ],
-      "rsi": 61.792354744815015,
-      "support": 335.60499500000003,
-      "resistance": 344.955005,
+      "rsi": 63.14728424392669,
+      "support": 1820.6797391,
+      "resistance": 1853.44995,
       "analogDirection": "bullish",
       "analogPctPositive": 0.925
     },
     {
-      "ticker": "KO",
-      "price": 87.18,
+      "ticker": "GLW",
+      "price": 158.71001,
       "score": 6.6,
       "reasons": [
-        "Precio a 0.8% del Soporte 1 (86.50) — +3.6",
-        "RSI(14) en 45.0 — +0.0",
-        "Motor de análogos: 93% de casos similares subieron a 130 velas — +3.0"
+        "Precio a 0.7% del Soporte 1 (157.57) — +3.6",
+        "Motor de análogos: 100% de casos similares subieron a 130 velas — +3.0"
       ],
-      "rsi": 44.980784679967336,
-      "support": 86.50023999999999,
-      "resistance": 87.265,
+      "rsi": 53.124664596662576,
+      "support": 157.57001,
+      "resistance": 160.71001,
       "analogDirection": "bullish",
-      "analogPctPositive": 0.925
+      "analogPctPositive": 1
     },
     {
       "ticker": "MU",
-      "price": 1053.97998,
+      "price": 1065.079956,
       "score": 6.5,
       "reasons": [
-        "Precio a 1.1% del Soporte 1 (1042.82) — +3.5",
+        "Precio a 0.9% del Soporte 1 (1055.29) — +3.5",
         "Motor de análogos: 100% de casos similares subieron a 130 velas — +3.0"
       ],
-      "rsi": 58.35031395105912,
-      "support": 1042.82106427,
+      "rsi": 59.65726454549437,
+      "support": 1055.29040382,
       "resistance": 1089.29004,
       "analogDirection": "bullish",
       "analogPctPositive": 1
     },
     {
-      "ticker": "SNDK",
-      "price": 1712.89001,
-      "score": 6.5,
+      "ticker": "NVDA",
+      "price": 227.21001,
+      "score": 6.3,
       "reasons": [
-        "Precio a 1.0% del Soporte 1 (1696.37) — +3.5",
-        "Motor de análogos: 100% de casos similares subieron a 130 velas — +3.0"
+        "Precio a 1.3% del Soporte 1 (224.15) — +3.3",
+        "Motor de análogos: 93% de casos similares subieron a 130 velas — +3.0"
       ],
-      "rsi": 53.32535718880247,
-      "support": 1696.37,
-      "resistance": 1756.3732900000002,
+      "rsi": 56.59215617445461,
+      "support": 224.14943236,
+      "resistance": 227.92,
       "analogDirection": "bullish",
-      "analogPctPositive": 1
-    },
-    {
-      "ticker": "ASML",
-      "price": 1771.41003,
-      "score": 6.4,
-      "reasons": [
-        "Precio a 1.2% del Soporte 1 (1750.00) — +3.4",
-        "Motor de análogos: 95% de casos similares subieron a 130 velas — +3.0"
-      ],
-      "rsi": 57.45633359986463,
-      "support": 1750.0049541666667,
-      "resistance": 1790,
-      "analogDirection": "bullish",
-      "analogPctPositive": 0.95
-    },
-    {
-      "ticker": "GE",
-      "price": 318.23999,
-      "score": 6.4,
-      "reasons": [
-        "Precio a 2.3% del Soporte 1 (311.00) — +2.9",
-        "RSI(14) en 40.6 — +0.5",
-        "Motor de análogos: 100% de casos similares subieron a 130 velas — +3.0"
-      ],
-      "rsi": 40.60370815525945,
-      "support": 311,
-      "resistance": 318.25,
-      "analogDirection": "bullish",
-      "analogPctPositive": 1
+      "analogPctPositive": 0.925
     },
     {
       "ticker": "AVGO",
-      "price": 349.57001,
+      "price": 355.10001,
       "score": 6.3,
       "reasons": [
-        "Precio a 2.1% del Soporte 1 (342.33) — +3.0",
-        "RSI(14) en 41.9 — +0.4",
+        "Precio a 1.4% del Soporte 1 (350.06) — +3.3",
         "Motor de análogos: 100% de casos similares subieron a 130 velas — +3.0"
       ],
-      "rsi": 41.946295101972105,
-      "support": 342.32999,
-      "resistance": 350.059998,
+      "rsi": 45.96255032009337,
+      "support": 350.059998,
+      "resistance": 357.27999,
       "analogDirection": "bullish",
       "analogPctPositive": 1
     },
     {
       "ticker": "CSCO",
-      "price": 106.74,
-      "score": 6.3,
+      "price": 106.94,
+      "score": 6.2,
       "reasons": [
-        "Precio a 2.1% del Soporte 1 (104.51) — +3.0",
-        "RSI(14) en 41.8 — +0.4",
+        "Precio a 2.3% del Soporte 1 (104.51) — +2.9",
+        "RSI(14) en 42.4 — +0.3",
         "Motor de análogos: 100% de casos similares subieron a 130 velas — +3.0"
       ],
-      "rsi": 41.78486682390135,
+      "rsi": 42.41967340424907,
       "support": 104.51,
       "resistance": 107.63266666666667,
       "analogDirection": "bullish",
       "analogPctPositive": 1
     },
     {
-      "ticker": "WMT",
-      "price": 108.73,
-      "score": 6.2,
+      "ticker": "ASTS",
+      "price": 59.4,
+      "score": 6.1,
       "reasons": [
-        "Precio a 1.6% del Soporte 1 (107.02) — +3.2",
-        "Motor de análogos: 93% de casos similares subieron a 130 velas — +3.0"
+        "Precio a 1.8% del Soporte 1 (58.32) — +3.1",
+        "Motor de análogos: 88% de casos similares subieron a 130 velas — +3.0"
       ],
-      "rsi": 51.62671061287413,
-      "support": 107.02000000000001,
-      "resistance": 108.93366595333333,
+      "rsi": 45.46381919226712,
+      "support": 58.32,
+      "resistance": 63.72,
       "analogDirection": "bullish",
-      "analogPctPositive": 0.925
+      "analogPctPositive": 0.875
     },
     {
-      "ticker": "GLW",
-      "price": 151.59,
-      "score": 5.9,
+      "ticker": "SNDK",
+      "price": 1729.76001,
+      "score": 6,
       "reasons": [
-        "Precio a 2.3% del Soporte 1 (148.16) — +2.9",
+        "Precio a 1.9% del Soporte 1 (1696.37) — +3.0",
         "Motor de análogos: 100% de casos similares subieron a 130 velas — +3.0"
       ],
-      "rsi": 47.61520590011471,
-      "support": 148.15792,
-      "resistance": 157.57001,
-      "analogDirection": "bullish",
-      "analogPctPositive": 1
-    },
-    {
-      "ticker": "MELI",
-      "price": 1712.41003,
-      "score": 5.5,
-      "reasons": [
-        "Precio a 0.0% del Soporte 1 (1712.00) — +4.0",
-        "RSI(14) en 32.5 — +1.5"
-      ],
-      "rsi": 32.545660215853275,
-      "support": 1712,
-      "resistance": 1733.78003,
-      "analogDirection": "bearish",
-      "analogPctPositive": 0.325
-    },
-    {
-      "ticker": "XYZ",
-      "price": 73.31,
-      "score": 5.3,
-      "reasons": [
-        "Precio a 2.5% del Soporte 1 (71.50) — +2.8",
-        "RSI(14) en 36.2 — +1.1",
-        "Motor de análogos: 68% de casos similares subieron a 130 velas — +1.5"
-      ],
-      "rsi": 36.23209737836068,
-      "support": 71.5,
-      "resistance": 73.65772,
-      "analogDirection": "bullish",
-      "analogPctPositive": 0.675
-    },
-    {
-      "ticker": "INTC",
-      "price": 116.029999,
-      "score": 5.3,
-      "reasons": [
-        "Precio a 3.4% del Soporte 1 (112.07) — +2.3",
-        "Motor de análogos: 100% de casos similares subieron a 130 velas — +3.0"
-      ],
-      "rsi": 58.522415700607155,
-      "support": 112.07000500000001,
-      "resistance": 119.21608618,
+      "rsi": 54.219519443625174,
+      "support": 1696.37,
+      "resistance": 1756.3732900000002,
       "analogDirection": "bullish",
       "analogPctPositive": 1
     },
     {
       "ticker": "CIFR",
-      "price": 16.74,
-      "score": 5.3,
+      "price": 16.51,
+      "score": 6,
       "reasons": [
-        "Precio a 3.4% del Soporte 1 (16.16) — +2.3",
-        "Motor de análogos: 95% de casos similares subieron a 130 velas — +3.0"
+        "Precio a 2.1% del Soporte 1 (16.16) — +3.0",
+        "Motor de análogos: 88% de casos similares subieron a 130 velas — +3.0"
       ],
-      "rsi": 46.85232814118082,
+      "rsi": 45.92596523098274,
       "support": 16.165,
       "resistance": 17.4535,
       "analogDirection": "bullish",
-      "analogPctPositive": 0.95
+      "analogPctPositive": 0.875
     },
     {
       "ticker": "SLV",
-      "price": 54.95,
-      "score": 5.2,
+      "price": 55.48,
+      "score": 5.6,
       "reasons": [
-        "Precio a 1.9% del Soporte 1 (53.92) — +3.1",
-        "RSI(14) en 39.6 — +0.7",
+        "Precio a 0.7% del Soporte 1 (55.08) — +3.6",
+        "RSI(14) en 41.4 — +0.4",
         "Motor de análogos: 68% de casos similares subieron a 130 velas — +1.5"
       ],
-      "rsi": 39.566595719343404,
-      "support": 53.91996,
-      "resistance": 55.080002,
+      "rsi": 41.42548331938134,
+      "support": 55.080002,
+      "resistance": 56.325,
       "analogDirection": "bullish",
       "analogPctPositive": 0.675
     },
     {
-      "ticker": "AMD",
-      "price": 607.87,
-      "score": 5.2,
+      "ticker": "RKLB",
+      "price": 69.7,
+      "score": 5.4,
       "reasons": [
-        "Precio a 3.5% del Soporte 1 (586.50) — +2.2",
+        "Precio a 2.9% del Soporte 1 (67.70) — +2.6",
+        "Motor de análogos: 83% de casos similares subieron a 130 velas — +2.8"
+      ],
+      "rsi": 50.90750911664229,
+      "support": 67.7,
+      "resistance": 72.94,
+      "analogDirection": "bullish",
+      "analogPctPositive": 0.825
+    },
+    {
+      "ticker": "AMD",
+      "price": 607.57001,
+      "score": 5.3,
+      "reasons": [
+        "Precio a 3.5% del Soporte 1 (586.50) — +2.3",
         "Motor de análogos: 100% de casos similares subieron a 130 velas — +3.0"
       ],
-      "rsi": 65.61886940721041,
+      "rsi": 65.5248756999265,
       "support": 586.498529882,
       "resistance": 710.2199666666668,
       "analogDirection": "bullish",
       "analogPctPositive": 1
     },
     {
+      "ticker": "INTC",
+      "price": 115.93,
+      "score": 5.3,
+      "reasons": [
+        "Precio a 3.3% del Soporte 1 (112.07) — +2.3",
+        "Motor de análogos: 100% de casos similares subieron a 130 velas — +3.0"
+      ],
+      "rsi": 58.40940297373339,
+      "support": 112.07000500000001,
+      "resistance": 119.21608618,
+      "analogDirection": "bullish",
+      "analogPctPositive": 1
+    },
+    {
       "ticker": "ZETA",
-      "price": 28.99,
+      "price": 28.96,
       "score": 5.1,
       "reasons": [
-        "Precio a 1.7% del Soporte 1 (28.50) — +3.2",
+        "Precio a 1.6% del Soporte 1 (28.50) — +3.2",
         "Motor de análogos: 73% de casos similares subieron a 130 velas — +1.9"
       ],
-      "rsi": 46.64700583617771,
+      "rsi": 46.46509420915607,
       "support": 28.5,
-      "resistance": 29.1992,
+      "resistance": 29.244512000000004,
       "analogDirection": "bullish",
       "analogPctPositive": 0.725
     },
     {
-      "ticker": "SOFI",
-      "price": 15.93,
+      "ticker": "ONDS",
+      "price": 7.48,
       "score": 5,
       "reasons": [
-        "Precio a 0.1% del Soporte 1 (15.92) — +4.0",
-        "RSI(14) en 36.7 — +1.0"
+        "Precio a 2.3% del Soporte 1 (7.31) — +2.9",
+        "Motor de análogos: 75% de casos similares subieron a 130 velas — +2.1"
       ],
-      "rsi": 36.68143789574861,
-      "support": 15.92004,
-      "resistance": 16.5,
+      "rsi": 45.822832783367794,
+      "support": 7.31,
+      "resistance": 7.89958,
+      "analogDirection": "bullish",
+      "analogPctPositive": 0.75
+    },
+    {
+      "ticker": "MELI",
+      "price": 1724.90002,
+      "score": 4.9,
+      "reasons": [
+        "Precio a 0.7% del Soporte 1 (1712.00) — +3.6",
+        "RSI(14) en 34.7 — +1.2"
+      ],
+      "rsi": 34.708018109658326,
+      "support": 1712,
+      "resistance": 1733.78003,
       "analogDirection": "bearish",
       "analogPctPositive": 0.375
     },
     {
-      "ticker": "MRVL",
-      "price": 251.89999,
+      "ticker": "ORCL",
+      "price": 137.78999,
       "score": 4.8,
       "reasons": [
-        "Precio a 2.2% del Soporte 1 (246.39) — +2.9",
-        "Motor de análogos: 73% de casos similares subieron a 130 velas — +1.9"
+        "Precio a 0.2% del Soporte 1 (137.49) — +3.9",
+        "RSI(14) en 43.1 — +0.2",
+        "Motor de análogos: 57% de casos similares subieron a 130 velas — +0.6"
       ],
-      "rsi": 57.127452063273815,
-      "support": 246.389995,
-      "resistance": 252.52,
-      "analogDirection": "bullish",
-      "analogPctPositive": 0.725
-    },
-    {
-      "ticker": "V",
-      "price": 367.73999,
-      "score": 4,
-      "reasons": [
-        "Precio a 0.1% del Soporte 1 (367.50) — +4.0"
-      ],
-      "rsi": 48.38682868289117,
-      "support": 367.49948764000004,
-      "resistance": 372.86332999999996,
-      "analogDirection": "bearish",
-      "analogPctPositive": 0.325
-    },
-    {
-      "ticker": "RKLB",
-      "price": 72.19,
-      "score": 3.9,
-      "reasons": [
-        "Precio a 6.2% del Soporte 1 (67.70) — +0.9",
-        "Motor de análogos: 95% de casos similares subieron a 130 velas — +3.0"
-      ],
-      "rsi": 55.72465296008902,
-      "support": 67.7,
-      "resistance": 72.94,
-      "analogDirection": "bullish",
-      "analogPctPositive": 0.95
-    },
-    {
-      "ticker": "MARA",
-      "price": 12.11,
-      "score": 3.8,
-      "reasons": [
-        "Precio a 0.3% del Soporte 1 (12.07) — +3.8"
-      ],
-      "rsi": 51.507146671993375,
-      "support": 12.07,
-      "resistance": 12.355,
-      "analogDirection": "bearish",
-      "analogPctPositive": 0.125
-    },
-    {
-      "ticker": "SMCI",
-      "price": 41.78,
-      "score": 3.7,
-      "reasons": [
-        "Precio a 0.6% del Soporte 1 (41.53) — +3.7"
-      ],
-      "rsi": 58.83998752305261,
-      "support": 41.53,
-      "resistance": 42.31,
-      "analogDirection": "bearish",
-      "analogPctPositive": 0.15
-    },
-    {
-      "ticker": "TSLA",
-      "price": 357.45001,
-      "score": 3.5,
-      "reasons": [
-        "Precio a 1.0% del Soporte 1 (354.05) — +3.5"
-      ],
-      "rsi": 47.06386508454444,
-      "support": 354.0477894955555,
-      "resistance": 367.550005,
-      "analogDirection": "bearish",
-      "analogPctPositive": 0.25
-    },
-    {
-      "ticker": "ORCL",
-      "price": 132.60001,
-      "score": 3.5,
-      "reasons": [
-        "Precio a 2.8% del Soporte 1 (128.84) — +2.6",
-        "RSI(14) en 37.3 — +0.9"
-      ],
-      "rsi": 37.269703034842266,
-      "support": 128.84,
-      "resistance": 137.48999500000002,
+      "rsi": 43.072198249263195,
+      "support": 137.48999500000002,
+      "resistance": 139.36,
       "analogDirection": "neutral",
-      "analogPctPositive": 0.45
+      "analogPctPositive": 0.575
     },
     {
-      "ticker": "NOW",
-      "price": 131.45,
-      "score": 3.5,
+      "ticker": "XYZ",
+      "price": 74.050003,
+      "score": 4.5,
       "reasons": [
-        "Precio a 1.0% del Soporte 1 (130.07) — +3.5"
+        "Precio a 0.5% del Soporte 1 (73.66) — +3.7",
+        "RSI(14) en 38.7 — +0.8"
       ],
-      "rsi": 47.01464879817183,
-      "support": 130.07,
-      "resistance": 131.54332833333336,
-      "analogDirection": "bearish",
-      "analogPctPositive": 0.1
-    },
-    {
-      "ticker": "ONDS",
-      "price": 7.68,
-      "score": 3.5,
-      "reasons": [
-        "Precio a 4.8% del Soporte 1 (7.31) — +1.6",
-        "Motor de análogos: 73% de casos similares subieron a 130 velas — +1.9"
-      ],
-      "rsi": 49.628072529673226,
-      "support": 7.31,
-      "resistance": 7.89958,
-      "analogDirection": "bullish",
-      "analogPctPositive": 0.725
-    },
-    {
-      "ticker": "ARM",
-      "price": 283.32999,
-      "score": 2.5,
-      "reasons": [
-        "Precio a 3.0% del Soporte 1 (274.80) — +2.5"
-      ],
-      "rsi": 51.95009798230654,
-      "support": 274.79999,
-      "resistance": 290.33000000000004,
+      "rsi": 38.699549907347716,
+      "support": 73.65772,
+      "resistance": 74.761,
       "analogDirection": "neutral",
       "analogPctPositive": 0.5
     },
     {
-      "ticker": "ASTS",
-      "price": 61,
-      "score": 1.9,
+      "ticker": "MRVL",
+      "price": 263.26999,
+      "score": 4.5,
       "reasons": [
-        "Precio a 6.4% del Soporte 1 (57.09) — +0.8",
-        "Motor de análogos: 63% de casos similares subieron a 130 velas — +1.1"
+        "Precio a 3.3% del Soporte 1 (254.60) — +2.4",
+        "Motor de análogos: 75% de casos similares subieron a 130 velas — +2.1"
       ],
-      "rsi": 48.0184115745842,
-      "support": 57.08833333333334,
-      "resistance": 63.72,
+      "rsi": 61.56360336997815,
+      "support": 254.60001,
+      "resistance": 266.09363618,
       "analogDirection": "bullish",
-      "analogPctPositive": 0.625
+      "analogPctPositive": 0.75
+    },
+    {
+      "ticker": "SOFI",
+      "price": 15.91,
+      "score": 4.2,
+      "reasons": [
+        "Precio a 1.6% del Soporte 1 (15.65) — +3.2",
+        "RSI(14) en 36.5 — +1.0"
+      ],
+      "rsi": 36.53593856146574,
+      "support": 15.651,
+      "resistance": 15.92004,
+      "analogDirection": "bearish",
+      "analogPctPositive": 0.375
+    },
+    {
+      "ticker": "V",
+      "price": 365.88,
+      "score": 3.9,
+      "reasons": [
+        "Precio a 0.2% del Soporte 1 (365.23) — +3.9"
+      ],
+      "rsi": 46.138741413971445,
+      "support": 365.226663,
+      "resistance": 367.49948764000004,
+      "analogDirection": "neutral",
+      "analogPctPositive": 0.425
+    },
+    {
+      "ticker": "SMCI",
+      "price": 41.02,
+      "score": 3.6,
+      "reasons": [
+        "Precio a 0.8% del Soporte 1 (40.70) — +3.6"
+      ],
+      "rsi": 56.406728437468246,
+      "support": 40.69636,
+      "resistance": 41.53,
+      "analogDirection": "bearish",
+      "analogPctPositive": 0.25
+    },
+    {
+      "ticker": "ARM",
+      "price": 293.67001,
+      "score": 3.4,
+      "reasons": [
+        "Precio a 1.1% del Soporte 1 (290.33) — +3.4"
+      ],
+      "rsi": 54.76730691561043,
+      "support": 290.33000000000004,
+      "resistance": 294,
+      "analogDirection": "neutral",
+      "analogPctPositive": 0.5
+    },
+    {
+      "ticker": "MARA",
+      "price": 11.99,
+      "score": 3.4,
+      "reasons": [
+        "Precio a 1.3% del Soporte 1 (11.84) — +3.4"
+      ],
+      "rsi": 50.53400426645517,
+      "support": 11.84,
+      "resistance": 12.07,
+      "analogDirection": "bearish",
+      "analogPctPositive": 0.125
     },
     {
       "ticker": "META",
-      "price": 715.62,
-      "score": 1.8,
+      "price": 738.78998,
+      "score": 2.7,
       "reasons": [
-        "Precio a 4.4% del Soporte 1 (684.18) — +1.8"
+        "Precio a 2.6% del Soporte 1 (719.56) — +2.7"
       ],
-      "rsi": 60.93365780744728,
-      "support": 684.18197968,
-      "resistance": 719.56212528,
-      "analogDirection": "neutral",
-      "analogPctPositive": 0.45
+      "rsi": 64.51499716566713,
+      "support": 719.56212528,
+      "resistance": 779.82001,
+      "analogDirection": "bearish",
+      "analogPctPositive": 0.325
+    },
+    {
+      "ticker": "NOW",
+      "price": 129.94,
+      "score": 2.7,
+      "reasons": [
+        "Precio a 2.6% del Soporte 1 (126.60) — +2.7"
+      ],
+      "rsi": 45.437356814734414,
+      "support": 126.59978618,
+      "resistance": 130.07,
+      "analogDirection": "bearish",
+      "analogPctPositive": 0.075
+    },
+    {
+      "ticker": "TSLA",
+      "price": 352.84,
+      "score": 2.6,
+      "reasons": [
+        "Precio a 2.9% del Soporte 1 (342.53) — +2.5",
+        "RSI(14) en 44.8 — +0.0"
+      ],
+      "rsi": 44.801531260883166,
+      "support": 342.53,
+      "resistance": 354.0477894955555,
+      "analogDirection": "bearish",
+      "analogPctPositive": 0.375
     },
     {
       "ticker": "MSFT",
-      "price": 509.22,
-      "score": 1.8,
+      "price": 508.95999,
+      "score": 2.3,
       "reasons": [
-        "Precio a 4.4% del Soporte 1 (486.62) — +1.8"
+        "Precio a 3.5% del Soporte 1 (491.22) — +2.3"
       ],
-      "rsi": 58.55521617388761,
-      "support": 486.615005,
+      "rsi": 58.381773066379765,
+      "support": 491.22,
       "resistance": 509.95001,
       "analogDirection": "neutral",
       "analogPctPositive": 0.425
     },
     {
-      "ticker": "ARKG",
-      "price": 53.35,
+      "ticker": "COIN",
+      "price": 190.020004,
       "score": 1.8,
       "reasons": [
-        "Precio a 5.3% del Soporte 1 (50.53) — +1.4",
+        "Precio a 4.4% del Soporte 1 (181.69) — +1.8"
+      ],
+      "rsi": 53.90938723432209,
+      "support": 181.688985,
+      "resistance": 191.91204000000002,
+      "analogDirection": "bearish",
+      "analogPctPositive": 0.375
+    },
+    {
+      "ticker": "RIOT",
+      "price": 21.39,
+      "score": 1.5,
+      "reasons": [
+        "Precio a 5.8% del Soporte 1 (20.16) — +1.1",
         "Motor de análogos: 55% de casos similares subieron a 130 velas — +0.4"
       ],
-      "rsi": 68.54141138265717,
-      "support": 50.535,
-      "resistance": null,
+      "rsi": 48.05393663699456,
+      "support": 20.157806,
+      "resistance": 21.855,
       "analogDirection": "neutral",
       "analogPctPositive": 0.55
     },
     {
-      "ticker": "RIOT",
-      "price": 21.62,
-      "score": 1.7,
+      "ticker": "ARKG",
+      "price": 53.95,
+      "score": 1.3,
       "reasons": [
-        "Precio a 6.8% del Soporte 1 (20.16) — +0.6",
-        "Motor de análogos: 63% de casos similares subieron a 130 velas — +1.1"
+        "Precio a 6.3% del Soporte 1 (50.53) — +0.8",
+        "Motor de análogos: 55% de casos similares subieron a 130 velas — +0.4"
       ],
-      "rsi": 48.985805031488056,
-      "support": 20.157806,
-      "resistance": 21.855,
-      "analogDirection": "bullish",
-      "analogPctPositive": 0.625
-    },
-    {
-      "ticker": "COIN",
-      "price": 191.78999,
-      "score": 1.4,
-      "reasons": [
-        "Precio a 5.3% del Soporte 1 (181.69) — +1.4"
-      ],
-      "rsi": 54.961281198129235,
-      "support": 181.688985,
-      "resistance": 191.91204000000002,
-      "analogDirection": "bearish",
-      "analogPctPositive": 0.35
+      "rsi": 70.03153111555082,
+      "support": 50.535,
+      "resistance": null,
+      "analogDirection": "neutral",
+      "analogPctPositive": 0.55
     }
   ]
 }
