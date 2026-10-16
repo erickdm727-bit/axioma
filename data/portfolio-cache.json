@@ -1,8 +1,8 @@
 {
-  "generatedAt": 1792093216485,
+  "generatedAt": 1792160962063,
   "tickers": {
     "CIFR": {
-      "price": 10.125,
+      "price": 9.66,
       "sr": {
         "support": null,
         "resistance": 11.056666666666668,
@@ -14,7 +14,7 @@
             "type": "qpivot"
           },
           {
-            "price": 13.36676,
+            "price": 13.358899999999998,
             "n": 2,
             "type": "fib"
           },
@@ -35,17 +35,9 @@
       "alert": {
         "urgent": false,
         "icon": "◇",
-        "text": "Precio a 9.2% debajo de la Resistencia 1 (11.06 USD) — sin niveles clave inmediatos que vigilar."
+        "text": "Precio a 14.5% debajo de la Resistencia 1 (11.06 USD) — sin niveles clave inmediatos que vigilar."
       },
       "daily": [
-        {
-          "datetime": "2026-06-09",
-          "open": 25,
-          "high": 25.58,
-          "low": 21.81,
-          "close": 23.035,
-          "volume": 23981700
-        },
         {
           "datetime": "2026-06-10",
           "open": 22.689,
@@ -748,22 +740,30 @@
           "high": 10.86,
           "low": 9.8,
           "close": 9.94,
-          "volume": 94111000
+          "volume": 94755800
         },
         {
           "datetime": "2026-10-15",
-          "open": 9.295,
-          "high": 10.165,
-          "low": 8.8,
-          "close": 10.125,
-          "volume": 4449717
+          "open": 9.32,
+          "high": 10.17,
+          "low": 8.79,
+          "close": 10.04,
+          "volume": 75395600
+        },
+        {
+          "datetime": "2026-10-16",
+          "open": 9.715,
+          "high": 9.97,
+          "low": 9.515,
+          "close": 9.66,
+          "volume": 457419
         }
       ],
-      "updatedAt": 1792093176299,
+      "updatedAt": 1792160921592,
       "error": null
     },
     "RIOT": {
-      "price": 15.47,
+      "price": 15.06,
       "sr": {
         "support": null,
         "resistance": 16.067333333333327,
@@ -796,17 +796,9 @@
       "alert": {
         "urgent": false,
         "icon": "◇",
-        "text": "Precio a 3.9% debajo de la Resistencia 1 (16.07 USD) — sin niveles clave inmediatos que vigilar."
+        "text": "Precio a 6.7% debajo de la Resistencia 1 (16.07 USD) — sin niveles clave inmediatos que vigilar."
       },
       "daily": [
-        {
-          "datetime": "2026-06-09",
-          "open": 26.45,
-          "high": 27.205,
-          "low": 23.91,
-          "close": 25.295,
-          "volume": 19281700
-        },
         {
           "datetime": "2026-06-10",
           "open": 24.72,
@@ -1509,52 +1501,65 @@
           "high": 16.17,
           "low": 14.78,
           "close": 15.1,
-          "volume": 21802500
+          "volume": 21879700
         },
         {
           "datetime": "2026-10-15",
-          "open": 14.425,
-          "high": 15.47,
+          "open": 14.4,
+          "high": 15.64,
           "low": 13.72,
-          "close": 15.47,
-          "volume": 985868
+          "close": 15.5,
+          "volume": 23295500
+        },
+        {
+          "datetime": "2026-10-16",
+          "open": 15.11,
+          "high": 15.18,
+          "low": 14.835,
+          "close": 15.06,
+          "volume": 214421
         }
       ],
-      "updatedAt": 1792093184345,
+      "updatedAt": 1792160929721,
       "error": null
     },
     "SOFI": {
-      "price": 15.04,
+      "price": 15.245,
       "sr": {
-        "support": 14.88,
-        "resistance": 15.134039999999999,
+        "support": 15.118319999999999,
+        "resistance": 15.53,
         "supports": [
           {
-            "price": 14.88,
+            "price": 15.118319999999999,
             "n": 1,
+            "type": "fib"
+          },
+          {
+            "price": 14.88,
+            "n": 2,
             "type": "pivot"
           },
           {
             "price": 13.819999999999997,
-            "n": 2,
+            "n": 3,
             "type": "qpivot"
           }
         ],
         "resistances": [
           {
-            "price": 15.134039999999999,
-            "n": 1,
-            "type": "fib"
-          },
-          {
             "price": 15.53,
-            "n": 2,
+            "n": 1,
             "type": "pivot"
           },
           {
-            "price": 16.11852,
-            "n": 3,
+            "price": 16.10616,
+            "n": 2,
             "type": "fib"
+          },
+          {
+            "price": 16.25,
+            "n": 3,
+            "type": "pivot"
           }
         ],
         "quarterlyPivot": {
@@ -1570,17 +1575,9 @@
         "icon": "⚠",
         "cls": "mixed",
         "title": "Cerca de un soporte — zona de riesgo",
-        "text": "Estás a 1.1% de tocar el Soporte 1 (14.88 USD). Si se rompe, el siguiente soporte está en 13.82 USD."
+        "text": "Estás a 0.8% de tocar el Soporte 1 (15.12 USD). Si se rompe, el siguiente soporte está en 14.88 USD."
       },
       "daily": [
-        {
-          "datetime": "2026-06-09",
-          "open": 16.4,
-          "high": 17.1,
-          "low": 15.651,
-          "close": 16.47,
-          "volume": 79913900
-        },
         {
           "datetime": "2026-06-10",
           "open": 16.205,
@@ -2283,22 +2280,30 @@
           "high": 15.04,
           "low": 13.92,
           "close": 14.22,
-          "volume": 91546900
+          "volume": 92173600
         },
         {
           "datetime": "2026-10-15",
-          "open": 13.885,
-          "high": 15.05,
-          "low": 13.88,
-          "close": 15.04,
-          "volume": 2329358
+          "open": 13.89,
+          "high": 15.13,
+          "low": 13.86,
+          "close": 15.09,
+          "volume": 62764500
+        },
+        {
+          "datetime": "2026-10-16",
+          "open": 15.09,
+          "high": 15.54,
+          "low": 15.09,
+          "close": 15.245,
+          "volume": 778620
         }
       ],
-      "updatedAt": 1792093192396,
+      "updatedAt": 1792160937831,
       "error": null
     },
     "TSLA": {
-      "price": 363.12,
+      "price": 364.675,
       "sr": {
         "support": 361.68333,
         "resistance": 365.8099975,
@@ -2349,17 +2354,9 @@
         "icon": "⚠",
         "cls": "mixed",
         "title": "Cerca de un soporte — zona de riesgo",
-        "text": "Estás a 0.4% de tocar el Soporte 1 (361.68 USD). Si se rompe, el siguiente soporte está en 354.05 USD."
+        "text": "Estás a 0.8% de tocar el Soporte 1 (361.68 USD). Si se rompe, el siguiente soporte está en 354.05 USD."
       },
       "daily": [
-        {
-          "datetime": "2026-06-09",
-          "open": 411.029999,
-          "high": 418.5,
-          "low": 384.23999,
-          "close": 396.67999,
-          "volume": 59940200
-        },
         {
           "datetime": "2026-06-10",
           "open": 391.54001,
@@ -3062,57 +3059,65 @@
           "high": 371.39001,
           "low": 363.82001,
           "close": 367.16,
-          "volume": 30803500
+          "volume": 31001400
         },
         {
           "datetime": "2026-10-15",
-          "open": 360.57,
-          "high": 363.665,
-          "low": 355.275,
-          "close": 363.12,
-          "volume": 708478
+          "open": 360.57001,
+          "high": 363.75,
+          "low": 355.23001,
+          "close": 362.44,
+          "volume": 26614300
+        },
+        {
+          "datetime": "2026-10-16",
+          "open": 369.27,
+          "high": 370.385,
+          "low": 363.45,
+          "close": 364.675,
+          "volume": 393001
         }
       ],
-      "updatedAt": 1792093200438,
+      "updatedAt": 1792160945947,
       "error": null
     },
     "XYZ": {
-      "price": 79.82,
+      "price": 80.55,
       "sr": {
-        "support": 78.72228,
-        "resistance": 80.465,
+        "support": 80.465,
+        "resistance": 81.040001,
         "supports": [
-          {
-            "price": 78.72228,
-            "n": 1,
-            "type": "fib"
-          },
-          {
-            "price": 77.73583333333333,
-            "n": 2,
-            "type": "confluencia"
-          },
-          {
-            "price": 77.095,
-            "n": 3,
-            "type": "pivot"
-          }
-        ],
-        "resistances": [
           {
             "price": 80.465,
             "n": 1,
             "type": "pivot"
           },
           {
-            "price": 81.040001,
+            "price": 79.82,
             "n": 2,
             "type": "pivot"
           },
           {
-            "price": 81.85544,
+            "price": 78.72228,
             "n": 3,
             "type": "fib"
+          }
+        ],
+        "resistances": [
+          {
+            "price": 81.040001,
+            "n": 1,
+            "type": "pivot"
+          },
+          {
+            "price": 81.85544,
+            "n": 2,
+            "type": "fib"
+          },
+          {
+            "price": 82.67833333333333,
+            "n": 3,
+            "type": "qpivot"
           }
         ],
         "quarterlyPivot": {
@@ -3128,17 +3133,9 @@
         "icon": "⚠",
         "cls": "mixed",
         "title": "Cerca de un soporte — zona de riesgo",
-        "text": "Estás a 1.4% de tocar el Soporte 1 (78.72 USD). Si se rompe, el siguiente soporte está en 77.74 USD."
+        "text": "Estás a 0.1% de tocar el Soporte 1 (80.47 USD). Si se rompe, el siguiente soporte está en 79.82 USD."
       },
       "daily": [
-        {
-          "datetime": "2026-06-09",
-          "open": 69.51,
-          "high": 70.45,
-          "low": 65.77,
-          "close": 68.29,
-          "volume": 5407800
-        },
         {
           "datetime": "2026-06-10",
           "open": 66.81,
@@ -3845,14 +3842,22 @@
         },
         {
           "datetime": "2026-10-15",
-          "open": 77.35,
-          "high": 80.03,
+          "open": 77.3,
+          "high": 80.089996,
           "low": 76.14,
-          "close": 79.82,
-          "volume": 235347
+          "close": 79.83,
+          "volume": 5468600
+        },
+        {
+          "datetime": "2026-10-16",
+          "open": 80.135,
+          "high": 81.13,
+          "low": 80.135,
+          "close": 80.55,
+          "volume": 43149
         }
       ],
-      "updatedAt": 1792093208480,
+      "updatedAt": 1792160954058,
       "error": null
     }
   }
