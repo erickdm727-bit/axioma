@@ -1,5 +1,5 @@
 {
-  "generatedAt": 1792194344177,
+  "generatedAt": 1792456228927,
   "records": [
     {
       "id": "CIFR_2026-08-26",
@@ -4634,6 +4634,151 @@
           "lower1Final": 69.43299029980136,
           "upper2Final": 124.73328820936794,
           "lower2Final": 57.1163398476962
+        },
+        "market": null,
+        "fusion": null
+      },
+      "resolved": false,
+      "resolution": null
+    },
+    {
+      "id": "CIFR_2026-10-19",
+      "ticker": "CIFR",
+      "timeframe": "1day",
+      "horizonBars": 130,
+      "calledAt": "2026-10-19",
+      "calledAtDatetime": "2026-10-19",
+      "calledAtTs": 1792456188305,
+      "priceAtCall": 8.94,
+      "methods": {
+        "own": {
+          "method": "analog",
+          "trainingSize": 330,
+          "n": 40,
+          "meanRet": 0.9169751240552,
+          "pctPositive": 1,
+          "direction": "bullish",
+          "centralFinal": 22.365301400728608,
+          "upper1Final": 44.04410689845698,
+          "lower1Final": 11.356949702684448,
+          "upper2Final": 86.73629376707211,
+          "lower2Final": 5.766982713011973
+        },
+        "market": null,
+        "fusion": null
+      },
+      "resolved": false,
+      "resolution": null
+    },
+    {
+      "id": "RIOT_2026-10-19",
+      "ticker": "RIOT",
+      "timeframe": "1day",
+      "horizonBars": 130,
+      "calledAt": "2026-10-19",
+      "calledAtDatetime": "2026-10-19",
+      "calledAtTs": 1792456196461,
+      "priceAtCall": 13.97,
+      "methods": {
+        "own": {
+          "method": "analog",
+          "trainingSize": 330,
+          "n": 40,
+          "meanRet": 0.6595060379598777,
+          "pctPositive": 1,
+          "direction": "bullish",
+          "centralFinal": 27.015700884434217,
+          "upper1Final": 35.432788877501544,
+          "lower1Final": 20.59809903195752,
+          "upper2Final": 46.472328554724825,
+          "lower2Final": 15.70500375116272
+        },
+        "market": null,
+        "fusion": null
+      },
+      "resolved": false,
+      "resolution": null
+    },
+    {
+      "id": "SOFI_2026-10-19",
+      "ticker": "SOFI",
+      "timeframe": "1day",
+      "horizonBars": 130,
+      "calledAt": "2026-10-19",
+      "calledAtDatetime": "2026-10-19",
+      "calledAtTs": 1792456204627,
+      "priceAtCall": 14.3,
+      "methods": {
+        "own": {
+          "method": "analog",
+          "trainingSize": 330,
+          "n": 40,
+          "meanRet": 0.19086718958663856,
+          "pctPositive": 0.4,
+          "direction": "bearish",
+          "centralFinal": 17.307271426245478,
+          "upper1Final": 27.44847996104911,
+          "lower1Final": 10.912868204242972,
+          "upper2Final": 43.53193716194906,
+          "lower2Final": 6.880962891850361
+        },
+        "market": null,
+        "fusion": null
+      },
+      "resolved": false,
+      "resolution": null
+    },
+    {
+      "id": "TSLA_2026-10-19",
+      "ticker": "TSLA",
+      "timeframe": "1day",
+      "horizonBars": 130,
+      "calledAt": "2026-10-19",
+      "calledAtDatetime": "2026-10-19",
+      "calledAtTs": 1792456212780,
+      "priceAtCall": 368.059998,
+      "methods": {
+        "own": {
+          "method": "analog",
+          "trainingSize": 330,
+          "n": 40,
+          "meanRet": 0.0774742370378718,
+          "pctPositive": 0.5,
+          "direction": "neutral",
+          "centralFinal": 397.7088480275565,
+          "upper1Final": 522.6326337110584,
+          "lower1Final": 302.6453336376482,
+          "upper2Final": 686.7960599177607,
+          "lower2Final": 230.3046523277174
+        },
+        "market": null,
+        "fusion": null
+      },
+      "resolved": false,
+      "resolution": null
+    },
+    {
+      "id": "XYZ_2026-10-19",
+      "ticker": "XYZ",
+      "timeframe": "1day",
+      "horizonBars": 130,
+      "calledAt": "2026-10-19",
+      "calledAtDatetime": "2026-10-19",
+      "calledAtTs": 1792456220923,
+      "priceAtCall": 77.5,
+      "methods": {
+        "own": {
+          "method": "analog",
+          "trainingSize": 330,
+          "n": 40,
+          "meanRet": 0.07887091814895791,
+          "pctPositive": 0.625,
+          "direction": "bullish",
+          "centralFinal": 83.86000945652734,
+          "upper1Final": 101.75597660720027,
+          "lower1Final": 69.11143129406351,
+          "upper2Final": 123.47099460622763,
+          "lower2Final": 56.95670637850478
         },
         "market": null,
         "fusion": null
