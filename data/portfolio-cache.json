@@ -1,8 +1,8 @@
 {
-  "generatedAt": 1792680662306,
+  "generatedAt": 1792698183662,
   "tickers": {
     "CIFR": {
-      "price": 8.25,
+      "price": 8.095,
       "sr": {
         "support": null,
         "resistance": 11.056666666666668,
@@ -14,7 +14,7 @@
             "type": "qpivot"
           },
           {
-            "price": 12.91874,
+            "price": 12.773330000000001,
             "n": 2,
             "type": "fib"
           },
@@ -35,7 +35,7 @@
       "alert": {
         "urgent": false,
         "icon": "◇",
-        "text": "Precio a 34.0% debajo de la Resistencia 1 (11.06 USD) — sin niveles clave inmediatos que vigilar."
+        "text": "Precio a 36.6% debajo de la Resistencia 1 (11.06 USD) — sin niveles clave inmediatos que vigilar."
       },
       "daily": [
         {
@@ -754,16 +754,16 @@
           "datetime": "2026-10-22",
           "open": 8.725,
           "high": 8.96,
-          "low": 8.25,
-          "close": 8.25,
-          "volume": 532362
+          "low": 8.045,
+          "close": 8.095,
+          "volume": 2119576
         }
       ],
-      "updatedAt": 1792680621787,
+      "updatedAt": 1792698143060,
       "error": null
     },
     "RIOT": {
-      "price": 13.01,
+      "price": 12.85,
       "sr": {
         "support": null,
         "resistance": 16.067333333333327,
@@ -775,7 +775,7 @@
             "type": "qpivot"
           },
           {
-            "price": 16.682899999999997,
+            "price": 16.4471,
             "n": 2,
             "type": "fib"
           },
@@ -796,7 +796,7 @@
       "alert": {
         "urgent": false,
         "icon": "◇",
-        "text": "Precio a 23.5% debajo de la Resistencia 1 (16.07 USD) — sin niveles clave inmediatos que vigilar."
+        "text": "Precio a 25.0% debajo de la Resistencia 1 (16.07 USD) — sin niveles clave inmediatos que vigilar."
       },
       "daily": [
         {
@@ -1515,16 +1515,16 @@
           "datetime": "2026-10-22",
           "open": 13.46,
           "high": 13.74,
-          "low": 12.97,
-          "close": 13.01,
-          "volume": 395418
+          "low": 12.67,
+          "close": 12.85,
+          "volume": 1133948
         }
       ],
-      "updatedAt": 1792680629913,
+      "updatedAt": 1792698151204,
       "error": null
     },
     "SOFI": {
-      "price": 14.815,
+      "price": 14.715,
       "sr": {
         "support": 13.839999999999998,
         "resistance": 14.88,
@@ -1565,7 +1565,7 @@
         "icon": "◆",
         "cls": "mixed",
         "title": "Cerca de una resistencia",
-        "text": "Estás a 0.4% de la Resistencia 1 (14.88 USD). Si la rompe, la siguiente resistencia está en 15.12 USD."
+        "text": "Estás a 1.1% de la Resistencia 1 (14.88 USD). Si la rompe, la siguiente resistencia está en 15.12 USD."
       },
       "daily": [
         {
@@ -2285,48 +2285,48 @@
           "open": 14.59,
           "high": 15.07,
           "low": 14.59,
-          "close": 14.815,
-          "volume": 535479
+          "close": 14.715,
+          "volume": 1585228
         }
       ],
-      "updatedAt": 1792680638048,
+      "updatedAt": 1792698159368,
       "error": null
     },
     "TSLA": {
-      "price": 386.71,
+      "price": 377.065,
       "sr": {
-        "support": 384.040009,
-        "resistance": 387.694995,
+        "support": 368.60001,
+        "resistance": 381.10663381999996,
         "supports": [
           {
-            "price": 384.040009,
+            "price": 368.60001,
             "n": 1,
             "type": "pivot"
           },
           {
-            "price": 381.10663381999996,
+            "price": 365.8099975,
             "n": 2,
-            "type": "fib"
+            "type": "confluencia"
           },
           {
-            "price": 368.60001,
+            "price": 361.68333,
             "n": 3,
-            "type": "pivot"
+            "type": "qpivot"
           }
         ],
         "resistances": [
           {
-            "price": 387.694995,
+            "price": 381.10663381999996,
             "n": 1,
-            "type": "pivot"
-          },
-          {
-            "price": 400.88671236,
-            "n": 2,
             "type": "fib"
           },
           {
-            "price": 414.75,
+            "price": 384.040009,
+            "n": 2,
+            "type": "pivot"
+          },
+          {
+            "price": 387.694995,
             "n": 3,
             "type": "pivot"
           }
@@ -2341,10 +2341,10 @@
       },
       "alert": {
         "urgent": true,
-        "icon": "⚠",
+        "icon": "◆",
         "cls": "mixed",
-        "title": "Cerca de un soporte — zona de riesgo",
-        "text": "Estás a 0.7% de tocar el Soporte 1 (384.04 USD). Si se rompe, el siguiente soporte está en 381.11 USD."
+        "title": "Cerca de una resistencia",
+        "text": "Estás a 1.1% de la Resistencia 1 (381.11 USD). Si la rompe, la siguiente resistencia está en 384.04 USD."
       },
       "daily": [
         {
@@ -3064,15 +3064,15 @@
           "open": 374.21,
           "high": 388.84,
           "low": 373.86,
-          "close": 386.71,
-          "volume": 547421
+          "close": 377.065,
+          "volume": 1260257
         }
       ],
-      "updatedAt": 1792680646173,
+      "updatedAt": 1792698167519,
       "error": null
     },
     "XYZ": {
-      "price": 78.67,
+      "price": 78.78,
       "sr": {
         "support": 77.73583333333333,
         "resistance": 79.21000000000001,
@@ -3123,7 +3123,7 @@
         "icon": "⚠",
         "cls": "mixed",
         "title": "Cerca de un soporte — zona de riesgo",
-        "text": "Estás a 1.2% de tocar el Soporte 1 (77.74 USD). Si se rompe, el siguiente soporte está en 77.19 USD."
+        "text": "Estás a 1.3% de tocar el Soporte 1 (77.74 USD). Si se rompe, el siguiente soporte está en 77.19 USD."
       },
       "daily": [
         {
@@ -3843,11 +3843,11 @@
           "open": 78.155,
           "high": 79.87,
           "low": 77.9,
-          "close": 78.67,
-          "volume": 53392
+          "close": 78.78,
+          "volume": 202491
         }
       ],
-      "updatedAt": 1792680654301,
+      "updatedAt": 1792698175658,
       "error": null
     }
   }
