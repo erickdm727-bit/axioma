@@ -1,5 +1,5 @@
 {
-  "generatedAt": 1795665278833,
+  "generatedAt": 1795751750089,
   "criteria": "v1: cercanía a soporte + RSI bajo + motor de análogos alcista (provisional)",
   "results": [
     {
@@ -165,13 +165,13 @@
     },
     {
       "ticker": "SNDK",
-      "price": 73.61,
+      "price": 73.51,
       "score": 5.1,
       "reasons": [
         "RSI(14) en 27.2 — +2.1",
         "Motor de análogos: 100% de casos similares subieron a 130 velas — +3.0"
       ],
-      "rsi": 27.200428260177304,
+      "rsi": 27.175642447733424,
       "support": null,
       "resistance": 100.49625,
       "analogDirection": "bullish",
